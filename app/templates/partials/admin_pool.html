@@ -1,0 +1,39 @@
+<!-- Admin attendee pool partial — swapped via SSE -->
+<div class="flex gap-4 text-sm mb-3">
+  <span class="text-green-600 font-medium">Active: {{ counts.active }}</span>
+  <span class="text-gray-500">Not yet: {{ counts.not_arrived }}</span>
+  <span class="text-red-500">Departed: {{ counts.departed }}</span>
+</div>
+
+<div class="max-h-72 overflow-y-auto space-y-1">
+  {% for id, att in attendees.items()|sort(attribute='1.name') %}
+  <div class="flex items-center justify-between px-3 py-2 rounded hover:bg-gray-50 text-sm"
+       data-attendee-name="{{ att.name|lower }}">
+    {% if att.status.value == 'checked-in' %}
+      <span>&#9989; {{ att.name }}</span>
+      <button
+        hx-post="/api/admin/check-in"
+        hx-vals='{"attendee_id": "{{ id }}", "action": "check-out"}'
+        hx-swap="none"
+        class="text-red-500 text-xs hover:underline"
+      >Check Out</button>
+    {% elif att.status.value == 'departed' %}
+      <span class="text-gray-400">&#128682; {{ att.name }} <span class="text-xs">(departed)</span></span>
+      <button
+        hx-post="/api/admin/check-in"
+        hx-vals='{"attendee_id": "{{ id }}", "action": "check-in"}'
+        hx-swap="none"
+        class="text-blue-500 text-xs hover:underline"
+      >Re-check In</button>
+    {% else %}
+      <span class="text-gray-600">&#11036; {{ att.name }}</span>
+      <button
+        hx-post="/api/admin/check-in"
+        hx-vals='{"attendee_id": "{{ id }}", "action": "check-in"}'
+        hx-swap="none"
+        class="text-green-600 text-xs hover:underline"
+      >Check In</button>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>

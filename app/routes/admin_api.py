@@ -132,6 +132,30 @@ async def advance_round():
     }
 
 
+@router.post("/undo-round")
+async def undo_last_round():
+    success = await state_manager.undo_last_round()
+    if not success:
+        raise HTTPException(status_code=400, detail="No rounds to undo")
+
+    state = await state_manager.get_state()
+    await broadcaster.broadcast(
+        "round_update",
+        {
+            "round_number": state.round_number,
+            "rounds_remaining": state.rounds_remaining,
+            "total_rounds": state.round_number + state.rounds_remaining,
+            "pairings": [],
+            "pit_stop": {"id": None, "name": None},
+            "average_score": 0,
+            "timer_end": None,
+            "undone": True,
+        },
+    )
+
+    return {"ok": True, "state": state.model_dump()}
+
+
 @router.post("/pause")
 async def pause_timer(request: PauseRequest):
     if request.action == "resume":

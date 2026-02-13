@@ -13,6 +13,11 @@ class Settings(BaseSettings):
     round_duration_minutes: int = 8
     total_rounds: int = 10
 
+    # LLM provider: "claude", "ollama", or "none"
+    llm_provider: str = "claude"
+    ollama_model: str = "llama3.2"
+    ollama_url: str = "http://localhost:11434"
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 

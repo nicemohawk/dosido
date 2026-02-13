@@ -13,49 +13,8 @@
     <h2 class="text-lg font-semibold mb-1">Round Control</h2>
     <p class="text-gray-400 text-xs mb-4">Click "Start Next Round" when attendees are seated and ready. The solver runs in ~1 second.</p>
 
-    <div class="flex items-center gap-4 mb-3">
-      <span class="text-sm font-medium" id="round-status">
-        {% if state.status.value == 'pre-event' %}
-          Pre-Event — No rounds started
-        {% elif state.status.value == 'round-active' %}
-          Round {{ state.round_number }} in progress
-        {% else %}
-          Between rounds ({{ state.round_number }} completed)
-        {% endif %}
-      </span>
-      <span class="text-2xl font-mono font-bold" id="timer-display">--:--</span>
-    </div>
-
-    <div class="flex flex-wrap gap-3 mb-4">
-      <button
-        hx-post="/api/admin/advance-round"
-        hx-confirm="Start Round {{ state.round_number + 1 }}? {{ counts.active }} attendees in pool."
-        hx-swap="none"
-        class="bg-green-600 text-white px-4 py-2 rounded font-medium hover:bg-green-700 disabled:opacity-50"
-        {% if state.rounds_remaining <= 0 %}disabled{% endif %}
-      >
-        Start Round {{ state.round_number + 1 }}
-      </button>
-
-      {% if state.status.value == 'round-active' and not state.timer_paused %}
-      <button
-        hx-post="/api/admin/pause"
-        hx-vals='{"action": "pause"}'
-        hx-swap="none"
-        class="bg-yellow-500 text-white px-4 py-2 rounded font-medium hover:bg-yellow-600"
-      >
-        Pause Timer
-      </button>
-      {% elif state.timer_paused %}
-      <button
-        hx-post="/api/admin/pause"
-        hx-vals='{"action": "resume"}'
-        hx-swap="none"
-        class="bg-blue-500 text-white px-4 py-2 rounded font-medium hover:bg-blue-600"
-      >
-        Resume Timer
-      </button>
-      {% endif %}
+    <div id="admin-round-control">
+      {% include "partials/admin_round_control.html" %}
     </div>
 
     <div class="flex gap-4 text-sm text-gray-600">
@@ -81,47 +40,12 @@
     <h2 class="text-lg font-semibold mb-1">Attendee Pool</h2>
     <p class="text-gray-400 text-xs mb-3">Check in attendees as they arrive. They'll be included in the next round.</p>
 
-    <div class="flex gap-4 text-sm mb-3" id="pool-counts">
-      <span class="text-green-600 font-medium">Active: {{ counts.active }}</span>
-      <span class="text-gray-500">Not yet: {{ counts.not_arrived }}</span>
-      <span class="text-red-500">Departed: {{ counts.departed }}</span>
-    </div>
-
     <input type="text" placeholder="Filter attendees..."
            class="w-full border rounded px-3 py-2 mb-3 text-sm" id="admin-filter"
            oninput="filterAttendees(this.value)">
 
-    <div class="max-h-72 overflow-y-auto space-y-1" id="attendee-list">
-      {% for id, att in attendees.items()|sort(attribute='1.name') %}
-      <div class="flex items-center justify-between px-3 py-2 rounded hover:bg-gray-50 text-sm"
-           data-attendee-name="{{ att.name|lower }}">
-        {% if att.status.value == 'checked-in' %}
-          <span>&#9989; {{ att.name }}</span>
-          <button
-            hx-post="/api/admin/check-in"
-            hx-vals='{"attendee_id": "{{ id }}", "action": "check-out"}'
-            hx-swap="none"
-            class="text-red-500 text-xs hover:underline"
-          >Check Out</button>
-        {% elif att.status.value == 'departed' %}
-          <span class="text-gray-400">&#128682; {{ att.name }} <span class="text-xs">(departed)</span></span>
-          <button
-            hx-post="/api/admin/check-in"
-            hx-vals='{"attendee_id": "{{ id }}", "action": "check-in"}'
-            hx-swap="none"
-            class="text-blue-500 text-xs hover:underline"
-          >Re-check In</button>
-        {% else %}
-          <span class="text-gray-600">&#11036; {{ att.name }}</span>
-          <button
-            hx-post="/api/admin/check-in"
-            hx-vals='{"attendee_id": "{{ id }}", "action": "check-in"}'
-            hx-swap="none"
-            class="text-green-600 text-xs hover:underline"
-          >Check In</button>
-        {% endif %}
-      </div>
-      {% endfor %}
+    <div id="admin-pool">
+      {% include "partials/admin_pool.html" %}
     </div>
   </section>
 
@@ -210,67 +134,10 @@
     </details>
   </section>
 
-  <!-- CURRENT PAIRINGS -->
-  {% if pairings %}
-  <section class="bg-white rounded-lg shadow p-5 mb-6">
-    <h2 class="text-lg font-semibold mb-3">Current Pairings — Round {{ state.round_number }}</h2>
-
-    <div class="space-y-2 text-sm" id="admin-pairings">
-      {% for p in pairings %}
-      <div class="flex items-center justify-between px-3 py-2 bg-gray-50 rounded">
-        <span>
-          <span class="font-medium text-gray-500">Table {{ p.table_number }}:</span>
-          {{ p.name_a }} ↔ {{ p.name_b }}
-        </span>
-        <span class="text-gray-400">score: {{ p.score }}</span>
-      </div>
-      {% endfor %}
-
-      {% if pit_stop_name %}
-      <div class="px-3 py-2 bg-yellow-50 rounded text-yellow-700">
-        Pit stop: {{ pit_stop_name }}
-      </div>
-      {% endif %}
-    </div>
-
-    <div class="mt-3 text-xs text-gray-400">
-      {% if pairings %}
-      Avg score: {{ "%.1f"|format(pairings|map(attribute='score')|list|sum / pairings|length) }}
-      {% endif %}
-    </div>
+  <!-- CURRENT PAIRINGS + SWAP OVERRIDE -->
+  <section class="bg-white rounded-lg shadow p-5 mb-6" id="admin-pairings">
+    {% include "partials/admin_pairings.html" %}
   </section>
-  {% endif %}
-
-  <!-- SWAP OVERRIDE -->
-  {% if pairings %}
-  <section class="bg-white rounded-lg shadow p-5 mb-6">
-    <h2 class="text-lg font-semibold mb-1">Swap Override</h2>
-    <p class="text-gray-400 text-xs mb-3">Use if two matched attendees already know each other well. Swaps both into different pairings.</p>
-
-    <form hx-post="/api/admin/swap" hx-swap="none" class="flex flex-wrap items-center gap-3 text-sm">
-      <select name="attendee_id_1" class="border rounded px-3 py-2">
-        <option value="">Select attendee...</option>
-        {% for id, att in attendees.items()|sort(attribute='1.name') %}
-          {% if att.status.value == 'checked-in' %}
-          <option value="{{ id }}">{{ att.name }}</option>
-          {% endif %}
-        {% endfor %}
-      </select>
-      <span class="text-gray-400">↔</span>
-      <select name="attendee_id_2" class="border rounded px-3 py-2">
-        <option value="">Select attendee...</option>
-        {% for id, att in attendees.items()|sort(attribute='1.name') %}
-          {% if att.status.value == 'checked-in' %}
-          <option value="{{ id }}">{{ att.name }}</option>
-          {% endif %}
-        {% endfor %}
-      </select>
-      <button type="submit" class="bg-orange-500 text-white px-4 py-2 rounded font-medium hover:bg-orange-600">
-        Apply Swap
-      </button>
-    </form>
-  </section>
-  {% endif %}
 
   <!-- SIGNAL STATS -->
   {% if signal_stats %}
@@ -297,14 +164,24 @@ Timer.setEnd("{{ state.timer_end }}");
 Timer.pause({{ state.timer_remaining }});
 {% endif %}
 
-// Handle SSE updates
+const PARTIAL_BASE = "/{{ slug }}/admin/{{ admin_token }}/partial";
+
+// Round update: refresh round control + pairings, then set timer
 document.body.addEventListener("sse:round_update", function(e) {
   const data = JSON.parse(e.detail.data);
-  Timer.setEnd(data.timer_end);
-  // Reload page to refresh all sections with new data
-  location.reload();
+  Promise.all([
+    htmx.ajax('GET', PARTIAL_BASE + '/round-control', {target: '#admin-round-control', swap: 'innerHTML'}),
+    htmx.ajax('GET', PARTIAL_BASE + '/pairings', {target: '#admin-pairings', swap: 'innerHTML'})
+  ]).then(function() {
+    if (data.timer_end) {
+      Timer.setEnd(data.timer_end);
+    } else if (data.undone) {
+      Timer.clear();
+    }
+  });
 });
 
+// Timer update: just update the JS timer — no DOM swap needed
 document.body.addEventListener("sse:timer_update", function(e) {
   const data = JSON.parse(e.detail.data);
   if (data.action === "pause") {
@@ -314,12 +191,21 @@ document.body.addEventListener("sse:timer_update", function(e) {
   }
 });
 
+// Check-in update: refresh pool + round control (active count in confirm dialog)
 document.body.addEventListener("sse:checkin_update", function(e) {
-  // Reload to refresh attendee list and counts
-  location.reload();
+  Promise.all([
+    htmx.ajax('GET', PARTIAL_BASE + '/pool', {target: '#admin-pool', swap: 'innerHTML'}),
+    htmx.ajax('GET', PARTIAL_BASE + '/round-control', {target: '#admin-round-control', swap: 'innerHTML'})
+  ]).then(function() {
+    // Re-apply attendee filter after pool refresh
+    var filter = document.getElementById('admin-filter');
+    if (filter && filter.value) {
+      filterAttendees(filter.value);
+    }
+  });
 });
 
-// Attendee filter
+// Client-side attendee filter
 function filterAttendees(query) {
   const rows = document.querySelectorAll('[data-attendee-name]');
   const q = query.toLowerCase().trim();

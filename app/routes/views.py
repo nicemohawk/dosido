@@ -166,6 +166,54 @@ async def admin_panel(request: Request, slug: str, token: str):
     )
 
 
+# --- Admin partial endpoints for live refresh ---
+
+
+@router.get("/{slug}/admin/{token}/partial/round-control", response_class=HTMLResponse)
+async def admin_partial_round_control(request: Request, slug: str, token: str):
+    if token != settings.admin_token:
+        return HTMLResponse("", status_code=404)
+    state = await state_manager.get_state()
+    counts = await state_manager.get_pool_counts()
+    return templates.TemplateResponse(
+        "partials/admin_round_control.html",
+        {"request": request, "state": state, "counts": counts, "settings": settings},
+    )
+
+
+@router.get("/{slug}/admin/{token}/partial/pool", response_class=HTMLResponse)
+async def admin_partial_pool(request: Request, slug: str, token: str):
+    if token != settings.admin_token:
+        return HTMLResponse("", status_code=404)
+    attendees = await state_manager.get_all_attendees()
+    counts = await state_manager.get_pool_counts()
+    return templates.TemplateResponse(
+        "partials/admin_pool.html",
+        {"request": request, "attendees": attendees, "counts": counts},
+    )
+
+
+@router.get("/{slug}/admin/{token}/partial/pairings", response_class=HTMLResponse)
+async def admin_partial_pairings(request: Request, slug: str, token: str):
+    if token != settings.admin_token:
+        return HTMLResponse("", status_code=404)
+    state = await state_manager.get_state()
+    pairings = await state_manager.get_current_pairings()
+    attendees = await state_manager.get_all_attendees()
+    pairing_display = _build_pairing_display(pairings, attendees)
+    pit_stop_name = _get_pit_stop_name(pairings, attendees)
+    return templates.TemplateResponse(
+        "partials/admin_pairings.html",
+        {
+            "request": request,
+            "state": state,
+            "pairings": pairing_display,
+            "pit_stop_name": pit_stop_name,
+            "attendees": attendees,
+        },
+    )
+
+
 def _build_pairing_display(pairings, attendees):
     display = []
     if pairings:

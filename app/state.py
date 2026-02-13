@@ -217,6 +217,60 @@ class EventStateManager:
 
         return result
 
+    async def undo_last_round(self) -> bool:
+        """Roll back the last round. Returns True if successful."""
+        state = await self.get_state()
+        if state.round_number <= 0:
+            return False
+
+        r = get_redis()
+        current = await self.get_current_pairings()
+
+        # Remove current round's pairings from history
+        # (they were added to history at the START of advance_round,
+        #  meaning the previous round's pairings are in history, not the current ones.
+        #  The current round's pairings haven't been added to history yet —
+        #  they get added when the NEXT round is advanced.)
+        # So we actually need to remove the pairings that belong to this round
+        # from the current_pairings, and restore the previous round.
+
+        # Remove current round result
+        await r.delete(f"{_prefix()}:round:{state.round_number}:pairings")
+
+        # Revert pit stop count for this round
+        if current and current.pit_stop:
+            count = int(await r.hget(f"{_prefix()}:pit_stops", current.pit_stop) or 0)
+            if count > 0:
+                await r.hset(f"{_prefix()}:pit_stops", current.pit_stop, str(count - 1))
+
+        # Restore previous round's pairings as current (or clear if round 1)
+        prev_round = state.round_number - 1
+        if prev_round > 0:
+            prev_raw = await r.get(f"{_prefix()}:round:{prev_round}:pairings")
+            if prev_raw:
+                await r.set(f"{_prefix()}:current_pairings", prev_raw)
+                # Also remove previous round's pairings from history
+                # (they were committed to history when this round was advanced)
+                prev_result = RoundResult.model_validate_json(prev_raw)
+                for pairing in prev_result.pairings:
+                    pair_key = make_pair_key(pairing.attendee_a, pairing.attendee_b)
+                    await r.srem(f"{_prefix()}:history", pair_key)
+            else:
+                await r.delete(f"{_prefix()}:current_pairings")
+        else:
+            await r.delete(f"{_prefix()}:current_pairings")
+
+        # Revert state
+        state.round_number -= 1
+        state.rounds_remaining += 1
+        state.status = EventStatus.BETWEEN_ROUNDS if state.round_number > 0 else EventStatus.PRE_EVENT
+        state.timer_end = None
+        state.timer_paused = False
+        state.timer_remaining = None
+        await self.set_state(state)
+
+        return True
+
     async def pause_timer(self) -> EventState:
         state = await self.get_state()
         if state.timer_end and not state.timer_paused:

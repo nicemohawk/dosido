@@ -17,14 +17,25 @@ class Broadcaster:
     def __init__(self) -> None:
         self._subscribers: list[asyncio.Queue[str]] = []
 
-    async def subscribe(self) -> AsyncGenerator[str, None]:
-        """Subscribe to events. Yields SSE-formatted strings."""
+    async def subscribe(
+        self, keepalive_seconds: int = 15
+    ) -> AsyncGenerator[str, None]:
+        """Subscribe to events. Yields SSE-formatted strings.
+
+        Sends SSE comment keepalives every `keepalive_seconds` to detect
+        dead connections and keep proxies from closing the stream.
+        """
         queue: asyncio.Queue[str] = asyncio.Queue()
         self._subscribers.append(queue)
         try:
             while True:
-                data = await queue.get()
-                yield data
+                try:
+                    data = await asyncio.wait_for(
+                        queue.get(), timeout=keepalive_seconds
+                    )
+                    yield data
+                except asyncio.TimeoutError:
+                    yield ": keepalive\n\n"
         except asyncio.CancelledError:
             pass
         finally:
