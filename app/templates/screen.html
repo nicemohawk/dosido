@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}{{ settings.event_name }} — Screen{% endblock %}
+{% block body_class %}bg-gray-900 text-white{% endblock %}
+
+{% block body %}
+<div class="min-h-screen p-8" hx-ext="sse" sse-connect="/api/state/stream">
+
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-8">
+    <div>
+      {% if state.round_number > 0 %}
+      <h1 class="text-4xl font-bold" id="round-label">
+        ROUND {{ state.round_number }} OF {{ state.round_number + state.rounds_remaining }}
+      </h1>
+      {% else %}
+      <h1 class="text-4xl font-bold">{{ settings.event_name }}</h1>
+      {% endif %}
+    </div>
+    <div class="text-6xl font-mono font-bold" id="timer-display">--:--</div>
+  </div>
+
+  <!-- Pairings grid or check-in board -->
+  <div id="main-content">
+    {% if state.round_number > 0 and pairings %}
+      {% include "partials/pairings_grid.html" %}
+    {% else %}
+      {% include "partials/checkin_board.html" %}
+    {% endif %}
+  </div>
+
+  <!-- Pit stop -->
+  {% if pairings and pit_stop_name %}
+  <div class="mt-8 text-center text-xl text-yellow-400" id="pit-stop">
+    &#9749; PIT STOP: {{ pit_stop_name }}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/timer.js"></script>
+<script>
+{% if state.timer_end %}
+Timer.setEnd("{{ state.timer_end }}");
+{% elif state.timer_paused and state.timer_remaining is not none %}
+Timer.pause({{ state.timer_remaining }});
+{% endif %}
+
+document.body.addEventListener("sse:round_update", function(e) {
+  const data = JSON.parse(e.detail.data);
+  Timer.setEnd(data.timer_end);
+  location.reload();
+});
+
+document.body.addEventListener("sse:timer_update", function(e) {
+  const data = JSON.parse(e.detail.data);
+  if (data.action === "pause") Timer.pause(data.timer_remaining);
+  else if (data.action === "resume") Timer.resume(data.timer_end);
+});
+
+document.body.addEventListener("sse:checkin_update", function(e) {
+  if (document.getElementById("checkin-board")) location.reload();
+});
+</script>
+{% endblock %}

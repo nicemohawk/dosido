@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block title %}Admin — {{ settings.event_name }}{% endblock %}
+
+{% block body %}
+<div class="max-w-5xl mx-auto px-4 py-6" hx-ext="sse" sse-connect="/api/state/stream">
+
+  <h1 class="text-2xl font-bold mb-1">Admin — Cofounder Matchmaking</h1>
+  <p class="text-gray-500 text-sm mb-6">{{ settings.event_name }}</p>
+
+  <!-- ROUND CONTROL -->
+  <section class="bg-white rounded-lg shadow p-5 mb-6">
+    <h2 class="text-lg font-semibold mb-1">Round Control</h2>
+    <p class="text-gray-400 text-xs mb-4">Click "Start Next Round" when attendees are seated and ready. The solver runs in ~1 second.</p>
+
+    <div class="flex items-center gap-4 mb-3">
+      <span class="text-sm font-medium" id="round-status">
+        {% if state.status.value == 'pre-event' %}
+          Pre-Event — No rounds started
+        {% elif state.status.value == 'round-active' %}
+          Round {{ state.round_number }} in progress
+        {% else %}
+          Between rounds ({{ state.round_number }} completed)
+        {% endif %}
+      </span>
+      <span class="text-2xl font-mono font-bold" id="timer-display">--:--</span>
+    </div>
+
+    <div class="flex flex-wrap gap-3 mb-4">
+      <button
+        hx-post="/api/admin/advance-round"
+        hx-confirm="Start Round {{ state.round_number + 1 }}? {{ counts.active }} attendees in pool."
+        hx-swap="none"
+        class="bg-green-600 text-white px-4 py-2 rounded font-medium hover:bg-green-700 disabled:opacity-50"
+        {% if state.rounds_remaining <= 0 %}disabled{% endif %}
+      >
+        Start Round {{ state.round_number + 1 }}
+      </button>
+
+      {% if state.status.value == 'round-active' and not state.timer_paused %}
+      <button
+        hx-post="/api/admin/pause"
+        hx-vals='{"action": "pause"}'
+        hx-swap="none"
+        class="bg-yellow-500 text-white px-4 py-2 rounded font-medium hover:bg-yellow-600"
+      >
+        Pause Timer
+      </button>
+      {% elif state.timer_paused %}
+      <button
+        hx-post="/api/admin/pause"
+        hx-vals='{"action": "resume"}'
+        hx-swap="none"
+        class="bg-blue-500 text-white px-4 py-2 rounded font-medium hover:bg-blue-600"
+      >
+        Resume Timer
+      </button>
+      {% endif %}
+    </div>
+
+    <div class="flex gap-4 text-sm text-gray-600">
+      <label>
+        Round duration:
+        <input type="number" value="{{ settings.round_duration_minutes }}" min="1" max="30"
+               class="w-16 border rounded px-2 py-1 ml-1" id="round-duration"> min
+      </label>
+      <label>
+        Total rounds:
+        <input type="number" value="{{ state.round_number + state.rounds_remaining }}" min="1" max="20"
+               class="w-16 border rounded px-2 py-1 ml-1" id="total-rounds">
+      </label>
+      <button
+        onclick="fetch('/api/admin/settings', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({round_duration_minutes:parseInt(document.getElementById('round-duration').value), total_rounds:parseInt(document.getElementById('total-rounds').value)})})"
+        class="text-blue-600 underline text-sm"
+      >Save</button>
+    </div>
+  </section>
+
+  <!-- ATTENDEE POOL -->
+  <section class="bg-white rounded-lg shadow p-5 mb-6">
+    <h2 class="text-lg font-semibold mb-1">Attendee Pool</h2>
+    <p class="text-gray-400 text-xs mb-3">Check in attendees as they arrive. They'll be included in the next round.</p>
+
+    <div class="flex gap-4 text-sm mb-3" id="pool-counts">
+      <span class="text-green-600 font-medium">Active: {{ counts.active }}</span>
+      <span class="text-gray-500">Not yet: {{ counts.not_arrived }}</span>
+      <span class="text-red-500">Departed: {{ counts.departed }}</span>
+    </div>
+
+    <input type="text" placeholder="Filter attendees..."
+           class="w-full border rounded px-3 py-2 mb-3 text-sm" id="admin-filter"
+           oninput="filterAttendees(this.value)">
+
+    <div class="max-h-72 overflow-y-auto space-y-1" id="attendee-list">
+      {% for id, att in attendees.items()|sort(attribute='1.name') %}
+      <div class="flex items-center justify-between px-3 py-2 rounded hover:bg-gray-50 text-sm"
+           data-attendee-name="{{ att.name|lower }}">
+        {% if att.status.value == 'checked-in' %}
+          <span>&#9989; {{ att.name }}</span>
+          <button
+            hx-post="/api/admin/check-in"
+            hx-vals='{"attendee_id": "{{ id }}", "action": "check-out"}'
+            hx-swap="none"
+            class="text-red-500 text-xs hover:underline"
+          >Check Out</button>
+        {% elif att.status.value == 'departed' %}
+          <span class="text-gray-400">&#128682; {{ att.name }} <span class="text-xs">(departed)</span></span>
+          <button
+            hx-post="/api/admin/check-in"
+            hx-vals='{"attendee_id": "{{ id }}", "action": "check-in"}'
+            hx-swap="none"
+            class="text-blue-500 text-xs hover:underline"
+          >Re-check In</button>
+        {% else %}
+          <span class="text-gray-600">&#11036; {{ att.name }}</span>
+          <button
+            hx-post="/api/admin/check-in"
+            hx-vals='{"attendee_id": "{{ id }}", "action": "check-in"}'
+            hx-swap="none"
+            class="text-green-600 text-xs hover:underline"
+          >Check In</button>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- ADD WALK-UP -->
+  <section class="bg-white rounded-lg shadow p-5 mb-6">
+    <h2 class="text-lg font-semibold mb-1">Add Walk-Up Attendee</h2>
+    <p class="text-gray-400 text-xs mb-3">For attendees not on the pre-registered list. Pick a badge from the reserve stack and select its slug below.</p>
+
+    <details class="group">
+      <summary class="cursor-pointer text-blue-600 font-medium text-sm group-open:mb-4">+ Add Walk-Up Attendee</summary>
+
+      <form hx-post="/api/admin/walk-up" hx-swap="none" hx-on::after-request="this.reset()"
+            class="grid grid-cols-2 gap-3 text-sm">
+        <div class="col-span-2">
+          <label class="block text-gray-600 mb-1">Name *</label>
+          <input type="text" name="name" required class="w-full border rounded px-3 py-2">
+        </div>
+        <div>
+          <label class="block text-gray-600 mb-1">Email</label>
+          <input type="email" name="email" class="w-full border rounded px-3 py-2">
+        </div>
+        <div>
+          <label class="block text-gray-600 mb-1">Badge slug</label>
+          <select name="badge_slug" class="w-full border rounded px-3 py-2">
+            <option value="">No badge</option>
+            {% for badge in walkup_badges %}
+            <option value="{{ badge.slug }}">{{ badge.slug }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-600 mb-1">Lane</label>
+          <select name="lane" class="w-full border rounded px-3 py-2">
+            <option value="idea">Idea-holder</option>
+            <option value="joiner">Joiner</option>
+            <option value="flexible" selected>Flexible</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-600 mb-1">Primary role</label>
+          <select name="role" class="w-full border rounded px-3 py-2">
+            <option value="engineering">Engineering</option>
+            <option value="product">Product</option>
+            <option value="gtm">GTM / Sales</option>
+            <option value="science">Science</option>
+            <option value="ops">Operations</option>
+            <option value="policy">Policy</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-600 mb-1">Role needed</label>
+          <select name="role_needed" class="w-full border rounded px-3 py-2">
+            <option value="engineering">Engineering</option>
+            <option value="product">Product</option>
+            <option value="gtm">GTM / Sales</option>
+            <option value="science">Science</option>
+            <option value="ops">Operations</option>
+            <option value="policy">Policy</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-600 mb-1">Top climate area</label>
+          <input type="text" name="top_climate_area" placeholder="e.g., energy" class="w-full border rounded px-3 py-2">
+        </div>
+        <div>
+          <label class="block text-gray-600 mb-1">Commitment</label>
+          <select name="commitment" class="w-full border rounded px-3 py-2">
+            <option value="full-time">Full-time</option>
+            <option value="part-time">Part-time</option>
+            <option value="exploring" selected>Exploring</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-600 mb-1">Working arrangement</label>
+          <select name="arrangement" class="w-full border rounded px-3 py-2">
+            <option value="remote-open" selected>Remote / Open</option>
+            <option value="colocated">Colocated only</option>
+          </select>
+        </div>
+        <div class="col-span-2">
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded font-medium hover:bg-blue-700">
+            Add Walk-Up
+          </button>
+        </div>
+      </form>
+    </details>
+  </section>
+
+  <!-- CURRENT PAIRINGS -->
+  {% if pairings %}
+  <section class="bg-white rounded-lg shadow p-5 mb-6">
+    <h2 class="text-lg font-semibold mb-3">Current Pairings — Round {{ state.round_number }}</h2>
+
+    <div class="space-y-2 text-sm" id="admin-pairings">
+      {% for p in pairings %}
+      <div class="flex items-center justify-between px-3 py-2 bg-gray-50 rounded">
+        <span>
+          <span class="font-medium text-gray-500">Table {{ p.table_number }}:</span>
+          {{ p.name_a }} ↔ {{ p.name_b }}
+        </span>
+        <span class="text-gray-400">score: {{ p.score }}</span>
+      </div>
+      {% endfor %}
+
+      {% if pit_stop_name %}
+      <div class="px-3 py-2 bg-yellow-50 rounded text-yellow-700">
+        Pit stop: {{ pit_stop_name }}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="mt-3 text-xs text-gray-400">
+      {% if pairings %}
+      Avg score: {{ "%.1f"|format(pairings|map(attribute='score')|list|sum / pairings|length) }}
+      {% endif %}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- SWAP OVERRIDE -->
+  {% if pairings %}
+  <section class="bg-white rounded-lg shadow p-5 mb-6">
+    <h2 class="text-lg font-semibold mb-1">Swap Override</h2>
+    <p class="text-gray-400 text-xs mb-3">Use if two matched attendees already know each other well. Swaps both into different pairings.</p>
+
+    <form hx-post="/api/admin/swap" hx-swap="none" class="flex flex-wrap items-center gap-3 text-sm">
+      <select name="attendee_id_1" class="border rounded px-3 py-2">
+        <option value="">Select attendee...</option>
+        {% for id, att in attendees.items()|sort(attribute='1.name') %}
+          {% if att.status.value == 'checked-in' %}
+          <option value="{{ id }}">{{ att.name }}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+      <span class="text-gray-400">↔</span>
+      <select name="attendee_id_2" class="border rounded px-3 py-2">
+        <option value="">Select attendee...</option>
+        {% for id, att in attendees.items()|sort(attribute='1.name') %}
+          {% if att.status.value == 'checked-in' %}
+          <option value="{{ id }}">{{ att.name }}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+      <button type="submit" class="bg-orange-500 text-white px-4 py-2 rounded font-medium hover:bg-orange-600">
+        Apply Swap
+      </button>
+    </form>
+  </section>
+  {% endif %}
+
+  <!-- SIGNAL STATS -->
+  {% if signal_stats %}
+  <section class="bg-white rounded-lg shadow p-5 mb-6">
+    <h2 class="text-lg font-semibold mb-3">Signals</h2>
+    <div class="text-sm text-gray-600 space-y-1">
+      <p>Signals submitted this round: {{ signal_stats.submitted }} / {{ signal_stats.total_active }} attendees</p>
+      <p>Total mutual matches (all rounds): {{ signal_stats.mutual_total }}</p>
+    </div>
+  </section>
+  {% endif %}
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/timer.js"></script>
+<script>
+// Initialize timer if round is active
+{% if state.timer_end %}
+Timer.setEnd("{{ state.timer_end }}");
+{% elif state.timer_paused and state.timer_remaining is not none %}
+Timer.pause({{ state.timer_remaining }});
+{% endif %}
+
+// Handle SSE updates
+document.body.addEventListener("sse:round_update", function(e) {
+  const data = JSON.parse(e.detail.data);
+  Timer.setEnd(data.timer_end);
+  // Reload page to refresh all sections with new data
+  location.reload();
+});
+
+document.body.addEventListener("sse:timer_update", function(e) {
+  const data = JSON.parse(e.detail.data);
+  if (data.action === "pause") {
+    Timer.pause(data.timer_remaining);
+  } else if (data.action === "resume") {
+    Timer.resume(data.timer_end);
+  }
+});
+
+document.body.addEventListener("sse:checkin_update", function(e) {
+  // Reload to refresh attendee list and counts
+  location.reload();
+});
+
+// Attendee filter
+function filterAttendees(query) {
+  const rows = document.querySelectorAll('[data-attendee-name]');
+  const q = query.toLowerCase().trim();
+  rows.forEach(row => {
+    row.style.display = !q || row.dataset.attendeeName.includes(q) ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}

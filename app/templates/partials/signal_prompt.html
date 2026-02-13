@@ -1,0 +1,23 @@
+<!-- Signal prompt — shown on personal mobile view between rounds -->
+{% if is_personal and attendee and my_match and state.round_number > 0 %}
+<div class="bg-white border rounded-xl p-5 text-center">
+  <p class="text-gray-500 text-sm mb-1">Round {{ state.round_number }} complete</p>
+  <p class="text-lg font-semibold mb-4">Want to follow up with {{ my_match }}?</p>
+  <div class="flex justify-center gap-4">
+    <button
+      hx-post="/api/signal"
+      hx-vals='{"from_attendee": "{{ attendee.id }}", "to_attendee": "{% for p in pairings.pairings if pairings %}{% if p.attendee_a == attendee.id %}{{ p.attendee_b }}{% elif p.attendee_b == attendee.id %}{{ p.attendee_a }}{% endif %}{% endfor %}", "round_number": {{ state.round_number }}}'
+      hx-swap="outerHTML"
+      class="bg-green-600 text-white px-6 py-3 rounded-lg font-medium text-lg hover:bg-green-700"
+    >
+      Yes
+    </button>
+    <button
+      onclick="document.getElementById('signal-prompt').classList.add('hidden')"
+      class="bg-gray-200 text-gray-600 px-6 py-3 rounded-lg font-medium text-lg hover:bg-gray-300"
+    >
+      Skip
+    </button>
+  </div>
+</div>
+{% endif %}

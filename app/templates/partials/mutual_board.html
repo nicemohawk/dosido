@@ -1,0 +1,20 @@
+<!-- Mutual matches board — displayed on projector during open networking -->
+<div class="text-center py-8">
+  <h2 class="text-3xl font-bold mb-6 text-green-400">&#129309; MUTUAL MATCHES — Find each other!</h2>
+
+  <div class="max-w-2xl mx-auto space-y-3">
+    {% for match in mutual_matches %}
+    <div class="text-2xl">
+      {{ match.name_a }} ↔ {{ match.name_b }}
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if not mutual_matches %}
+  <p class="text-gray-500 text-xl">No mutual matches recorded yet.</p>
+  {% endif %}
+
+  <div class="mt-8 text-gray-400 text-xl">
+    Open networking starts now
+  </div>
+</div>

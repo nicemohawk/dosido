@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}{{ settings.event_name }}{% endblock %}
+
+{% block body %}
+<div class="max-w-md mx-auto px-4 py-6" hx-ext="sse" sse-connect="/api/state/stream">
+
+  {% if is_personal and attendee %}
+  <!-- ===== PERSONAL MOBILE VIEW (badge QR) ===== -->
+
+  <div class="text-center mb-4">
+    <p class="text-gray-500 text-sm">Welcome,</p>
+    <p class="text-xl font-bold">{{ attendee.name }}</p>
+  </div>
+
+  <!-- Round + Timer -->
+  <div class="flex justify-between items-center mb-6">
+    {% if state.round_number > 0 %}
+    <span class="text-sm font-medium text-gray-600">
+      Round {{ state.round_number }} of {{ state.round_number + state.rounds_remaining }}
+    </span>
+    {% else %}
+    <span class="text-sm text-gray-400">Waiting for first round...</span>
+    {% endif %}
+    <span class="text-3xl font-mono font-bold" id="timer-display">--:--</span>
+  </div>
+
+  {% if state.round_number > 0 %}
+    {% if is_pit_stop %}
+    <!-- Pit stop -->
+    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-8 text-center mb-6">
+      <p class="text-4xl mb-2">&#9749;</p>
+      <p class="text-xl font-semibold text-yellow-700">Pit Stop</p>
+      <p class="text-gray-500 mt-2">Take a breather — you'll be matched next round.</p>
+    </div>
+    {% elif my_match %}
+    <!-- Your match -->
+    <div class="bg-blue-50 border border-blue-200 rounded-xl p-8 text-center mb-6">
+      <p class="text-gray-500 text-sm mb-2">Your match:</p>
+      <p class="text-3xl font-bold text-blue-900 mb-3">{{ my_match }}</p>
+      <p class="text-5xl font-bold text-blue-600">TABLE {{ my_table }}</p>
+    </div>
+    {% else %}
+    <div class="bg-gray-50 rounded-xl p-8 text-center mb-6">
+      <p class="text-gray-400">No pairing this round</p>
+    </div>
+    {% endif %}
+
+    <!-- Signal prompt (shown between rounds) -->
+    <div id="signal-prompt" class="hidden">
+      {% include "partials/signal_prompt.html" %}
+    </div>
+  {% else %}
+    <div class="bg-gray-50 rounded-xl p-8 text-center">
+      <p class="text-gray-400">Rounds haven't started yet.</p>
+      <p class="text-gray-400 text-sm mt-2">Grab some coffee and mingle!</p>
+    </div>
+  {% endif %}
+
+  <!-- Mutual matches -->
+  {% if mutual_matches %}
+  <div class="mt-6 bg-green-50 border border-green-200 rounded-xl p-5">
+    <p class="font-semibold text-green-800 mb-2">&#129309; Your Mutual Matches</p>
+    <ul class="space-y-1">
+      {% for name in mutual_matches %}
+      <li class="text-green-700">{{ name }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <!-- ===== GENERAL MOBILE VIEW (search/pin) ===== -->
+
+  <!-- Search bar -->
+  <div class="flex gap-2 mb-4">
+    <input type="text" id="search-input" placeholder="Search name..."
+           class="flex-1 border rounded-lg px-3 py-2 text-sm">
+    <button id="pin-button" class="px-3 py-2 border rounded-lg text-sm" title="Pin this search">&#128204;</button>
+    <button id="clear-pin" class="px-3 py-2 border rounded-lg text-sm text-gray-400" title="Clear pin">&times;</button>
+  </div>
+
+  <!-- Round + Timer -->
+  <div class="flex justify-between items-center mb-4">
+    {% if state.round_number > 0 %}
+    <span class="text-sm font-medium text-gray-600">
+      Round {{ state.round_number }} of {{ state.round_number + state.rounds_remaining }}
+    </span>
+    {% else %}
+    <span class="text-sm text-gray-400">Waiting for first round...</span>
+    {% endif %}
+    <span class="text-2xl font-mono font-bold" id="timer-display">--:--</span>
+  </div>
+
+  <!-- Pairings list -->
+  {% if pairings %}
+  <div class="space-y-2" id="pairings-list">
+    {% for p in pairings %}
+    <div class="bg-white rounded-lg shadow-sm p-3 flex justify-between items-center"
+         data-pairing-row data-pairing-names="{{ p.name_a }} {{ p.name_b }}">
+      <div>
+        <span class="text-xs text-gray-400">Table {{ p.table_number }}</span>
+        <div class="font-medium">{{ p.name_a }} ↔ {{ p.name_b }}</div>
+      </div>
+    </div>
+    {% endfor %}
+
+    {% if pit_stop_name %}
+    <div class="bg-yellow-50 rounded-lg p-3 text-yellow-700 text-sm">
+      &#9749; Pit stop: {{ pit_stop_name }}
+    </div>
+    {% endif %}
+  </div>
+  {% else %}
+  <div class="text-center text-gray-400 py-8">
+    No pairings yet
+  </div>
+  {% endif %}
+
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/timer.js"></script>
+{% if not is_personal %}
+<script src="/static/js/search.js"></script>
+{% endif %}
+<script>
+{% if state.timer_end %}
+Timer.setEnd("{{ state.timer_end }}");
+{% elif state.timer_paused and state.timer_remaining is not none %}
+Timer.pause({{ state.timer_remaining }});
+{% endif %}
+
+document.body.addEventListener("sse:round_update", function(e) {
+  const data = JSON.parse(e.detail.data);
+  Timer.setEnd(data.timer_end);
+  location.reload();
+});
+
+document.body.addEventListener("sse:timer_update", function(e) {
+  const data = JSON.parse(e.detail.data);
+  if (data.action === "pause") Timer.pause(data.timer_remaining);
+  else if (data.action === "resume") Timer.resume(data.timer_end);
+});
+</script>
+{% endblock %}

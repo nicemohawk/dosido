@@ -1,0 +1,19 @@
+<!-- Check-in status board — displayed pre-event and between rounds on projector -->
+<div id="checkin-board">
+  <h2 class="text-2xl font-semibold mb-6 text-gray-300">Check-In Status</h2>
+
+  <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+    {% for id, att in attendees.items()|sort(attribute='1.name') %}
+    <div class="px-3 py-2 rounded text-lg
+      {% if att.status.value == 'checked-in' %}bg-green-900 text-green-300
+      {% else %}bg-gray-800 text-gray-500{% endif %}">
+      {% if att.status.value == 'checked-in' %}&#10003;{% else %}&mdash;{% endif %}
+      {{ att.name }}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="mt-6 text-gray-400 text-lg">
+    {{ counts.active }} checked in &middot; {{ counts.not_arrived }} waiting &middot; {{ counts.total }} total
+  </div>
+</div>
