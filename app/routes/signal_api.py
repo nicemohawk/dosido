@@ -26,19 +26,20 @@ async def record_signal(request: SignalRequest):
         to_id=request.to_attendee,
     )
 
-    if is_mutual:
-        attendees = await state_manager.get_all_attendees()
-        a = attendees.get(request.from_attendee)
-        b = attendees.get(request.to_attendee)
-        await broadcaster.broadcast(
-            "signal_update",
-            {
-                "mutual": True,
-                "attendee_a": {"id": request.from_attendee, "name": a.name if a else "?", "token": a.token if a else ""},
-                "attendee_b": {"id": request.to_attendee, "name": b.name if b else "?", "token": b.token if b else ""},
-            },
-        )
+    attendees = await state_manager.get_all_attendees()
+    a = attendees.get(request.from_attendee)
+    b = attendees.get(request.to_attendee)
 
+    await broadcaster.broadcast(
+        "signal_update",
+        {
+            "mutual": is_mutual,
+            "attendee_a": {"id": request.from_attendee, "name": a.name if a else "?", "token": a.token if a else ""},
+            "attendee_b": {"id": request.to_attendee, "name": b.name if b else "?", "token": b.token if b else ""},
+        },
+    )
+
+    if is_mutual:
         return {"ok": True, "mutual": True, "match_token": b.token if b else ""}
 
     return {"ok": True, "mutual": False}

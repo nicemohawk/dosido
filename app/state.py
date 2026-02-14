@@ -323,18 +323,25 @@ class EventStateManager:
         partner_1 = p1.attendee_b if p1.attendee_a == attendee_id_1 else p1.attendee_a
         partner_2 = p2.attendee_b if p2.attendee_a == attendee_id_2 else p2.attendee_a
 
+        # Look up scores for the new pairs from the compatibility matrix
+        matrix = await self.get_compatibility_matrix()
+        new_key_1 = make_pair_key(attendee_id_2, partner_1)
+        new_key_2 = make_pair_key(attendee_id_1, partner_2)
+        score_1 = matrix.get(new_key_1, {}).get("composite_score", 0)
+        score_2 = matrix.get(new_key_2, {}).get("composite_score", 0)
+
         # Swap: attendee_1 goes with partner_2, attendee_2 goes with partner_1
         result.pairings[idx_1] = Pairing(
             table_number=p1.table_number,
             attendee_a=min(attendee_id_2, partner_1),
             attendee_b=max(attendee_id_2, partner_1),
-            composite_score=0,  # Score no longer meaningful after manual swap
+            composite_score=score_1,
         )
         result.pairings[idx_2] = Pairing(
             table_number=p2.table_number,
             attendee_a=min(attendee_id_1, partner_2),
             attendee_b=max(attendee_id_1, partner_2),
-            composite_score=0,
+            composite_score=score_2,
         )
 
         await self.set_current_pairings(result)

@@ -1,160 +1,220 @@
 {% extends "base.html" %}
 
 {% block title %}Admin — {{ settings.event_name }}{% endblock %}
+{% block body_class %}text-[#e2e8f0]{% endblock %}
+
+{% block head %}
+<style>
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  input, select { font-family: inherit; }
+  a.profile-link { color: #93c5fd; text-decoration: none; }
+  a.profile-link:hover { text-decoration: underline; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #111827; }
+  ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+</style>
+{% endblock %}
 
 {% block body %}
-<div class="max-w-5xl mx-auto px-4 py-6" hx-ext="json-enc">
+<div style="min-height: 100vh; background: #0a0f1a; color: #e2e8f0;" hx-ext="json-enc">
 
-  <h1 class="text-2xl font-bold mb-1">Admin — Cofounder Matchmaking</h1>
-  <p class="text-gray-500 text-sm mb-6">{{ settings.event_name }}</p>
-
-  <!-- ROUND CONTROL -->
-  <section class="bg-white rounded-lg shadow p-5 mb-6">
-    <h2 class="text-lg font-semibold mb-1">Round Control</h2>
-    <p class="text-gray-400 text-xs mb-4">Click "Start Next Round" when attendees are seated and ready. The solver runs in ~1 second.</p>
-
-    <div id="admin-round-control">
-      {% include "partials/admin_round_control.html" %}
+  <!-- Header bar -->
+  <div style="background: #111827; border-bottom: 1px solid #1e293b; padding: 16px 28px; display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <div id="status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: {% if state.status.value == 'round-active' and not state.timer_paused %}#22c55e{% else %}#f59e0b{% endif %}; box-shadow: 0 0 8px {% if state.status.value == 'round-active' and not state.timer_paused %}#22c55e{% else %}#f59e0b{% endif %};"></div>
+      <span style="font-size: 15px; font-weight: 600; color: #94a3b8; letter-spacing: 0.05em; text-transform: uppercase;">
+        Admin — Cofounder Matchmaking
+      </span>
     </div>
-
-    <div class="flex gap-4 text-sm text-gray-600 items-center">
-      <label>
-        Round duration:
-        <input type="number" value="{{ settings.round_duration_minutes }}" min="1" max="30"
-               class="w-16 border rounded px-2 py-1 ml-1" id="round-duration"
-               data-original="{{ settings.round_duration_minutes }}"
-               oninput="checkSettingsChanged()"> min
-      </label>
-      <label>
-        Total rounds:
-        <input type="number" value="{{ state.round_number + state.rounds_remaining }}" min="1" max="20"
-               class="w-16 border rounded px-2 py-1 ml-1" id="total-rounds"
-               data-original="{{ state.round_number + state.rounds_remaining }}"
-               oninput="checkSettingsChanged()">
-      </label>
-      <button id="save-settings-btn" class="text-blue-600 underline text-sm hidden"
-        onclick="saveSettings()">Save</button>
-      <span id="saved-indicator" class="text-green-600 text-sm transition-opacity duration-500 hidden">Saved!</span>
+    <div style="font-size: 13px; color: #64748b;">
+      {{ settings.event_name }}
     </div>
-  </section>
+  </div>
 
-  <!-- ATTENDEE POOL -->
-  <section class="bg-white rounded-lg shadow p-5 mb-6">
-    <h2 class="text-lg font-semibold mb-1">Attendee Pool</h2>
-    <p class="text-gray-400 text-xs mb-3">Check in attendees as they arrive. They'll be included in the next round.</p>
+  <div style="padding: 24px 28px; max-width: 1200px; margin: 0 auto;">
 
-    <input type="text" placeholder="Filter attendees..."
-           class="w-full border rounded px-3 py-2 mb-3 text-sm" id="admin-filter"
-           oninput="filterAttendees(this.value)">
+    <!-- Round Control -->
+    <div style="background: #111827; border: 1px solid #1e293b; border-radius: 12px; padding: 24px; margin-bottom: 20px;">
+      <div id="admin-round-control">
+        {% include "partials/admin_round_control.html" %}
+      </div>
 
-    <div id="admin-pool">
-      {% include "partials/admin_pool.html" %}
-    </div>
-  </section>
-
-  <!-- ADD WALK-UP -->
-  <section class="bg-white rounded-lg shadow p-5 mb-6">
-    <h2 class="text-lg font-semibold mb-1">Add Walk-Up Attendee</h2>
-    <p class="text-gray-400 text-xs mb-3">For attendees not on the pre-registered list. Pick a badge from the reserve stack and select its slug below.</p>
-
-    <details class="group">
-      <summary class="cursor-pointer text-blue-600 font-medium text-sm group-open:mb-4">+ Add Walk-Up Attendee</summary>
-
-      <form hx-post="/api/admin/walk-up" hx-swap="none" hx-on::after-request="this.reset()"
-            class="grid grid-cols-2 gap-3 text-sm">
-        <div class="col-span-2">
-          <label class="block text-gray-600 mb-1">Name *</label>
-          <input type="text" name="name" required class="w-full border rounded px-3 py-2">
-        </div>
-        <div>
-          <label class="block text-gray-600 mb-1">Email</label>
-          <input type="email" name="email" class="w-full border rounded px-3 py-2">
-        </div>
-        <div>
-          <label class="block text-gray-600 mb-1">Badge slug</label>
-          <select name="badge_slug" class="w-full border rounded px-3 py-2">
-            <option value="">No badge</option>
-            {% for badge in walkup_badges %}
-            <option value="{{ badge.slug }}">{{ badge.slug }}</option>
+      <div style="display: flex; gap: 12px; align-items: center; margin-top: 20px; margin-left: auto; justify-content: flex-end;">
+        <label style="font-size: 12px; color: #64748b; display: flex; align-items: center; gap: 6px;">
+          Duration
+          <input type="number" id="round-duration" value="{{ settings.round_duration_minutes }}" min="1" max="30"
+                 data-original="{{ settings.round_duration_minutes }}" oninput="checkSettingsChanged()"
+                 style="background: #1e293b; color: #e2e8f0; border: 1px solid #374151; border-radius: 6px; padding: 0 10px; font-size: 13px; width: 64px; height: 36px;">
+          <span style="color: #64748b;">min</span>
+        </label>
+        <label style="font-size: 12px; color: #64748b; display: flex; align-items: center; gap: 6px;">
+          Rounds
+          <select id="total-rounds" data-original="{{ state.round_number + state.rounds_remaining }}" onchange="checkSettingsChanged()"
+                  style="background: #1e293b; color: #e2e8f0; border: 1px solid #374151; border-radius: 6px; padding: 0 10px; font-size: 13px; height: 36px;">
+            {% for n in range(6, 16) %}
+            <option value="{{ n }}" {% if n == state.round_number + state.rounds_remaining %}selected{% endif %}>{{ n }}</option>
             {% endfor %}
           </select>
-        </div>
+        </label>
+        <button id="save-settings-btn" onclick="saveSettings()" style="display: none; background: #3b82f6; color: white; border: none; border-radius: 6px; padding: 6px 14px; font-weight: 600; font-size: 12px; cursor: pointer;">Save</button>
+        <span id="saved-indicator" style="display: none; font-size: 12px; color: #22c55e;">Saved!</span>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display: flex; gap: 2px; margin-bottom: 20px;" id="admin-tabs">
+      <button onclick="switchTab('pool')" data-tab="pool" class="admin-tab admin-tab-active"
+              style="background: #1e293b; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 10px 18px; font-weight: 600; font-size: 13px; cursor: pointer;">
+        Attendee Pool ({{ counts.total }})
+      </button>
+      <button onclick="switchTab('pairings')" data-tab="pairings" class="admin-tab"
+              style="background: transparent; color: #64748b; border: 1px solid transparent; border-radius: 8px; padding: 10px 18px; font-weight: 600; font-size: 13px; cursor: pointer;">
+        Current Pairings
+      </button>
+      <button onclick="switchTab('signals')" data-tab="signals" class="admin-tab"
+              style="background: transparent; color: #64748b; border: 1px solid transparent; border-radius: 8px; padding: 10px 18px; font-weight: 600; font-size: 13px; cursor: pointer;">
+        Signals
+      </button>
+    </div>
+
+    <!-- Pool Tab -->
+    <div id="tab-pool" style="background: #111827; border: 1px solid #1e293b; border-radius: 12px; padding: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <input type="text" id="admin-filter" placeholder="Filter attendees..." oninput="filterAttendees(this.value)"
+               style="background: #0a0f1a; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 10px 14px; font-size: 14px; width: 280px; outline: none;">
+        <button onclick="toggleWalkUp()" id="walkup-toggle-btn"
+                style="background: #1e293b; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 10px 16px; font-weight: 600; font-size: 13px; cursor: pointer;">
+          + Add Walk-Up
+        </button>
+      </div>
+
+      <div id="admin-pool">
+        {% include "partials/admin_pool.html" %}
+      </div>
+    </div>
+
+    <!-- Pairings Tab -->
+    <div id="tab-pairings" style="display: none; background: #111827; border: 1px solid #1e293b; border-radius: 12px; padding: 24px;">
+      <div id="admin-pairings">
+        {% include "partials/admin_pairings.html" %}
+      </div>
+    </div>
+
+    <!-- Signals Tab -->
+    <div id="tab-signals" style="display: none; background: #111827; border: 1px solid #1e293b; border-radius: 12px; padding: 24px;">
+      <div id="admin-signals">
+        {% include "partials/admin_signals.html" %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Walk-Up Modal -->
+  <div id="walkup-modal" onclick="if(event.target===this)toggleWalkUp()"
+       style="display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center;">
+    <div style="background: #111827; border: 1px solid #1e293b; border-radius: 16px; padding: 32px; width: 520px; max-width: 90vw; box-shadow: 0 24px 48px rgba(0,0,0,0.4);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
         <div>
-          <label class="block text-gray-600 mb-1">Lane</label>
-          <select name="lane" class="w-full border rounded px-3 py-2">
-            <option value="idea">Idea-holder</option>
-            <option value="joiner">Joiner</option>
-            <option value="flexible" selected>Flexible</option>
-          </select>
+          <div style="font-size: 18px; font-weight: 700; color: #e2e8f0;">Add Walk-Up Attendee</div>
+          <div style="font-size: 13px; color: #64748b; margin-top: 2px;">Quick-entry for attendees not on the pre-registered list</div>
         </div>
-        <div>
-          <label class="block text-gray-600 mb-1">Primary role</label>
-          <select name="role" class="w-full border rounded px-3 py-2">
-            <option value="engineering">Engineering</option>
-            <option value="product">Product</option>
-            <option value="gtm">GTM / Sales</option>
-            <option value="science">Science</option>
-            <option value="ops">Operations</option>
-            <option value="policy">Policy</option>
-          </select>
+        <button onclick="toggleWalkUp()" style="background: none; border: none; color: #64748b; font-size: 24px; cursor: pointer; padding: 4px 8px; line-height: 1;">&times;</button>
+      </div>
+
+      <form id="walkup-form" hx-post="/api/admin/walk-up" hx-swap="none" hx-on::after-request="this.reset(); toggleWalkUp();">
+        <!-- Name — full width, large, autofocused -->
+        <div style="margin-bottom: 16px;">
+          <label style="font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Name *</label>
+          <input type="text" name="name" required id="walkup-name-input"
+                 style="background: #0a0f1a; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 12px 16px; font-size: 16px; width: 100%; outline: none; box-sizing: border-box;"
+                 placeholder="Full name">
         </div>
-        <div>
-          <label class="block text-gray-600 mb-1">Role needed</label>
-          <select name="role_needed" class="w-full border rounded px-3 py-2">
-            <option value="engineering">Engineering</option>
-            <option value="product">Product</option>
-            <option value="gtm">GTM / Sales</option>
-            <option value="science">Science</option>
-            <option value="ops">Operations</option>
-            <option value="policy">Policy</option>
-          </select>
+
+        <!-- Email — full width -->
+        <div style="margin-bottom: 16px;">
+          <label style="font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Email</label>
+          <input type="email" name="email"
+                 style="background: #0a0f1a; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 12px 16px; font-size: 14px; width: 100%; outline: none; box-sizing: border-box;"
+                 placeholder="email@example.com">
         </div>
-        <div>
-          <label class="block text-gray-600 mb-1">Top climate area</label>
-          <input type="text" name="top_climate_area" placeholder="e.g., energy" class="w-full border rounded px-3 py-2">
+
+        <!-- Two-column fields -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Badge</label>
+            <select name="badge_slug"
+                    style="background: #0a0f1a; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 0 14px; font-size: 14px; width: 100%; height: 44px; box-sizing: border-box;">
+              <option value="">No badge</option>
+              {% for badge in walkup_badges %}
+              <option value="{{ badge.slug }}">{{ badge.slug }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Lane</label>
+            <select name="lane"
+                    style="background: #0a0f1a; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 0 14px; font-size: 14px; width: 100%; height: 44px; box-sizing: border-box;">
+              <option value="idea">Idea-holder</option>
+              <option value="joiner">Joiner</option>
+              <option value="flexible" selected>Flexible</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Primary Role</label>
+            <select name="role"
+                    style="background: #0a0f1a; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 0 14px; font-size: 14px; width: 100%; height: 44px; box-sizing: border-box;">
+              <option value="engineering">Engineering</option>
+              <option value="product">Product</option>
+              <option value="gtm">GTM / Sales</option>
+              <option value="science">Science</option>
+              <option value="ops">Operations</option>
+              <option value="policy">Policy</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Role Needed</label>
+            <select name="role_needed"
+                    style="background: #0a0f1a; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 0 14px; font-size: 14px; width: 100%; height: 44px; box-sizing: border-box;">
+              <option value="engineering">Engineering</option>
+              <option value="product">Product</option>
+              <option value="gtm">GTM / Sales</option>
+              <option value="science">Science</option>
+              <option value="ops">Operations</option>
+              <option value="policy">Policy</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Top Climate Area</label>
+            <input type="text" name="top_climate_area" placeholder="e.g., energy"
+                   style="background: #0a0f1a; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 0 14px; font-size: 14px; width: 100%; height: 44px; outline: none; box-sizing: border-box;">
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Commitment</label>
+            <select name="commitment"
+                    style="background: #0a0f1a; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 0 14px; font-size: 14px; width: 100%; height: 44px; box-sizing: border-box;">
+              <option value="full-time">Full-time</option>
+              <option value="part-time">Part-time</option>
+              <option value="exploring" selected>Exploring</option>
+            </select>
+          </div>
         </div>
-        <div>
-          <label class="block text-gray-600 mb-1">Commitment</label>
-          <select name="commitment" class="w-full border rounded px-3 py-2">
-            <option value="full-time">Full-time</option>
-            <option value="part-time">Part-time</option>
-            <option value="exploring" selected>Exploring</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-gray-600 mb-1">Working arrangement</label>
-          <select name="arrangement" class="w-full border rounded px-3 py-2">
-            <option value="remote-open" selected>Remote / Open</option>
-            <option value="colocated">Colocated only</option>
-          </select>
-        </div>
-        <div class="col-span-2">
-          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded font-medium hover:bg-blue-700">
-            Add Walk-Up
+
+        <!-- Actions -->
+        <div style="display: flex; gap: 10px; justify-content: flex-end; padding-top: 8px; border-top: 1px solid #1e293b;">
+          <button type="button" onclick="toggleWalkUp()"
+                  style="background: #1e293b; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 10px 20px; font-weight: 600; font-size: 14px; cursor: pointer;">
+            Cancel
+          </button>
+          <button type="submit"
+                  style="background: #22c55e; color: #0a0f1a; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 600; font-size: 14px; cursor: pointer;">
+            Add to Pool
           </button>
         </div>
       </form>
-    </details>
-  </section>
-
-  <!-- CURRENT PAIRINGS + SWAP OVERRIDE -->
-  <section class="bg-white rounded-lg shadow p-5 mb-6" id="admin-pairings">
-    {% include "partials/admin_pairings.html" %}
-  </section>
-
-  <!-- SIGNAL STATS -->
-  {% if signal_stats %}
-  <section class="bg-white rounded-lg shadow p-5 mb-6">
-    <h2 class="text-lg font-semibold mb-3">Signals</h2>
-    <div class="text-sm text-gray-600 space-y-1">
-      <p>Signals submitted this round: {{ signal_stats.submitted }} / {{ signal_stats.total_active }} attendees</p>
-      <p>Total mutual matches (all rounds): {{ signal_stats.mutual_total }}</p>
     </div>
-  </section>
-  {% endif %}
+  </div>
 
 </div>
-
 {% endblock %}
 
 {% block scripts %}
@@ -169,12 +229,40 @@ Timer.pause({{ state.timer_remaining }});
 
 const PARTIAL_BASE = "/{{ slug }}/admin/{{ admin_token }}/partial";
 
+// Tab switching
+function switchTab(tab) {
+  document.querySelectorAll('[id^="tab-"]').forEach(function(el) { el.style.display = 'none'; });
+  document.getElementById('tab-' + tab).style.display = '';
+  document.querySelectorAll('.admin-tab').forEach(function(btn) {
+    var isActive = btn.dataset.tab === tab;
+    btn.style.background = isActive ? '#1e293b' : 'transparent';
+    btn.style.color = isActive ? '#e2e8f0' : '#64748b';
+    btn.style.borderColor = isActive ? '#374151' : 'transparent';
+  });
+}
+
+// Walk-up modal toggle
+function toggleWalkUp() {
+  var modal = document.getElementById('walkup-modal');
+  var isHidden = modal.style.display === 'none';
+  modal.style.display = isHidden ? 'flex' : 'none';
+  if (isHidden) {
+    setTimeout(function() { document.getElementById('walkup-name-input').focus(); }, 50);
+  } else {
+    document.getElementById('walkup-form').reset();
+  }
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && document.getElementById('walkup-modal').style.display === 'flex') toggleWalkUp();
+});
+
 // Round update: refresh round control + pairings, then set timer
 document.body.addEventListener("sse:round_update", function(e) {
   const data = JSON.parse(e.detail.data);
   Promise.all([
     htmx.ajax('GET', PARTIAL_BASE + '/round-control', {target: '#admin-round-control', swap: 'innerHTML'}),
-    htmx.ajax('GET', PARTIAL_BASE + '/pairings', {target: '#admin-pairings', swap: 'innerHTML'})
+    htmx.ajax('GET', PARTIAL_BASE + '/pairings', {target: '#admin-pairings', swap: 'innerHTML'}),
+    htmx.ajax('GET', PARTIAL_BASE + '/signals', {target: '#admin-signals', swap: 'innerHTML'})
   ]).then(function() {
     if (data.timer_end) {
       Timer.setEnd(data.timer_end);
@@ -197,10 +285,15 @@ document.body.addEventListener("sse:timer_update", function(e) {
     });
 });
 
+// Signal update: refresh signals tab
+document.body.addEventListener("sse:signal_update", function(e) {
+  htmx.ajax('GET', PARTIAL_BASE + '/signals', {target: '#admin-signals', swap: 'innerHTML'});
+});
+
 // Check-in update: refresh pool + round control (active count in confirm dialog)
 document.body.addEventListener("sse:checkin_update", function(e) {
   // Preserve scroll position of the attendee list
-  var scrollable = document.querySelector('#admin-pool .overflow-y-auto');
+  var scrollable = document.querySelector('#admin-pool [data-pool-list]');
   var savedScroll = scrollable ? scrollable.scrollTop : 0;
 
   Promise.all([
@@ -208,7 +301,7 @@ document.body.addEventListener("sse:checkin_update", function(e) {
     htmx.ajax('GET', PARTIAL_BASE + '/round-control', {target: '#admin-round-control', swap: 'innerHTML'})
   ]).then(function() {
     // Restore scroll position
-    var newScrollable = document.querySelector('#admin-pool .overflow-y-auto');
+    var newScrollable = document.querySelector('#admin-pool [data-pool-list]');
     if (newScrollable) newScrollable.scrollTop = savedScroll;
 
     // Re-apply attendee filter after pool refresh
@@ -233,8 +326,8 @@ function checkSettingsChanged() {
   var dur = document.getElementById('round-duration');
   var tot = document.getElementById('total-rounds');
   var changed = dur.value !== dur.dataset.original || tot.value !== tot.dataset.original;
-  document.getElementById('save-settings-btn').classList.toggle('hidden', !changed);
-  document.getElementById('saved-indicator').classList.add('hidden');
+  document.getElementById('save-settings-btn').style.display = changed ? '' : 'none';
+  document.getElementById('saved-indicator').style.display = 'none';
 }
 
 function saveSettings() {
@@ -250,12 +343,12 @@ function saveSettings() {
   }).then(function() {
     dur.dataset.original = dur.value;
     tot.dataset.original = tot.value;
-    document.getElementById('save-settings-btn').classList.add('hidden');
+    document.getElementById('save-settings-btn').style.display = 'none';
     var indicator = document.getElementById('saved-indicator');
-    indicator.classList.remove('hidden');
-    indicator.style.opacity = '1';
-    setTimeout(function() { indicator.style.opacity = '0'; }, 5000);
-    setTimeout(function() { indicator.classList.add('hidden'); indicator.style.opacity = '1'; }, 5500);
+    indicator.style.display = '';
+    setTimeout(function() { indicator.style.display = 'none'; }, 3000);
+    // Refresh round control to update "Round X of Y" display
+    htmx.ajax('GET', PARTIAL_BASE + '/round-control', {target: '#admin-round-control', swap: 'innerHTML'});
   });
 }
 </script>

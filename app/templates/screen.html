@@ -105,10 +105,10 @@
         {% endfor %}
       </div>
 
-      {% if pit_stop_name %}
+      {% if pit_stop_info %}
       <div style="margin-top: 6px; flex-shrink: 0; background: #1c1208; border: 1px solid #422006; border-radius: 7px; padding: 8px 14px; display: flex; align-items: center; gap: 10px;">
         <span style="font-size: 14px;">&#9749;</span>
-        <span style="font-size: 13px; color: #f59e0b; font-weight: 500;">Pit Stop: {{ pit_stop_name }}</span>
+        <span style="font-size: 13px; color: #f59e0b; font-weight: 500;">Pit Stop: {{ pit_stop_info.name }}</span>
       </div>
       {% endif %}
     {% else %}

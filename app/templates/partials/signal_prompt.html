@@ -1,21 +1,25 @@
 <!-- Signal prompt — shown on personal mobile view when timer expires -->
 {% if is_personal and attendee and my_match and my_match_id and state.round_number > 0 %}
-<div class="bg-white border rounded-xl p-5 text-center" id="signal-prompt-inner">
-  <p class="text-gray-500 text-sm mb-1">Round {{ state.round_number }} complete</p>
-  <p class="text-lg font-semibold mb-4">Want to follow up with {{ my_match }}?</p>
-  <div class="flex justify-center gap-4">
-    <button
-      onclick="sendSignal('{{ attendee.id }}', '{{ my_match_id }}', {{ state.round_number }}, '{{ my_match }}')"
-      class="bg-green-600 text-white px-6 py-3 rounded-lg font-medium text-lg hover:bg-green-700"
-    >
-      Yes
-    </button>
-    <button
-      onclick="document.getElementById('signal-prompt').classList.add('hidden')"
-      class="bg-gray-200 text-gray-600 px-6 py-3 rounded-lg font-medium text-lg hover:bg-gray-300"
-    >
-      Skip
-    </button>
+<div style="background: #111827; border: 1px solid #1e293b; border-radius: 12px; padding: 24px; text-align: center;" id="signal-prompt-inner">
+  <div style="font-size: 13px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;">
+    Round {{ state.round_number }} Complete
+  </div>
+  <div style="font-size: 16px; color: #94a3b8; margin-top: 16px;">You were matched with</div>
+  <div style="font-size: 24px; font-weight: 700; margin-top: 8px;">{{ my_match }}</div>
+  <div style="background: #0a0f1a; border: 1px solid #1e293b; border-radius: 10px; padding: 20px; margin-top: 24px;">
+    <div style="font-size: 15px; font-weight: 600; margin-bottom: 16px;">&#129309; Want to follow up?</div>
+    <div style="display: flex; gap: 12px; justify-content: center;">
+      <button
+        onclick="sendSignal('{{ attendee.id }}', '{{ my_match_id }}', {{ state.round_number }}, '{{ my_match }}')"
+        style="background: #22c55e; color: #0a0f1a; border: none; border-radius: 10px; padding: 14px 36px; font-size: 16px; font-weight: 700; cursor: pointer;">
+        Yes
+      </button>
+      <button
+        onclick="document.getElementById('signal-prompt').classList.add('hidden')"
+        style="background: #1e293b; color: #94a3b8; border: 1px solid #374151; border-radius: 10px; padding: 14px 36px; font-size: 16px; font-weight: 600; cursor: pointer;">
+        Skip
+      </button>
+    </div>
   </div>
 </div>
 {% endif %}

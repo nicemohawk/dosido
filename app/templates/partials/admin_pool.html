@@ -1,39 +1,69 @@
 <!-- Admin attendee pool partial — swapped via SSE -->
-<div class="flex gap-4 text-sm mb-3">
-  <span class="text-green-600 font-medium">Active: {{ counts.active }}</span>
-  <span class="text-gray-500">Not yet: {{ counts.not_arrived }}</span>
-  <span class="text-red-500">Departed: {{ counts.departed }}</span>
+{% set role_colors = {
+  'engineering': '#3b82f6',
+  'product': '#8b5cf6',
+  'gtm': '#f59e0b',
+  'science': '#10b981',
+  'ops': '#6366f1',
+  'policy': '#ec4899'
+} %}
+
+<!-- Summary bar -->
+<div style="display: flex; gap: 20px; margin-bottom: 16px; font-size: 13px;">
+  <span style="color: #22c55e;">&#9679; Active: {{ counts.active }}</span>
+  <span style="color: #94a3b8;">&#9675; Not yet: {{ counts.not_arrived }}</span>
+  <span style="color: #ef4444;">&#9679; Departed: {{ counts.departed }}</span>
 </div>
 
-<div class="max-h-72 overflow-y-auto space-y-1">
+<!-- Attendee list -->
+<div style="display: flex; flex-direction: column; gap: 2px; max-height: 480px; overflow-y: auto;" data-pool-list>
   {% for id, att in attendees.items()|sort(attribute='1.name') %}
-  <div class="flex items-center justify-between px-3 py-2 rounded hover:bg-gray-50 text-sm"
+  {% set rc = role_colors.get(att.role.value, '#64748b') %}
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 8px; background: {% if att.status.value == 'checked-in' %}#0d1520{% else %}transparent{% endif %}; opacity: {% if att.status.value == 'departed' %}0.5{% else %}1{% endif %};"
        data-attendee-name="{{ att.name|lower }}">
-    {% if att.status.value == 'checked-in' %}
-      <span>&#9989; {% if att.token %}<a href="/{{ slug }}/a/{{ att.token }}" target="_blank" class="hover:underline text-blue-600">{{ att.name }}</a>{% else %}{{ att.name }}{% endif %}</span>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span style="font-size: 16px;">{% if att.status.value == 'checked-in' %}&#9989;{% elif att.status.value == 'departed' %}&#128682;{% else %}&#11036;{% endif %}</span>
+      <div>
+        <div style="font-size: 14px; font-weight: 600;">
+          {% if att.token %}<a href="/{{ slug }}/a/{{ att.token }}" target="_blank" class="profile-link">{{ att.name }}</a>{% else %}{{ att.name }}{% endif %}
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 2px;">
+          <span style="font-size: 11px; font-weight: 600; color: {{ rc }}; background: {{ rc }}18; padding: 1px 6px; border-radius: 4px;">{{ att.role.value }}</span>
+          <span style="font-size: 11px; color: #64748b;">{{ att.lane.value }}</span>
+          <span style="font-size: 11px; color: #64748b;">{{ att.commitment.value[:2]|upper }}</span>
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      {% if att.pit_stop_count > 0 %}
+      <span style="font-size: 11px; color: #f59e0b;">&#9749; &times;{{ att.pit_stop_count }}</span>
+      {% endif %}
+      {% if att.status.value == 'checked-in' %}
       <button
         hx-post="/api/admin/check-in"
         hx-vals='{"attendee_id": "{{ id }}", "action": "check-out"}'
         hx-swap="none"
-        class="text-red-500 text-xs hover:underline"
-      >Check Out</button>
-    {% elif att.status.value == 'departed' %}
-      <span class="text-gray-400">&#128682; {% if att.token %}<a href="/{{ slug }}/a/{{ att.token }}" target="_blank" class="hover:underline">{{ att.name }}</a>{% else %}{{ att.name }}{% endif %} <span class="text-xs">(departed)</span></span>
+        style="background: #7f1d1d; color: #e2e8f0; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer;">
+        Check Out
+      </button>
+      {% elif att.status.value == 'departed' %}
       <button
         hx-post="/api/admin/check-in"
         hx-vals='{"attendee_id": "{{ id }}", "action": "check-in"}'
         hx-swap="none"
-        class="text-blue-500 text-xs hover:underline"
-      >Re-check In</button>
-    {% else %}
-      <span class="text-gray-600">&#11036; {% if att.token %}<a href="/{{ slug }}/a/{{ att.token }}" target="_blank" class="hover:underline text-blue-600">{{ att.name }}</a>{% else %}{{ att.name }}{% endif %}</span>
+        style="background: #374151; color: #e2e8f0; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer;">
+        Re-check In
+      </button>
+      {% else %}
       <button
         hx-post="/api/admin/check-in"
         hx-vals='{"attendee_id": "{{ id }}", "action": "check-in"}'
         hx-swap="none"
-        class="text-green-600 text-xs hover:underline"
-      >Check In</button>
-    {% endif %}
+        style="background: #14532d; color: #e2e8f0; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer;">
+        Check In
+      </button>
+      {% endif %}
+    </div>
   </div>
   {% endfor %}
 </div>

@@ -22,7 +22,7 @@ async def projector_screen(request: Request, slug: str):
     counts = await state_manager.get_pool_counts()
 
     pairing_display = _build_pairing_display(pairings, attendees)
-    pit_stop_name = _get_pit_stop_name(pairings, attendees)
+    pit_stop_info = _get_pit_stop_info(pairings, attendees)
 
     return templates.TemplateResponse(
         "screen.html",
@@ -31,7 +31,7 @@ async def projector_screen(request: Request, slug: str):
             "slug": slug,
             "state": state,
             "pairings": pairing_display,
-            "pit_stop_name": pit_stop_name,
+            "pit_stop_info": pit_stop_info,
             "counts": counts,
             "attendees": attendees,
             "settings": settings,
@@ -153,7 +153,7 @@ async def general_mobile(request: Request, slug: str):
     counts = await state_manager.get_pool_counts()
 
     pairing_display = _build_pairing_display(pairings, attendees)
-    pit_stop_name = _get_pit_stop_name(pairings, attendees)
+    pit_stop_info = _get_pit_stop_info(pairings, attendees)
 
     return templates.TemplateResponse(
         "mobile.html",
@@ -164,7 +164,7 @@ async def general_mobile(request: Request, slug: str):
             "attendee": None,
             "state": state,
             "pairings": pairing_display,
-            "pit_stop_name": pit_stop_name,
+            "pit_stop_info": pit_stop_info,
             "counts": counts,
             "is_personal": False,
             "settings": settings,
@@ -184,7 +184,7 @@ async def admin_panel(request: Request, slug: str, token: str):
     walkup_badges = await state_manager.get_available_walkup_badges()
 
     pairing_display = _build_pairing_display(pairings, attendees)
-    pit_stop_name = _get_pit_stop_name(pairings, attendees)
+    pit_stop_info = _get_pit_stop_info(pairings, attendees)
 
     # Signal stats for current round
     signal_stats = None
@@ -205,7 +205,7 @@ async def admin_panel(request: Request, slug: str, token: str):
             "admin_token": token,
             "state": state,
             "pairings": pairing_display,
-            "pit_stop_name": pit_stop_name,
+            "pit_stop_info": pit_stop_info,
             "counts": counts,
             "attendees": attendees,
             "walkup_badges": walkup_badges,
@@ -250,16 +250,40 @@ async def admin_partial_pairings(request: Request, slug: str, token: str):
     pairings = await state_manager.get_current_pairings()
     attendees = await state_manager.get_all_attendees()
     pairing_display = _build_pairing_display(pairings, attendees)
-    pit_stop_name = _get_pit_stop_name(pairings, attendees)
+    pit_stop_info = _get_pit_stop_info(pairings, attendees)
     return templates.TemplateResponse(
         "partials/admin_pairings.html",
         {
             "request": request,
+            "slug": slug,
             "state": state,
             "pairings": pairing_display,
-            "pit_stop_name": pit_stop_name,
+            "pit_stop_info": pit_stop_info,
             "attendees": attendees,
         },
+    )
+
+
+@router.get("/{slug}/admin/{token}/partial/signals", response_class=HTMLResponse)
+async def admin_partial_signals(request: Request, slug: str, token: str):
+    if token != settings.admin_token:
+        return HTMLResponse("", status_code=404)
+    state = await state_manager.get_state()
+    counts = await state_manager.get_pool_counts()
+
+    signal_stats = None
+    if state.round_number > 0:
+        signals = await state_manager.get_signals_for_round(state.round_number)
+        mutual_matches = await state_manager.get_mutual_matches()
+        signal_stats = {
+            "submitted": len(signals),
+            "total_active": counts["active"],
+            "mutual_total": len(mutual_matches),
+        }
+
+    return templates.TemplateResponse(
+        "partials/admin_signals.html",
+        {"request": request, "state": state, "signal_stats": signal_stats},
     )
 
 
@@ -274,6 +298,8 @@ def _build_pairing_display(pairings, attendees):
                     "table_number": p.table_number,
                     "name_a": a.name if a else "?",
                     "name_b": b.name if b else "?",
+                    "token_a": a.token if a else "",
+                    "token_b": b.token if b else "",
                     "id_a": p.attendee_a,
                     "id_b": p.attendee_b,
                     "score": round(p.composite_score, 1),
@@ -282,8 +308,9 @@ def _build_pairing_display(pairings, attendees):
     return display
 
 
-def _get_pit_stop_name(pairings, attendees):
+def _get_pit_stop_info(pairings, attendees):
     if pairings and pairings.pit_stop:
         pit = attendees.get(pairings.pit_stop)
-        return pit.name if pit else None
+        if pit:
+            return {"name": pit.name, "token": pit.token}
     return None

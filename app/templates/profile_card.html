@@ -1,96 +1,115 @@
 {% extends "base.html" %}
 
 {% block title %}{{ attendee.name }} — {{ settings.event_name }}{% endblock %}
+{% block body_class %}text-[#e2e8f0]{% endblock %}
+
+{% set role_colors = {
+  'engineering': '#3b82f6',
+  'product': '#8b5cf6',
+  'gtm': '#f59e0b',
+  'science': '#10b981',
+  'ops': '#6366f1',
+  'policy': '#ec4899'
+} %}
 
 {% block body %}
-<div class="max-w-md mx-auto px-4 py-6">
+<div style="min-height: 100vh; background: #0a0f1a; color: #e2e8f0; padding: 20px;">
+  <div style="max-width: 480px; margin: 0 auto;">
 
-  <!-- Profile Card -->
-  <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+    <!-- Profile Card -->
+    <div style="background: #111827; border: 1px solid #1e293b; border-radius: 16px; overflow: hidden;">
 
-    <!-- Header -->
-    <div class="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-8 text-white text-center">
-      <h1 class="text-2xl font-bold">{{ attendee.name }}</h1>
-      <p class="text-blue-200 mt-1 text-sm capitalize">{{ attendee.role | replace("-", " ") }} · {{ attendee.top_climate_area or "Climate" }}</p>
-    </div>
-
-    <div class="px-6 py-5 space-y-4">
-
-      {% if attendee.superpower %}
-      <div>
-        <p class="text-gray-800 font-medium italic">"{{ attendee.superpower }}"</p>
-      </div>
-      {% endif %}
-
-      {% if attendee.matching_summary %}
-      <div>
-        <p class="text-gray-600 text-sm">{{ attendee.matching_summary }}</p>
-      </div>
-      {% endif %}
-
-      {% if attendee.domain_tags %}
-      <div class="flex flex-wrap gap-1.5">
-        {% for tag in attendee.domain_tags %}
-        <span class="bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-full">{{ tag }}</span>
-        {% endfor %}
-      </div>
-      {% endif %}
-
-      <!-- Details -->
-      <div class="grid grid-cols-2 gap-3 text-sm pt-2 border-t border-gray-100">
-        <div>
-          <span class="text-gray-400 text-xs block">Looking for</span>
-          <span class="text-gray-700 capitalize">{{ attendee.role_needed | replace("-", " ") }}</span>
+      <!-- Header -->
+      <div style="padding: 32px 24px; text-align: center; border-bottom: 1px solid #1e293b;">
+        <div style="font-size: 24px; font-weight: 700;">{{ attendee.name }}</div>
+        {% set rc = role_colors.get(attendee.role.value, '#64748b') %}
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px;">
+          <span style="font-size: 12px; font-weight: 600; color: {{ rc }}; background: {{ rc }}18; padding: 2px 8px; border-radius: 4px;">{{ attendee.role.value }}</span>
+          {% if attendee.top_climate_area %}
+          <span style="font-size: 13px; color: #64748b;">&middot;</span>
+          <span style="font-size: 13px; color: #94a3b8;">{{ attendee.top_climate_area }}</span>
+          {% endif %}
         </div>
-        <div>
-          <span class="text-gray-400 text-xs block">Lane</span>
-          <span class="text-gray-700 capitalize">{{ attendee.lane | replace("-", " ") }}</span>
-        </div>
-        <div>
-          <span class="text-gray-400 text-xs block">Commitment</span>
-          <span class="text-gray-700 capitalize">{{ attendee.commitment | replace("-", " ") }}</span>
-        </div>
-        {% if attendee.stage %}
-        <div>
-          <span class="text-gray-400 text-xs block">Stage</span>
-          <span class="text-gray-700 capitalize">{{ attendee.stage | replace("-", " ") }}</span>
+      </div>
+
+      <div style="padding: 24px;">
+
+        {% if attendee.superpower %}
+        <div style="font-size: 15px; font-style: italic; color: #94a3b8; margin-bottom: 16px;">
+          "{{ attendee.superpower }}"
         </div>
         {% endif %}
-        {% if attendee.location %}
-        <div>
-          <span class="text-gray-400 text-xs block">Location</span>
-          <span class="text-gray-700">{{ attendee.location }}</span>
+
+        {% if attendee.matching_summary %}
+        <div style="font-size: 13px; color: #64748b; margin-bottom: 16px; line-height: 1.5;">
+          {{ attendee.matching_summary }}
         </div>
         {% endif %}
-        <div>
-          <span class="text-gray-400 text-xs block">Arrangement</span>
-          <span class="text-gray-700 capitalize">{{ attendee.arrangement | replace("-", " ") }}</span>
+
+        {% if attendee.domain_tags %}
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px;">
+          {% for tag in attendee.domain_tags %}
+          <span style="background: #1e293b; color: #93c5fd; font-size: 12px; padding: 3px 10px; border-radius: 20px; border: 1px solid #374151;">{{ tag }}</span>
+          {% endfor %}
         </div>
-      </div>
+        {% endif %}
 
-      {% if attendee.intention_90_day %}
-      <div class="pt-2 border-t border-gray-100">
-        <span class="text-gray-400 text-xs block mb-1">90-day intention</span>
-        <p class="text-gray-600 text-sm">{{ attendee.intention_90_day }}</p>
-      </div>
-      {% endif %}
+        <!-- Details -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-top: 16px; border-top: 1px solid #1e293b;">
+          <div>
+            <div style="font-size: 11px; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Looking for</div>
+            <div style="font-size: 14px; text-transform: capitalize;">{{ attendee.role_needed.value | replace("-", " ") }}</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Lane</div>
+            <div style="font-size: 14px; text-transform: capitalize;">{{ attendee.lane.value | replace("-", " ") }}</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Commitment</div>
+            <div style="font-size: 14px; text-transform: capitalize;">{{ attendee.commitment.value | replace("-", " ") }}</div>
+          </div>
+          {% if attendee.stage %}
+          <div>
+            <div style="font-size: 11px; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Stage</div>
+            <div style="font-size: 14px; text-transform: capitalize;">{{ attendee.stage | replace("-", " ") }}</div>
+          </div>
+          {% endif %}
+          {% if attendee.location %}
+          <div>
+            <div style="font-size: 11px; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Location</div>
+            <div style="font-size: 14px;">{{ attendee.location }}</div>
+          </div>
+          {% endif %}
+          <div>
+            <div style="font-size: 11px; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Arrangement</div>
+            <div style="font-size: 14px; text-transform: capitalize;">{{ attendee.arrangement.value | replace("-", " ") }}</div>
+          </div>
+        </div>
 
+        {% if attendee.intention_90_day %}
+        <div style="padding-top: 16px; margin-top: 12px; border-top: 1px solid #1e293b;">
+          <div style="font-size: 11px; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">90-day intention</div>
+          <div style="font-size: 13px; color: #94a3b8; line-height: 1.5;">{{ attendee.intention_90_day }}</div>
+        </div>
+        {% endif %}
+
+      </div>
     </div>
-  </div>
 
-  {% if not is_claimed %}
-  <!-- "This is me" claim button -->
-  <div class="mt-6 text-center">
-    <form method="POST" action="/{{ slug }}/a/{{ token }}/claim"
-          onsubmit="localStorage.setItem('matchmaking_{{ slug }}_token', '{{ token }}')">
-      <button type="submit"
-              class="bg-blue-600 text-white px-8 py-3 rounded-xl font-medium text-lg shadow hover:bg-blue-700 transition-colors">
-        This is me
-      </button>
-    </form>
-    <p class="text-gray-400 text-xs mt-2">Tap if this is your badge to see your matches</p>
-  </div>
-  {% endif %}
+    {% if not is_claimed %}
+    <!-- "This is me" claim button -->
+    <div style="margin-top: 24px; text-align: center;">
+      <form method="POST" action="/{{ slug }}/a/{{ token }}/claim"
+            onsubmit="localStorage.setItem('matchmaking_{{ slug }}_token', '{{ token }}')">
+        <button type="submit"
+                style="background: #22c55e; color: #0a0f1a; border: none; border-radius: 12px; padding: 14px 36px; font-size: 16px; font-weight: 700; cursor: pointer;">
+          This is me
+        </button>
+      </form>
+      <div style="font-size: 12px; color: #475569; margin-top: 8px;">Tap if this is your badge to see your matches</div>
+    </div>
+    {% endif %}
 
+  </div>
 </div>
 {% endblock %}
