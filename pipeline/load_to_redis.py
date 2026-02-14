@@ -5,6 +5,10 @@ from __future__ import annotations
 import asyncio
 import json
 import sys
+from pathlib import Path
+
+# Ensure project root is on sys.path when run directly
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import redis.asyncio as aioredis
 
@@ -95,6 +99,10 @@ async def load_data(
     await r.aclose()
 
 
-if __name__ == "__main__":
+def main():
     redis_url = sys.argv[1] if len(sys.argv) > 1 else "redis://localhost:6379"
     asyncio.run(load_data(redis_url=redis_url))
+
+
+if __name__ == "__main__":
+    main()

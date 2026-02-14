@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import random
+import sys
 import uuid
 from itertools import combinations
 from pathlib import Path
@@ -205,8 +206,10 @@ def seed(
     print("Done!")
 
 
-if __name__ == "__main__":
-    import sys
-
+def main():
     count = int(sys.argv[1]) if len(sys.argv) > 1 else 60
     seed(attendee_count=count)
+
+
+if __name__ == "__main__":
+    main()

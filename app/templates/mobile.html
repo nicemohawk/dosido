@@ -46,10 +46,13 @@
     </div>
     {% endif %}
 
-    <!-- Signal prompt (shown between rounds) -->
+    <!-- Signal prompt (shown when timer expires, persists into next round) -->
     <div id="signal-prompt" class="hidden">
       {% include "partials/signal_prompt.html" %}
     </div>
+
+    <!-- Carryover signal prompt from previous round (populated via JS) -->
+    <div id="signal-carryover" class="hidden"></div>
   {% else %}
     <div class="bg-gray-50 rounded-xl p-8 text-center">
       <p class="text-gray-400">Rounds haven't started yet.</p>
@@ -145,19 +148,65 @@ Timer.pause({{ state.timer_remaining }});
 {% endif %}
 
 {% if is_personal %}
+var SIGNAL_STORAGE_KEY = "matchmaking_pending_signal";
+
 // Show signal prompt when timer expires
 Timer.onExpire(function() {
   var prompt = document.getElementById('signal-prompt');
   if (prompt) prompt.classList.remove('hidden');
 });
+
+// On load, check for carryover signal from previous round
+(function() {
+  var raw = localStorage.getItem(SIGNAL_STORAGE_KEY);
+  if (!raw) return;
+  var pending = JSON.parse(raw);
+  localStorage.removeItem(SIGNAL_STORAGE_KEY);
+
+  // Only show if it's for this attendee and a previous round
+  if (pending.from_attendee !== "{{ attendee.id }}") return;
+  if (pending.round_number >= {{ state.round_number }}) return;
+
+  var container = document.getElementById('signal-carryover');
+  if (!container) return;
+
+  container.innerHTML =
+    '<div class="bg-white border rounded-xl p-5 text-center mb-4" hx-ext="json-enc">' +
+      '<p class="text-gray-500 text-sm mb-1">From round ' + pending.round_number + '</p>' +
+      '<p class="text-lg font-semibold mb-4">Want to follow up with ' + pending.match_name + '?</p>' +
+      '<div class="flex justify-center gap-4">' +
+        '<button hx-post="/api/signal"' +
+          ' hx-vals=\'' + JSON.stringify({from_attendee: pending.from_attendee, to_attendee: pending.to_attendee, round_number: pending.round_number}) + '\'' +
+          ' hx-swap="outerHTML"' +
+          ' class="bg-green-600 text-white px-6 py-3 rounded-lg font-medium text-lg hover:bg-green-700">Yes</button>' +
+        '<button onclick="document.getElementById(\'signal-carryover\').classList.add(\'hidden\')"' +
+          ' class="bg-gray-200 text-gray-600 px-6 py-3 rounded-lg font-medium text-lg hover:bg-gray-300">Skip</button>' +
+      '</div>' +
+    '</div>';
+  container.classList.remove('hidden');
+  htmx.process(container);
+
+  // Auto-dismiss after 60 seconds
+  setTimeout(function() { container.classList.add('hidden'); }, 60000);
+})();
 {% endif %}
 
 document.body.addEventListener("sse:round_update", function(e) {
   const data = JSON.parse(e.detail.data);
   {% if is_personal %}
-  // Hide signal prompt from previous round
+  // Save pending signal to localStorage before reload
   var prompt = document.getElementById('signal-prompt');
-  if (prompt) prompt.classList.add('hidden');
+  if (prompt && !prompt.classList.contains('hidden')) {
+    var signalData = {
+      from_attendee: "{{ attendee.id }}",
+      to_attendee: "{{ my_match_id or '' }}",
+      match_name: "{{ my_match or '' }}",
+      round_number: {{ state.round_number }}
+    };
+    if (signalData.to_attendee) {
+      localStorage.setItem(SIGNAL_STORAGE_KEY, JSON.stringify(signalData));
+    }
+  }
   {% endif %}
   Timer.setEnd(data.timer_end);
   location.reload();

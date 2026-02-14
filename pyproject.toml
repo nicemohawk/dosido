@@ -24,6 +24,15 @@ dev = [
     "fakeredis>=2.25",
 ]
 
+[project.scripts]
+fm-seed = "scripts.seed_test_data:main"
+fm-load = "pipeline.load_to_redis:main"
+fm-serve = "scripts.serve:main"
+fm-test-profile = "scripts.test_profile:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app", "pipeline", "scripts"]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

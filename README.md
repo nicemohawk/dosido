@@ -22,7 +22,7 @@ FastAPI + Jinja2 + HTMX  →  Railway (persistent process)
 
 - **Server-rendered HTML** with HTMX for live updates via SSE — no JS framework, no build step
 - **Tailwind CSS** via CDN
-- **Badge QR codes** link each attendee to their personal mobile view (`/{slug}/a/{token}`)
+- **Badge QR codes** link to a public profile card (`/{slug}/a/{token}`). The badge owner taps "This is me" to claim their identity and unlock their personal view (match, table, signals)
 - Walk-up attendees get fun-slug badges ("Pink Unicorn", "Curious Armadillo") with pre-generated QR codes
 
 ### Views
@@ -30,7 +30,7 @@ FastAPI + Jinja2 + HTMX  →  Railway (persistent process)
 | URL | Purpose |
 |-----|---------|
 | `/{slug}/screen` | Projector — table grid, countdown timer, pit stop |
-| `/{slug}/a/{token}` | Personal mobile — your match, table number, signal prompt |
+| `/{slug}/a/{token}` | Badge QR — public profile card, or personal view if claimed |
 | `/{slug}` | General mobile — full pairing list with name search/pin |
 | `/{slug}/admin/{token}` | Admin panel — round control, check-in, walk-ups, swaps |
 
@@ -49,6 +49,16 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
+After activating the venv, you get these CLI commands:
+
+| Command | What it does |
+|---------|-------------|
+| `fm-seed` | Generate 60 fake attendees + compatibility matrix |
+| `fm-load` | Load data into Redis |
+| `fm-serve` | Start the dev server (with reload) |
+| `fm-test-profile` | Test LinkedIn scraping + enrichment |
+| `pytest tests/` | Run tests |
+
 ### Configure
 
 ```bash
@@ -56,23 +66,18 @@ cp .env.example .env
 # Edit .env with your Redis URL, Anthropic API key, admin token, etc.
 ```
 
-### Seed test data (for development)
-
-```bash
-python scripts/seed_test_data.py
-python scripts/run_pipeline.py --seed-only
-```
-
-This generates 60 fake attendees with a randomized compatibility matrix and loads them into Redis.
-
-### Run
+### Quick start (development)
 
 ```bash
 # Start Redis (if not already running)
 brew services start redis  # macOS
 
+# Seed fake data and load into Redis
+fm-seed
+fm-load
+
 # Start the server
-uvicorn app.main:app --reload
+fm-serve
 ```
 
 Open:
@@ -145,16 +150,16 @@ Interactively test LinkedIn scraping and enrichment:
 
 ```bash
 # Scrape a LinkedIn profile (see what data we can extract)
-python scripts/test_profile.py https://linkedin.com/in/someone
+fm-test-profile https://linkedin.com/in/someone
 
 # Scrape + enrich with Claude
-python scripts/test_profile.py https://linkedin.com/in/someone --enrich
+fm-test-profile https://linkedin.com/in/someone --enrich
 
 # Scrape + enrich with local Ollama (no API key needed)
-python scripts/test_profile.py https://linkedin.com/in/someone --enrich --provider ollama
+fm-test-profile https://linkedin.com/in/someone --enrich --provider ollama
 
 # Scrape + enrich with stub data (no LLM at all)
-python scripts/test_profile.py --enrich --provider none
+fm-test-profile --enrich --provider none
 ```
 
 ## Testing
@@ -196,8 +201,8 @@ app/
     admin_api.py       # POST routes: check-in, advance, pause, swap, walk-up
     public_api.py      # GET /api/state, SSE stream
     signal_api.py      # POST /api/signal, GET /api/mutual-matches
-  templates/           # Jinja2 templates (base, admin, screen, mobile)
-  static/js/           # Timer, search, connection status indicator
+  templates/           # Jinja2 templates (base, admin, screen, mobile, profile card)
+  static/js/           # Timer, SSE client, search, connection status
 
 pipeline/
   ingest.py            # Luma CSV → normalized JSON
@@ -214,6 +219,8 @@ scripts/
   test_profile.py      # Interactive LinkedIn scrape + enrichment tester
 
 tests/
+  conftest.py          # Shared fixtures (fakeredis, test client, seeding)
   test_matching.py     # Unit tests for scoring + matching
   test_simulation.py   # Integration tests (multi-round, performance)
+  test_api.py          # API + view tests (routes, signals, lifecycle)
 ```
