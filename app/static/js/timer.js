@@ -5,6 +5,8 @@
     let paused = false;
     let pausedRemaining = null;
     let intervalId = null;
+    let expireCallback = null;
+    let expireFired = false;
     const timerElement = () => document.getElementById("timer-display");
 
     function formatTime(totalSeconds) {
@@ -38,6 +40,10 @@
 
         if (remaining <= 0) {
             element.classList.add("text-red-500", "animate-pulse");
+            if (!expireFired && expireCallback) {
+                expireFired = true;
+                expireCallback();
+            }
         } else if (remaining <= 60) {
             element.classList.add("text-red-500");
             element.classList.remove("animate-pulse");
@@ -58,6 +64,7 @@
             timerEnd = new Date(isoTimestamp).getTime();
             paused = false;
             pausedRemaining = null;
+            expireFired = false;
             startCountdown();
         },
         pause(remainingSeconds) {
@@ -75,8 +82,12 @@
             timerEnd = null;
             paused = false;
             pausedRemaining = null;
+            expireFired = false;
             if (intervalId) clearInterval(intervalId);
             updateDisplay();
+        },
+        onExpire(callback) {
+            expireCallback = callback;
         },
     };
 })();

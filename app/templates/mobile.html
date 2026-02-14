@@ -3,7 +3,7 @@
 {% block title %}{{ settings.event_name }}{% endblock %}
 
 {% block body %}
-<div class="max-w-md mx-auto px-4 py-6" hx-ext="sse" sse-connect="/api/state/stream">
+<div class="max-w-md mx-auto px-4 py-6" hx-ext="json-enc">
 
   {% if is_personal and attendee %}
   <!-- ===== PERSONAL MOBILE VIEW (badge QR) ===== -->
@@ -126,6 +126,16 @@
 <script src="/static/js/timer.js"></script>
 {% if not is_personal %}
 <script src="/static/js/search.js"></script>
+<script>
+// Redirect to personal view if user has claimed a badge
+(function() {
+  var slug = "{{ slug }}";
+  var token = localStorage.getItem("matchmaking_" + slug + "_token");
+  if (token) {
+    window.location.replace("/" + slug + "/a/" + token);
+  }
+})();
+</script>
 {% endif %}
 <script>
 {% if state.timer_end %}
@@ -134,8 +144,21 @@ Timer.setEnd("{{ state.timer_end }}");
 Timer.pause({{ state.timer_remaining }});
 {% endif %}
 
+{% if is_personal %}
+// Show signal prompt when timer expires
+Timer.onExpire(function() {
+  var prompt = document.getElementById('signal-prompt');
+  if (prompt) prompt.classList.remove('hidden');
+});
+{% endif %}
+
 document.body.addEventListener("sse:round_update", function(e) {
   const data = JSON.parse(e.detail.data);
+  {% if is_personal %}
+  // Hide signal prompt from previous round
+  var prompt = document.getElementById('signal-prompt');
+  if (prompt) prompt.classList.add('hidden');
+  {% endif %}
   Timer.setEnd(data.timer_end);
   location.reload();
 });

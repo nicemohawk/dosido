@@ -3,7 +3,7 @@
 {% block title %}Admin — {{ settings.event_name }}{% endblock %}
 
 {% block body %}
-<div class="max-w-5xl mx-auto px-4 py-6" hx-ext="sse" sse-connect="/api/state/stream">
+<div class="max-w-5xl mx-auto px-4 py-6" hx-ext="json-enc">
 
   <h1 class="text-2xl font-bold mb-1">Admin — Cofounder Matchmaking</h1>
   <p class="text-gray-500 text-sm mb-6">{{ settings.event_name }}</p>
@@ -181,22 +181,33 @@ document.body.addEventListener("sse:round_update", function(e) {
   });
 });
 
-// Timer update: just update the JS timer — no DOM swap needed
+// Timer update: refresh round control (pause/resume button) + update JS timer
 document.body.addEventListener("sse:timer_update", function(e) {
   const data = JSON.parse(e.detail.data);
-  if (data.action === "pause") {
-    Timer.pause(data.timer_remaining);
-  } else if (data.action === "resume") {
-    Timer.resume(data.timer_end);
-  }
+  htmx.ajax('GET', PARTIAL_BASE + '/round-control', {target: '#admin-round-control', swap: 'innerHTML'})
+    .then(function() {
+      if (data.action === "pause") {
+        Timer.pause(data.timer_remaining);
+      } else if (data.action === "resume") {
+        Timer.resume(data.timer_end);
+      }
+    });
 });
 
 // Check-in update: refresh pool + round control (active count in confirm dialog)
 document.body.addEventListener("sse:checkin_update", function(e) {
+  // Preserve scroll position of the attendee list
+  var scrollable = document.querySelector('#admin-pool .overflow-y-auto');
+  var savedScroll = scrollable ? scrollable.scrollTop : 0;
+
   Promise.all([
     htmx.ajax('GET', PARTIAL_BASE + '/pool', {target: '#admin-pool', swap: 'innerHTML'}),
     htmx.ajax('GET', PARTIAL_BASE + '/round-control', {target: '#admin-round-control', swap: 'innerHTML'})
   ]).then(function() {
+    // Restore scroll position
+    var newScrollable = document.querySelector('#admin-pool .overflow-y-auto');
+    if (newScrollable) newScrollable.scrollTop = savedScroll;
+
     // Re-apply attendee filter after pool refresh
     var filter = document.getElementById('admin-filter');
     if (filter && filter.value) {

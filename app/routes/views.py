@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Cookie, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
@@ -40,42 +40,66 @@ async def projector_screen(request: Request, slug: str):
 
 
 @router.get("/{slug}/a/{token}", response_class=HTMLResponse)
-async def personal_mobile(request: Request, slug: str, token: str):
-    """Personal mobile view — attendee identified by badge QR token."""
+async def badge_view(
+    request: Request,
+    slug: str,
+    token: str,
+    claimed_id: str = Cookie(default=None),
+):
+    """Badge QR view — public profile card, or personal view if claimed."""
     attendee = await state_manager.get_attendee_by_token(token)
+    if not attendee:
+        return HTMLResponse("Badge not found", status_code=404)
+
+    is_owner = claimed_id == attendee.id
+
+    if not is_owner:
+        # Public profile card
+        return templates.TemplateResponse(
+            "profile_card.html",
+            {
+                "request": request,
+                "slug": slug,
+                "token": token,
+                "attendee": attendee,
+                "settings": settings,
+            },
+        )
+
+    # Personal view — owner has claimed this badge
     state = await state_manager.get_state()
     pairings = await state_manager.get_current_pairings()
     attendees = await state_manager.get_all_attendees()
 
-    # Find this attendee's current pairing
     my_match = None
+    my_match_id = None
     my_table = None
-    if pairings and attendee:
+    if pairings:
         for p in pairings.pairings:
             if p.attendee_a == attendee.id:
                 partner = attendees.get(p.attendee_b)
                 my_match = partner.name if partner else "?"
+                my_match_id = p.attendee_b
                 my_table = p.table_number
                 break
             elif p.attendee_b == attendee.id:
                 partner = attendees.get(p.attendee_a)
                 my_match = partner.name if partner else "?"
+                my_match_id = p.attendee_a
                 my_table = p.table_number
                 break
 
-    is_pit_stop = pairings and pairings.pit_stop == (attendee.id if attendee else None)
+    is_pit_stop = pairings and pairings.pit_stop == attendee.id
 
-    # Get this attendee's mutual matches
     mutual_matches = []
-    if attendee:
-        all_mutuals = await state_manager.get_mutual_matches()
-        for key in all_mutuals:
-            ids = key.split(":")
-            if attendee.id in ids:
-                other_id = ids[0] if ids[1] == attendee.id else ids[1]
-                other = attendees.get(other_id)
-                if other:
-                    mutual_matches.append(other.name)
+    all_mutuals = await state_manager.get_mutual_matches()
+    for key in all_mutuals:
+        ids = key.split(":")
+        if attendee.id in ids:
+            other_id = ids[0] if ids[1] == attendee.id else ids[1]
+            other = attendees.get(other_id)
+            if other:
+                mutual_matches.append(other.name)
 
     return templates.TemplateResponse(
         "mobile.html",
@@ -86,6 +110,7 @@ async def personal_mobile(request: Request, slug: str, token: str):
             "attendee": attendee,
             "state": state,
             "my_match": my_match,
+            "my_match_id": my_match_id,
             "my_table": my_table,
             "is_pit_stop": is_pit_stop,
             "mutual_matches": mutual_matches,

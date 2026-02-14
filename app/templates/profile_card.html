@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}{{ attendee.name }} — {{ settings.event_name }}{% endblock %}
+
+{% block body %}
+<div class="max-w-md mx-auto px-4 py-6">
+
+  <!-- Profile Card -->
+  <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-8 text-white text-center">
+      <h1 class="text-2xl font-bold">{{ attendee.name }}</h1>
+      <p class="text-blue-200 mt-1 text-sm capitalize">{{ attendee.role | replace("-", " ") }} · {{ attendee.top_climate_area or "Climate" }}</p>
+    </div>
+
+    <div class="px-6 py-5 space-y-4">
+
+      {% if attendee.superpower %}
+      <div>
+        <p class="text-gray-800 font-medium italic">"{{ attendee.superpower }}"</p>
+      </div>
+      {% endif %}
+
+      {% if attendee.matching_summary %}
+      <div>
+        <p class="text-gray-600 text-sm">{{ attendee.matching_summary }}</p>
+      </div>
+      {% endif %}
+
+      {% if attendee.domain_tags %}
+      <div class="flex flex-wrap gap-1.5">
+        {% for tag in attendee.domain_tags %}
+        <span class="bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-full">{{ tag }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Details -->
+      <div class="grid grid-cols-2 gap-3 text-sm pt-2 border-t border-gray-100">
+        <div>
+          <span class="text-gray-400 text-xs block">Looking for</span>
+          <span class="text-gray-700 capitalize">{{ attendee.role_needed | replace("-", " ") }}</span>
+        </div>
+        <div>
+          <span class="text-gray-400 text-xs block">Lane</span>
+          <span class="text-gray-700 capitalize">{{ attendee.lane | replace("-", " ") }}</span>
+        </div>
+        <div>
+          <span class="text-gray-400 text-xs block">Commitment</span>
+          <span class="text-gray-700 capitalize">{{ attendee.commitment | replace("-", " ") }}</span>
+        </div>
+        {% if attendee.stage %}
+        <div>
+          <span class="text-gray-400 text-xs block">Stage</span>
+          <span class="text-gray-700 capitalize">{{ attendee.stage | replace("-", " ") }}</span>
+        </div>
+        {% endif %}
+        {% if attendee.location %}
+        <div>
+          <span class="text-gray-400 text-xs block">Location</span>
+          <span class="text-gray-700">{{ attendee.location }}</span>
+        </div>
+        {% endif %}
+        <div>
+          <span class="text-gray-400 text-xs block">Arrangement</span>
+          <span class="text-gray-700 capitalize">{{ attendee.arrangement | replace("-", " ") }}</span>
+        </div>
+      </div>
+
+      {% if attendee.intention_90_day %}
+      <div class="pt-2 border-t border-gray-100">
+        <span class="text-gray-400 text-xs block mb-1">90-day intention</span>
+        <p class="text-gray-600 text-sm">{{ attendee.intention_90_day }}</p>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <!-- "This is me" claim button -->
+  <div class="mt-6 text-center">
+    <button onclick="claimBadge()"
+            class="bg-blue-600 text-white px-8 py-3 rounded-xl font-medium text-lg shadow hover:bg-blue-700 transition-colors">
+      This is me
+    </button>
+    <p class="text-gray-400 text-xs mt-2">Tap if this is your badge to see your matches</p>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function claimBadge() {
+  var slug = "{{ slug }}";
+  var token = "{{ token }}";
+  var attendeeId = "{{ attendee.id }}";
+
+  // Store token in localStorage for general-view redirect
+  localStorage.setItem("matchmaking_" + slug + "_token", token);
+
+  // Set cookie so server can gate personal view
+  document.cookie = "claimed_id=" + attendeeId + ";path=/;max-age=86400;SameSite=Lax";
+
+  // Reload to get personal view
+  location.reload();
+}
+</script>
+{% endblock %}
