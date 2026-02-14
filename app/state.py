@@ -379,6 +379,16 @@ class EventStateManager:
             return None
         return await self.get_attendee(attendee_id)
 
+    # --- Badge claims ---
+
+    async def claim_badge(self, attendee_id: str) -> None:
+        r = get_redis()
+        await r.sadd(f"{_prefix()}:claimed", attendee_id)
+
+    async def is_badge_claimed(self, attendee_id: str) -> bool:
+        r = get_redis()
+        return await r.sismember(f"{_prefix()}:claimed", attendee_id)
+
     # --- Signals ---
 
     async def record_signal(

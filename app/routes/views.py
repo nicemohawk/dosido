@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Cookie, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from app.config import settings
@@ -55,6 +55,7 @@ async def badge_view(
 
     if not is_owner:
         # Public profile card
+        is_claimed = await state_manager.is_badge_claimed(attendee.id)
         return templates.TemplateResponse(
             "profile_card.html",
             {
@@ -62,6 +63,7 @@ async def badge_view(
                 "slug": slug,
                 "token": token,
                 "attendee": attendee,
+                "is_claimed": is_claimed,
                 "settings": settings,
             },
         )
@@ -91,6 +93,12 @@ async def badge_view(
 
     is_pit_stop = pairings and pairings.pit_stop == attendee.id
 
+    # Check if user already submitted feedback this round
+    already_signaled = False
+    if state.round_number > 0:
+        round_signals = await state_manager.get_signals_for_round(state.round_number)
+        already_signaled = attendee.id in round_signals
+
     mutual_matches = []
     all_mutuals = await state_manager.get_mutual_matches()
     for key in all_mutuals:
@@ -99,9 +107,9 @@ async def badge_view(
             other_id = ids[0] if ids[1] == attendee.id else ids[1]
             other = attendees.get(other_id)
             if other:
-                mutual_matches.append(other.name)
+                mutual_matches.append({"name": other.name, "token": other.token})
 
-    return templates.TemplateResponse(
+    response = templates.TemplateResponse(
         "mobile.html",
         {
             "request": request,
@@ -113,11 +121,27 @@ async def badge_view(
             "my_match_id": my_match_id,
             "my_table": my_table,
             "is_pit_stop": is_pit_stop,
+            "already_signaled": already_signaled,
             "mutual_matches": mutual_matches,
             "is_personal": True,
             "settings": settings,
         },
     )
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@router.post("/{slug}/a/{token}/claim")
+async def claim_badge(slug: str, token: str):
+    """Claim a badge as your own — sets cookie and records in Redis."""
+    attendee = await state_manager.get_attendee_by_token(token)
+    if not attendee:
+        return HTMLResponse("Badge not found", status_code=404)
+
+    await state_manager.claim_badge(attendee.id)
+    response = RedirectResponse(f"/{slug}/a/{token}", status_code=303)
+    response.set_cookie("claimed_id", attendee.id, max_age=86400, samesite="lax")
+    return response
 
 
 @router.get("/{slug}", response_class=HTMLResponse)
@@ -214,7 +238,7 @@ async def admin_partial_pool(request: Request, slug: str, token: str):
     counts = await state_manager.get_pool_counts()
     return templates.TemplateResponse(
         "partials/admin_pool.html",
-        {"request": request, "attendees": attendees, "counts": counts},
+        {"request": request, "slug": slug, "attendees": attendees, "counts": counts},
     )
 
 

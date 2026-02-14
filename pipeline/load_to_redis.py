@@ -99,8 +99,47 @@ async def load_data(
     await r.aclose()
 
 
+async def _check_existing(redis_url: str, event_slug: str) -> bool:
+    """Check if event data already exists in Redis. Returns True if safe to proceed."""
+    from app.config import settings
+
+    prefix = f"event:{event_slug}"
+    r = aioredis.from_url(redis_url, decode_responses=True)
+    count = await r.hlen(f"{prefix}:attendees")
+    await r.aclose()
+
+    if count == 0:
+        return True
+
+    print(f"Found {count} existing attendees in Redis for '{event_slug}'.")
+    print("  [w] Wipe existing data and reload")
+    print("  [r] Run anyway (overwrite/merge)")
+    print("  [x] Exit")
+    choice = input("  > ").strip().lower()
+
+    if choice == "w":
+        r = aioredis.from_url(redis_url, decode_responses=True)
+        keys = []
+        async for key in r.scan_iter(f"{prefix}:*"):
+            keys.append(key)
+        if keys:
+            await r.delete(*keys)
+        await r.aclose()
+        print(f"  Wiped {len(keys)} keys")
+        return True
+    elif choice == "r":
+        return True
+    else:
+        print("  Exiting.")
+        return False
+
+
 def main():
     redis_url = sys.argv[1] if len(sys.argv) > 1 else "redis://localhost:6379"
+    from app.config import settings
+
+    if not asyncio.run(_check_existing(redis_url, settings.event_slug)):
+        return
     asyncio.run(load_data(redis_url=redis_url))
 
 

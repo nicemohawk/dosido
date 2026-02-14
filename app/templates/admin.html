@@ -17,21 +17,24 @@
       {% include "partials/admin_round_control.html" %}
     </div>
 
-    <div class="flex gap-4 text-sm text-gray-600">
+    <div class="flex gap-4 text-sm text-gray-600 items-center">
       <label>
         Round duration:
         <input type="number" value="{{ settings.round_duration_minutes }}" min="1" max="30"
-               class="w-16 border rounded px-2 py-1 ml-1" id="round-duration"> min
+               class="w-16 border rounded px-2 py-1 ml-1" id="round-duration"
+               data-original="{{ settings.round_duration_minutes }}"
+               oninput="checkSettingsChanged()"> min
       </label>
       <label>
         Total rounds:
         <input type="number" value="{{ state.round_number + state.rounds_remaining }}" min="1" max="20"
-               class="w-16 border rounded px-2 py-1 ml-1" id="total-rounds">
+               class="w-16 border rounded px-2 py-1 ml-1" id="total-rounds"
+               data-original="{{ state.round_number + state.rounds_remaining }}"
+               oninput="checkSettingsChanged()">
       </label>
-      <button
-        onclick="fetch('/api/admin/settings', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({round_duration_minutes:parseInt(document.getElementById('round-duration').value), total_rounds:parseInt(document.getElementById('total-rounds').value)})})"
-        class="text-blue-600 underline text-sm"
-      >Save</button>
+      <button id="save-settings-btn" class="text-blue-600 underline text-sm hidden"
+        onclick="saveSettings()">Save</button>
+      <span id="saved-indicator" class="text-green-600 text-sm transition-opacity duration-500 hidden">Saved!</span>
     </div>
   </section>
 
@@ -222,6 +225,37 @@ function filterAttendees(query) {
   const q = query.toLowerCase().trim();
   rows.forEach(row => {
     row.style.display = !q || row.dataset.attendeeName.includes(q) ? '' : 'none';
+  });
+}
+
+// Settings save with dirty detection
+function checkSettingsChanged() {
+  var dur = document.getElementById('round-duration');
+  var tot = document.getElementById('total-rounds');
+  var changed = dur.value !== dur.dataset.original || tot.value !== tot.dataset.original;
+  document.getElementById('save-settings-btn').classList.toggle('hidden', !changed);
+  document.getElementById('saved-indicator').classList.add('hidden');
+}
+
+function saveSettings() {
+  var dur = document.getElementById('round-duration');
+  var tot = document.getElementById('total-rounds');
+  fetch('/api/admin/settings', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      round_duration_minutes: parseInt(dur.value),
+      total_rounds: parseInt(tot.value)
+    })
+  }).then(function() {
+    dur.dataset.original = dur.value;
+    tot.dataset.original = tot.value;
+    document.getElementById('save-settings-btn').classList.add('hidden');
+    var indicator = document.getElementById('saved-indicator');
+    indicator.classList.remove('hidden');
+    indicator.style.opacity = '1';
+    setTimeout(function() { indicator.style.opacity = '0'; }, 5000);
+    setTimeout(function() { indicator.classList.add('hidden'); indicator.style.opacity = '1'; }, 5500);
   });
 }
 </script>

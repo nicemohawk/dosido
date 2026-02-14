@@ -78,33 +78,19 @@
     </div>
   </div>
 
+  {% if not is_claimed %}
   <!-- "This is me" claim button -->
   <div class="mt-6 text-center">
-    <button onclick="claimBadge()"
-            class="bg-blue-600 text-white px-8 py-3 rounded-xl font-medium text-lg shadow hover:bg-blue-700 transition-colors">
-      This is me
-    </button>
+    <form method="POST" action="/{{ slug }}/a/{{ token }}/claim"
+          onsubmit="localStorage.setItem('matchmaking_{{ slug }}_token', '{{ token }}')">
+      <button type="submit"
+              class="bg-blue-600 text-white px-8 py-3 rounded-xl font-medium text-lg shadow hover:bg-blue-700 transition-colors">
+        This is me
+      </button>
+    </form>
     <p class="text-gray-400 text-xs mt-2">Tap if this is your badge to see your matches</p>
   </div>
+  {% endif %}
 
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-function claimBadge() {
-  var slug = "{{ slug }}";
-  var token = "{{ token }}";
-  var attendeeId = "{{ attendee.id }}";
-
-  // Store token in localStorage for general-view redirect
-  localStorage.setItem("matchmaking_" + slug + "_token", token);
-
-  // Set cookie so server can gate personal view
-  document.cookie = "claimed_id=" + attendeeId + ";path=/;max-age=86400;SameSite=Lax";
-
-  // Reload to get personal view
-  location.reload();
-}
-</script>
 {% endblock %}

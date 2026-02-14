@@ -46,13 +46,15 @@
     </div>
     {% endif %}
 
-    <!-- Signal prompt (shown when timer expires, persists into next round) -->
+    {% if not already_signaled %}
+    <!-- Feedback prompt (shown when timer expires, persists into next round) -->
     <div id="signal-prompt" class="hidden">
       {% include "partials/signal_prompt.html" %}
     </div>
 
-    <!-- Carryover signal prompt from previous round (populated via JS) -->
+    <!-- Carryover feedback prompt from previous round (populated via JS) -->
     <div id="signal-carryover" class="hidden"></div>
+    {% endif %}
   {% else %}
     <div class="bg-gray-50 rounded-xl p-8 text-center">
       <p class="text-gray-400">Rounds haven't started yet.</p>
@@ -60,17 +62,20 @@
     </div>
   {% endif %}
 
-  <!-- Mutual matches -->
+  <!-- Follow-up list (mutual matches) -->
+  <div id="follow-up-container">
   {% if mutual_matches %}
   <div class="mt-6 bg-green-50 border border-green-200 rounded-xl p-5">
-    <p class="font-semibold text-green-800 mb-2">&#129309; Your Mutual Matches</p>
-    <ul class="space-y-1">
-      {% for name in mutual_matches %}
-      <li class="text-green-700">{{ name }}</li>
+    <p class="font-semibold text-green-800 mb-2">&#129309; Your Follow-Up List</p>
+    <p class="text-green-700 text-sm mb-3">Great conversations worth continuing — connect during networking time!</p>
+    <ul class="space-y-1" id="follow-up-list">
+      {% for match in mutual_matches %}
+      <li data-name="{{ match.name }}"><a href="/{{ slug }}/a/{{ match.token }}" target="_blank" class="text-green-700 hover:underline font-medium">{{ match.name }}</a></li>
       {% endfor %}
     </ul>
   </div>
   {% endif %}
+  </div>
 
   {% else %}
   <!-- ===== GENERAL MOBILE VIEW (search/pin) ===== -->
@@ -149,14 +154,26 @@ Timer.pause({{ state.timer_remaining }});
 
 {% if is_personal %}
 var SIGNAL_STORAGE_KEY = "matchmaking_pending_signal";
+var SIGNAL_SENT_KEY = "matchmaking_signal_sent";
+var MY_ATTENDEE_ID = "{{ attendee.id }}";
 
-// Show signal prompt when timer expires
+// Track whether we've already sent feedback this round
+var signalSentThisRound = {{ 'true' if already_signaled else 'false' }};
+
+// Show feedback prompt when timer expires (only if not already sent)
 Timer.onExpire(function() {
+  if (signalSentThisRound) return;
+  // Also check localStorage in case we sent during this page session
+  var sentRaw = localStorage.getItem(SIGNAL_SENT_KEY);
+  if (sentRaw) {
+    var sent = JSON.parse(sentRaw);
+    if (sent.attendee === MY_ATTENDEE_ID && sent.round === {{ state.round_number }}) return;
+  }
   var prompt = document.getElementById('signal-prompt');
   if (prompt) prompt.classList.remove('hidden');
 });
 
-// On load, check for carryover signal from previous round
+// On load, check for carryover feedback from previous round
 (function() {
   var raw = localStorage.getItem(SIGNAL_STORAGE_KEY);
   if (!raw) return;
@@ -164,27 +181,31 @@ Timer.onExpire(function() {
   localStorage.removeItem(SIGNAL_STORAGE_KEY);
 
   // Only show if it's for this attendee and a previous round
-  if (pending.from_attendee !== "{{ attendee.id }}") return;
+  if (pending.from_attendee !== MY_ATTENDEE_ID) return;
   if (pending.round_number >= {{ state.round_number }}) return;
+
+  // Don't show if already sent (check localStorage)
+  var sentRaw = localStorage.getItem(SIGNAL_SENT_KEY);
+  if (sentRaw) {
+    var sent = JSON.parse(sentRaw);
+    if (sent.attendee === MY_ATTENDEE_ID && sent.round === pending.round_number) return;
+  }
 
   var container = document.getElementById('signal-carryover');
   if (!container) return;
 
   container.innerHTML =
-    '<div class="bg-white border rounded-xl p-5 text-center mb-4" hx-ext="json-enc">' +
+    '<div class="bg-white border rounded-xl p-5 text-center mb-4" id="signal-carryover-inner">' +
       '<p class="text-gray-500 text-sm mb-1">From round ' + pending.round_number + '</p>' +
       '<p class="text-lg font-semibold mb-4">Want to follow up with ' + pending.match_name + '?</p>' +
       '<div class="flex justify-center gap-4">' +
-        '<button hx-post="/api/signal"' +
-          ' hx-vals=\'' + JSON.stringify({from_attendee: pending.from_attendee, to_attendee: pending.to_attendee, round_number: pending.round_number}) + '\'' +
-          ' hx-swap="outerHTML"' +
+        '<button onclick="sendSignal(\'' + pending.from_attendee + '\', \'' + pending.to_attendee + '\', ' + pending.round_number + ', \'' + pending.match_name + '\')"' +
           ' class="bg-green-600 text-white px-6 py-3 rounded-lg font-medium text-lg hover:bg-green-700">Yes</button>' +
         '<button onclick="document.getElementById(\'signal-carryover\').classList.add(\'hidden\')"' +
           ' class="bg-gray-200 text-gray-600 px-6 py-3 rounded-lg font-medium text-lg hover:bg-gray-300">Skip</button>' +
       '</div>' +
     '</div>';
   container.classList.remove('hidden');
-  htmx.process(container);
 
   // Auto-dismiss after 60 seconds
   setTimeout(function() { container.classList.add('hidden'); }, 60000);
@@ -194,17 +215,19 @@ Timer.onExpire(function() {
 document.body.addEventListener("sse:round_update", function(e) {
   const data = JSON.parse(e.detail.data);
   {% if is_personal %}
-  // Save pending signal to localStorage before reload
-  var prompt = document.getElementById('signal-prompt');
-  if (prompt && !prompt.classList.contains('hidden')) {
-    var signalData = {
-      from_attendee: "{{ attendee.id }}",
-      to_attendee: "{{ my_match_id or '' }}",
-      match_name: "{{ my_match or '' }}",
-      round_number: {{ state.round_number }}
-    };
-    if (signalData.to_attendee) {
-      localStorage.setItem(SIGNAL_STORAGE_KEY, JSON.stringify(signalData));
+  // Save pending feedback to localStorage before reload (only if not already sent)
+  if (!signalSentThisRound) {
+    var prompt = document.getElementById('signal-prompt');
+    if (prompt && !prompt.classList.contains('hidden')) {
+      var signalData = {
+        from_attendee: MY_ATTENDEE_ID,
+        to_attendee: "{{ my_match_id or '' }}",
+        match_name: "{{ my_match or '' }}",
+        round_number: {{ state.round_number }}
+      };
+      if (signalData.to_attendee) {
+        localStorage.setItem(SIGNAL_STORAGE_KEY, JSON.stringify(signalData));
+      }
     }
   }
   {% endif %}
@@ -217,5 +240,82 @@ document.body.addEventListener("sse:timer_update", function(e) {
   if (data.action === "pause") Timer.pause(data.timer_remaining);
   else if (data.action === "resume") Timer.resume(data.timer_end);
 });
+
+{% if is_personal %}
+function markSignalSent(roundNumber) {
+  signalSentThisRound = true;
+  localStorage.setItem(SIGNAL_SENT_KEY, JSON.stringify({attendee: MY_ATTENDEE_ID, round: roundNumber}));
+  localStorage.removeItem(SIGNAL_STORAGE_KEY);
+}
+
+function addToFollowUpList(name, token) {
+  var list = document.getElementById('follow-up-list');
+  if (!list) {
+    // Create the follow-up list section if it doesn't exist yet
+    var container = document.getElementById('follow-up-container');
+    if (!container) return;
+    container.innerHTML =
+      '<div class="mt-6 bg-green-50 border border-green-200 rounded-xl p-5">' +
+        '<p class="font-semibold text-green-800 mb-2">&#129309; Your Follow-Up List</p>' +
+        '<p class="text-green-700 text-sm mb-3">Great conversations worth continuing — connect during networking time!</p>' +
+        '<ul class="space-y-1" id="follow-up-list"></ul>' +
+      '</div>';
+    list = document.getElementById('follow-up-list');
+  }
+  // Avoid duplicates
+  if (list.querySelector('[data-name="' + name + '"]')) return;
+  var li = document.createElement('li');
+  li.setAttribute('data-name', name);
+  var a = document.createElement('a');
+  a.href = '/{{ slug }}/a/' + token;
+  a.target = '_blank';
+  a.className = 'text-green-700 hover:underline font-medium';
+  a.textContent = name;
+  li.appendChild(a);
+  list.appendChild(li);
+}
+
+function sendSignal(fromId, toId, roundNumber, matchName) {
+  fetch('/api/signal', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({from_attendee: fromId, to_attendee: toId, round_number: roundNumber})
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    markSignalSent(roundNumber);
+    var el = document.getElementById('signal-prompt-inner') || document.getElementById('signal-carryover-inner');
+    if (!el) return;
+    if (data.mutual) {
+      el.innerHTML = '<p class="text-2xl mb-2">&#129309;</p>' +
+        '<p class="text-lg font-semibold text-green-700">It\'s mutual!</p>' +
+        '<p class="text-gray-500 text-sm mt-1">You and ' + matchName + ' both want to follow up.</p>';
+      // Dynamically add to follow-up list
+      addToFollowUpList(matchName, data.match_token || '');
+    } else {
+      el.innerHTML = '<p class="text-2xl mb-2">&#9989;</p>' +
+        '<p class="text-lg font-semibold text-gray-700">Feedback sent!</p>' +
+        '<p class="text-gray-500 text-sm mt-1">If ' + matchName + ' feels the same, you\'ll both be notified.</p>';
+    }
+  });
+}
+
+// Listen for mutual match events (other person signals you)
+document.body.addEventListener("sse:signal_update", function(e) {
+  var data = JSON.parse(e.detail.data);
+  if (!data.mutual) return;
+  var a = data.attendee_a, b = data.attendee_b;
+  if (a.id !== MY_ATTENDEE_ID && b.id !== MY_ATTENDEE_ID) return;
+  var other = (a.id === MY_ATTENDEE_ID) ? b : a;
+  addToFollowUpList(other.name, other.token);
+  // Upgrade "Feedback sent!" prompt to "It's mutual!" if visible
+  var el = document.getElementById('signal-prompt-inner') || document.getElementById('signal-carryover-inner');
+  if (el) {
+    el.innerHTML = '<p class="text-2xl mb-2">&#129309;</p>' +
+      '<p class="text-lg font-semibold text-green-700">It\'s mutual!</p>' +
+      '<p class="text-gray-500 text-sm mt-1">You and ' + other.name + ' both want to follow up.</p>';
+  }
+});
+{% endif %}
 </script>
 {% endblock %}

@@ -10,7 +10,7 @@
   <div class="flex items-center justify-between px-3 py-2 rounded hover:bg-gray-50 text-sm"
        data-attendee-name="{{ att.name|lower }}">
     {% if att.status.value == 'checked-in' %}
-      <span>&#9989; {{ att.name }}</span>
+      <span>&#9989; {% if att.token %}<a href="/{{ slug }}/a/{{ att.token }}" target="_blank" class="hover:underline text-blue-600">{{ att.name }}</a>{% else %}{{ att.name }}{% endif %}</span>
       <button
         hx-post="/api/admin/check-in"
         hx-vals='{"attendee_id": "{{ id }}", "action": "check-out"}'
@@ -18,7 +18,7 @@
         class="text-red-500 text-xs hover:underline"
       >Check Out</button>
     {% elif att.status.value == 'departed' %}
-      <span class="text-gray-400">&#128682; {{ att.name }} <span class="text-xs">(departed)</span></span>
+      <span class="text-gray-400">&#128682; {% if att.token %}<a href="/{{ slug }}/a/{{ att.token }}" target="_blank" class="hover:underline">{{ att.name }}</a>{% else %}{{ att.name }}{% endif %} <span class="text-xs">(departed)</span></span>
       <button
         hx-post="/api/admin/check-in"
         hx-vals='{"attendee_id": "{{ id }}", "action": "check-in"}'
@@ -26,7 +26,7 @@
         class="text-blue-500 text-xs hover:underline"
       >Re-check In</button>
     {% else %}
-      <span class="text-gray-600">&#11036; {{ att.name }}</span>
+      <span class="text-gray-600">&#11036; {% if att.token %}<a href="/{{ slug }}/a/{{ att.token }}" target="_blank" class="hover:underline text-blue-600">{{ att.name }}</a>{% else %}{{ att.name }}{% endif %}</span>
       <button
         hx-post="/api/admin/check-in"
         hx-vals='{"attendee_id": "{{ id }}", "action": "check-in"}'

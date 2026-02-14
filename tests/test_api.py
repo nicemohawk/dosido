@@ -445,6 +445,54 @@ class TestViews:
         assert "Welcome," in resp.text
         assert "Test Person 0" in resp.text
 
+    async def test_personal_view_follow_up_list(self, client, fake_redis):
+        """Follow-up list renders mutual matches on page load."""
+        prefix = f"event:{settings.event_slug}"
+        attendees = await seed_attendees(fake_redis, count=4)
+        await seed_matrix(fake_redis, attendees)
+        await check_in_all(client, attendees)
+
+        # Set up tokens
+        await fake_redis.hset(f"{prefix}:tokens", "token-0", attendees[0]["id"])
+        await fake_redis.hset(f"{prefix}:tokens", "token-1", attendees[1]["id"])
+
+        # Advance a round
+        await client.post("/api/admin/advance-round", json={})
+
+        # Create mutual signals
+        await client.post(
+            "/api/signal",
+            json={"from_attendee": attendees[0]["id"], "to_attendee": attendees[1]["id"], "round_number": 1},
+        )
+        await client.post(
+            "/api/signal",
+            json={"from_attendee": attendees[1]["id"], "to_attendee": attendees[0]["id"], "round_number": 1},
+        )
+
+        # Verify mutual match exists in Redis
+        mutuals = await fake_redis.smembers(f"{prefix}:mutual_matches")
+        assert len(mutuals) == 1
+
+        # Load personal view as attendee 0
+        client.cookies.set("claimed_id", attendees[0]["id"])
+        resp = await client.get("/test-event/a/token-0")
+        assert resp.status_code == 200
+        assert "Follow-Up List" in resp.text, f"Follow-Up List not found in response. Mutual matches in Redis: {mutuals}"
+        assert "Test Person 1" in resp.text
+
+        # "Reload" — load same page again, list should persist
+        resp2 = await client.get("/test-event/a/token-0")
+        assert resp2.status_code == 200
+        assert "Follow-Up List" in resp2.text, "Follow-Up List lost on reload"
+        assert "Test Person 1" in resp2.text, "Match name lost on reload"
+
+        # Also verify attendee 1 sees it from their side
+        client.cookies.set("claimed_id", attendees[1]["id"])
+        resp3 = await client.get("/test-event/a/token-1")
+        assert resp3.status_code == 200
+        assert "Follow-Up List" in resp3.text, "Attendee 1 should also see follow-up list"
+        assert "Test Person 0" in resp3.text, "Attendee 1 should see Person 0 in list"
+
     async def test_admin_partial_round_control(self, client, fake_redis):
         await seed_attendees(fake_redis, count=2)
 
