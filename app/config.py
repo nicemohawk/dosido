@@ -7,7 +7,7 @@ class Settings(BaseSettings):
 
     event_slug: str = "climate-week-2026"
     event_name: str = "SF Climate Week Cofounder Matchmaking"
-    admin_token: str = "change-me"
+    admin_token: str = ""
     base_url: str = "http://localhost:8000"
 
     round_duration_minutes: int = 8

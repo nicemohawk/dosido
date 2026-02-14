@@ -81,7 +81,7 @@ fm-serve
 ```
 
 Open:
-- Admin: http://localhost:8000/climate-week-2026/admin/change-me-to-a-random-32-char-hex-string
+- Admin: http://localhost:8000/climate-week-2026/admin/{ADMIN_TOKEN}
 - Screen: http://localhost:8000/climate-week-2026/screen
 - Mobile: http://localhost:8000/climate-week-2026
 
