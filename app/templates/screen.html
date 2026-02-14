@@ -1,40 +1,122 @@
 {% extends "base.html" %}
 
 {% block title %}{{ settings.event_name }} — Screen{% endblock %}
-{% block body_class %}bg-gray-900 text-white{% endblock %}
+{% block body_class %}text-[#e2e8f0]{% endblock %}
+
+{% block head %}
+<style>
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .timer-warning { color: #f59e0b !important; animation: pulse 1s infinite; }
+  .timer-done { color: #ef4444 !important; animation: pulse 1s infinite; }
+</style>
+{% endblock %}
 
 {% block body %}
-<div class="min-h-screen p-8">
+<div style="background: #0a0f1a; padding: 28px 40px; height: 100vh; display: flex; flex-direction: column;">
 
   <!-- Header -->
-  <div class="flex justify-between items-center mb-8">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0;">
     <div>
+      <div style="font-size: 12px; font-weight: 600; color: #475569; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 2px;">
+        {{ settings.event_name }}
+      </div>
       {% if state.round_number > 0 %}
-      <h1 class="text-4xl font-bold" id="round-label">
-        ROUND {{ state.round_number }} OF {{ state.round_number + state.rounds_remaining }}
-      </h1>
+      <div style="font-size: 26px; font-weight: 700;">
+        Round {{ state.round_number }} <span style="color: #475569; font-weight: 400;">of {{ state.round_number + state.rounds_remaining }}</span>
+      </div>
       {% else %}
-      <h1 class="text-4xl font-bold">{{ settings.event_name }}</h1>
+      <div style="font-size: 26px; font-weight: 700;">Waiting for Round 1</div>
       {% endif %}
     </div>
-    <div class="text-6xl font-mono font-bold" id="timer-display">--:--</div>
+    <div style="display: flex; align-items: center; gap: 20px;">
+      {% if pairings %}
+      <div style="font-size: 13px; color: #64748b;">
+        {{ pairings|length }} tables &middot; {{ counts.active }} attendees
+      </div>
+      {% endif %}
+      <span id="timer-display" style="font-family: 'JetBrains Mono', monospace; font-size: 56px; font-weight: 700; color: #e2e8f0;">--:--</span>
+    </div>
   </div>
 
   <!-- Pairings grid or check-in board -->
-  <div id="main-content">
+  <div style="flex: 1; min-height: 0;">
     {% if state.round_number > 0 and pairings %}
-      {% include "partials/pairings_grid.html" %}
+      {% set count = pairings|length %}
+      {% if count <= 10 %}
+        {% set cols = 2 %}
+        {% set card_pad = "10px 16px" %}
+        {% set card_gap = "8px" %}
+        {% set grid_gap = "8px" %}
+        {% set tbl_size = "28px" %}
+        {% set tbl_min = "40px" %}
+        {% set div_h = "36px" %}
+        {% set name_size = "16px" %}
+      {% elif count <= 15 %}
+        {% set cols = 3 %}
+        {% set card_pad = "8px 14px" %}
+        {% set card_gap = "10px" %}
+        {% set grid_gap = "6px" %}
+        {% set tbl_size = "24px" %}
+        {% set tbl_min = "36px" %}
+        {% set div_h = "32px" %}
+        {% set name_size = "14px" %}
+      {% elif count <= 20 %}
+        {% set cols = 4 %}
+        {% set card_pad = "6px 10px" %}
+        {% set card_gap = "10px" %}
+        {% set grid_gap = "5px" %}
+        {% set tbl_size = "20px" %}
+        {% set tbl_min = "30px" %}
+        {% set div_h = "28px" %}
+        {% set name_size = "12px" %}
+      {% elif count <= 25 %}
+        {% set cols = 5 %}
+        {% set card_pad = "6px 10px" %}
+        {% set card_gap = "10px" %}
+        {% set grid_gap = "5px" %}
+        {% set tbl_size = "20px" %}
+        {% set tbl_min = "30px" %}
+        {% set div_h = "28px" %}
+        {% set name_size = "12px" %}
+      {% else %}
+        {% set cols = 6 %}
+        {% set card_pad = "6px 10px" %}
+        {% set card_gap = "10px" %}
+        {% set grid_gap = "5px" %}
+        {% set tbl_size = "20px" %}
+        {% set tbl_min = "30px" %}
+        {% set div_h = "28px" %}
+        {% set name_size = "12px" %}
+      {% endif %}
+
+      <div id="pairings-grid" style="display: grid; grid-template-columns: repeat({{ cols }}, 1fr); gap: {{ grid_gap }}; align-content: start; overflow: hidden;">
+        {% for p in pairings %}
+        <div style="background: #111827; border: 1px solid #1e293b; border-radius: 7px; padding: {{ card_pad }}; display: flex; align-items: center; gap: {{ card_gap }};"
+             data-pairing-row data-pairing-names="{{ p.name_a }} {{ p.name_b }}">
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: {{ tbl_size }}; font-weight: 800; color: #3b82f6; min-width: {{ tbl_min }}; text-align: center; line-height: 1;">
+            {{ p.table_number }}
+          </div>
+          <div style="width: 2px; height: {{ div_h }}; background: #1e3a5f; border-radius: 1px; flex-shrink: 0;"></div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: {{ name_size }}; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.4;">{{ p.name_a }}</div>
+            <div style="font-size: {{ name_size }}; font-weight: 500; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.4;">{{ p.name_b }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      {% if pit_stop_name %}
+      <div style="margin-top: 6px; flex-shrink: 0; background: #1c1208; border: 1px solid #422006; border-radius: 7px; padding: 8px 14px; display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 14px;">&#9749;</span>
+        <span style="font-size: 13px; color: #f59e0b; font-weight: 500;">Pit Stop: {{ pit_stop_name }}</span>
+      </div>
+      {% endif %}
     {% else %}
-      {% include "partials/checkin_board.html" %}
+      <div id="main-content">
+        {% include "partials/checkin_board.html" %}
+      </div>
     {% endif %}
   </div>
-
-  <!-- Pit stop -->
-  {% if pairings and pit_stop_name %}
-  <div class="mt-8 text-center text-xl text-yellow-400" id="pit-stop">
-    &#9749; PIT STOP: {{ pit_stop_name }}
-  </div>
-  {% endif %}
 
 </div>
 {% endblock %}
@@ -47,6 +129,24 @@ Timer.setEnd("{{ state.timer_end }}");
 {% elif state.timer_paused and state.timer_remaining is not none %}
 Timer.pause({{ state.timer_remaining }});
 {% endif %}
+
+// Timer color states
+(function() {
+  var el = document.getElementById('timer-display');
+  if (!el) return;
+  var origUpdate = Timer._updateDisplay;
+  var observer = new MutationObserver(function() {
+    var text = el.textContent.trim();
+    var parts = text.split(':');
+    if (parts.length !== 2) return;
+    var totalSec = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+    if (isNaN(totalSec)) return;
+    el.classList.remove('timer-warning', 'timer-done');
+    if (totalSec === 0) el.classList.add('timer-done');
+    else if (totalSec <= 60) el.classList.add('timer-warning');
+  });
+  observer.observe(el, { childList: true, characterData: true, subtree: true });
+})();
 
 document.body.addEventListener("sse:round_update", function(e) {
   const data = JSON.parse(e.detail.data);
