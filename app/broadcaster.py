@@ -31,7 +31,7 @@ class Broadcaster:
                     data = await asyncio.wait_for(queue.get(), timeout=keepalive_seconds)
                     yield data
                 except asyncio.TimeoutError:
-                    yield ": keepalive\n\n"
+                    yield "event: heartbeat\ndata: \n\n"
         except asyncio.CancelledError:
             pass
         finally:
