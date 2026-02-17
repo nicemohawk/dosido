@@ -49,7 +49,8 @@ def strip_html(html: str) -> str:
     """Strip HTML tags and collapse whitespace."""
     text = re.sub(r"<(script|style)[^>]*>.*?</\1>", "", html, flags=re.DOTALL | re.IGNORECASE)
     text = re.sub(r"<[^>]+>", " ", text)
-    text = text.replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">").replace("&nbsp;", " ")
+    text = text.replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">")
+    text = text.replace("&nbsp;", " ")
     text = re.sub(r"\s+", " ", text).strip()
     return text
 
@@ -216,11 +217,13 @@ def enrich_all(
 
     for i, attendee in enumerate(attendees):
         if attendee["id"] in existing and existing[attendee["id"]].get("matching_summary"):
-            print(f"  [{i+1}/{len(attendees)}] Skipping {attendee['name']} (already enriched)")
+            print(f"  [{i + 1}/{len(attendees)}] Skipping {attendee['name']} (already enriched)")
             results.append(existing[attendee["id"]])
             continue
 
-        print(f"  [{i+1}/{len(attendees)}] Enriching {attendee['name']} (provider: {provider})...")
+        print(
+            f"  [{i + 1}/{len(attendees)}] Enriching {attendee['name']} (provider: {provider})..."
+        )
         enriched = enrich_attendee(attendee, provider=provider)
         results.append(enriched)
 

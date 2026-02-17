@@ -126,7 +126,7 @@ def submit_batch(
     scores = [v["score"] for v in matrix.values()]
     if scores:
         print(f"  Score range: {min(scores)}-{max(scores)}")
-        print(f"  Average: {sum(scores)/len(scores):.1f}")
+        print(f"  Average: {sum(scores) / len(scores):.1f}")
 
     return matrix
 

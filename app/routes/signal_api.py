@@ -6,7 +6,6 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from app.broadcaster import broadcaster
-from app.scoring import make_pair_key
 from app.state import state_manager
 
 router = APIRouter(prefix="/api")
@@ -34,8 +33,16 @@ async def record_signal(request: SignalRequest):
         "signal_update",
         {
             "mutual": is_mutual,
-            "attendee_a": {"id": request.from_attendee, "name": a.name if a else "?", "token": a.token if a else ""},
-            "attendee_b": {"id": request.to_attendee, "name": b.name if b else "?", "token": b.token if b else ""},
+            "attendee_a": {
+                "id": request.from_attendee,
+                "name": a.name if a else "?",
+                "token": a.token if a else "",
+            },
+            "attendee_b": {
+                "id": request.to_attendee,
+                "name": b.name if b else "?",
+                "token": b.token if b else "",
+            },
         },
     )
 

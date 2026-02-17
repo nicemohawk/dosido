@@ -17,9 +17,7 @@ class Broadcaster:
     def __init__(self) -> None:
         self._subscribers: list[asyncio.Queue[str]] = []
 
-    async def subscribe(
-        self, keepalive_seconds: int = 15
-    ) -> AsyncGenerator[str, None]:
+    async def subscribe(self, keepalive_seconds: int = 15) -> AsyncGenerator[str, None]:
         """Subscribe to events. Yields SSE-formatted strings.
 
         Sends SSE comment keepalives every `keepalive_seconds` to detect
@@ -30,9 +28,7 @@ class Broadcaster:
         try:
             while True:
                 try:
-                    data = await asyncio.wait_for(
-                        queue.get(), timeout=keepalive_seconds
-                    )
+                    data = await asyncio.wait_for(queue.get(), timeout=keepalive_seconds)
                     yield data
                 except asyncio.TimeoutError:
                     yield ": keepalive\n\n"

@@ -1,9 +1,5 @@
 """End-to-end simulation: 60 attendees, 10 rounds, verify matching integrity."""
 
-import json
-
-import pytest
-
 from app.matching import solve_round
 from app.models import Attendee
 from app.scoring import make_pair_key
@@ -77,8 +73,7 @@ class TestFullSimulation:
 
             expected_paired = len(pool) - (1 if pit_stop else 0)
             assert len(paired_ids) == expected_paired, (
-                f"Round {round_num + 1}: expected {expected_paired} paired, "
-                f"got {len(paired_ids)}"
+                f"Round {round_num + 1}: expected {expected_paired} paired, got {len(paired_ids)}"
             )
 
     def test_50_checkins_with_departures(self):

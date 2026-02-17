@@ -13,7 +13,6 @@ from app.models import (
     Attendee,
     AttendeeSource,
     AttendeeStatus,
-    EventStatus,
 )
 from app.scoring import make_pair_key
 from app.state import state_manager
@@ -76,7 +75,12 @@ async def check_in(request: CheckInRequest):
     counts = await state_manager.get_pool_counts()
     await broadcaster.broadcast(
         "checkin_update",
-        {"attendee_id": attendee.id, "name": attendee.name, "action": request.action, "pool": counts},
+        {
+            "attendee_id": attendee.id,
+            "name": attendee.name,
+            "action": request.action,
+            "pool": counts,
+        },
     )
 
     return {"ok": True, "attendee": attendee.model_dump(), "pool": counts}
@@ -176,9 +180,7 @@ async def pause_timer(request: PauseRequest):
 
 @router.post("/swap")
 async def swap_override(request: SwapRequest):
-    result = await state_manager.swap_pairing(
-        request.attendee_id_1, request.attendee_id_2
-    )
+    result = await state_manager.swap_pairing(request.attendee_id_1, request.attendee_id_2)
     if not result:
         raise HTTPException(status_code=400, detail="No active pairings to swap")
 
@@ -242,9 +244,7 @@ async def add_walk_up(request: WalkUpRequest):
 
     # Assign walk-up badge token if slug provided
     if request.badge_slug:
-        token = await state_manager.assign_walkup_badge(
-            request.badge_slug, attendee_id
-        )
+        token = await state_manager.assign_walkup_badge(request.badge_slug, attendee_id)
         if token:
             attendee.token = token
 

@@ -2,14 +2,10 @@
 
 from __future__ import annotations
 
-import json
-
 import pytest
-import pytest_asyncio
 
 from app.config import settings
 from tests.conftest import check_in_all, seed_attendees, seed_matrix
-
 
 pytestmark = pytest.mark.asyncio
 
@@ -188,8 +184,7 @@ class TestUndoRound:
         await check_in_all(client, attendees)
 
         # Round 1
-        r1 = await client.post("/api/admin/advance-round", json={})
-        round1_pairings = r1.json()["round"]["pairings"]
+        await client.post("/api/admin/advance-round", json={})
 
         # Undo
         await client.post("/api/admin/undo-round", json={})
@@ -462,11 +457,19 @@ class TestViews:
         # Create mutual signals
         await client.post(
             "/api/signal",
-            json={"from_attendee": attendees[0]["id"], "to_attendee": attendees[1]["id"], "round_number": 1},
+            json={
+                "from_attendee": attendees[0]["id"],
+                "to_attendee": attendees[1]["id"],
+                "round_number": 1,
+            },
         )
         await client.post(
             "/api/signal",
-            json={"from_attendee": attendees[1]["id"], "to_attendee": attendees[0]["id"], "round_number": 1},
+            json={
+                "from_attendee": attendees[1]["id"],
+                "to_attendee": attendees[0]["id"],
+                "round_number": 1,
+            },
         )
 
         # Verify mutual match exists in Redis
@@ -477,7 +480,9 @@ class TestViews:
         client.cookies.set("claimed_id", attendees[0]["id"])
         resp = await client.get("/test-event/a/token-0")
         assert resp.status_code == 200
-        assert "Follow-Up List" in resp.text, f"Follow-Up List not found in response. Mutual matches in Redis: {mutuals}"
+        assert "Follow-Up List" in resp.text, (
+            f"Follow-Up List not found in response. Mutual matches in Redis: {mutuals}"
+        )
         assert "Test Person 1" in resp.text
 
         # "Reload" — load same page again, list should persist
@@ -496,9 +501,7 @@ class TestViews:
     async def test_admin_partial_round_control(self, client, fake_redis):
         await seed_attendees(fake_redis, count=2)
 
-        resp = await client.get(
-            "/test-event/admin/test-admin-token/partial/round-control"
-        )
+        resp = await client.get("/test-event/admin/test-admin-token/partial/round-control")
         assert resp.status_code == 200
         assert "Start Round" in resp.text
 
@@ -511,9 +514,7 @@ class TestViews:
         assert "Test Person" in resp.text
 
     async def test_admin_partial_pairings(self, client, fake_redis):
-        resp = await client.get(
-            "/test-event/admin/test-admin-token/partial/pairings"
-        )
+        resp = await client.get("/test-event/admin/test-admin-token/partial/pairings")
         assert resp.status_code == 200
         assert "No pairings" in resp.text
 
