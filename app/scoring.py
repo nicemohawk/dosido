@@ -6,7 +6,7 @@ from app.models import Attendee
 
 
 def make_pair_key(id_a: str, id_b: str) -> str:
-    """Create a canonical pair key (sorted) for matrix lookups."""
+    """Two cookies, one filling."""
     return ":".join(sorted([id_a, id_b]))
 
 
