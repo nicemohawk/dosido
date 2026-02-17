@@ -81,3 +81,7 @@ Settings via Pydantic `BaseSettings` in `app/config.py`, loaded from `.env`. Key
 - `/{slug}/a/{token}` — Badge QR (public profile card or personal view if claimed)
 - `/{slug}` — General mobile (pairing list + search)
 - `/{slug}/admin/{token}` — Admin panel (check-in, round control, swaps, walk-ups, signals)
+
+## Backlog
+
+See [BACKLOG.md](./BACKLOG.md) for improvement ideas and tech debt. Update it as items are discovered or completed.
