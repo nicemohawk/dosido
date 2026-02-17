@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
 
     event_slug: str = "climate-week-2026"
-    event_name: str = "SF Climate Week Cofounder Matchmaking"
+    event_name: str = "SF Climate Week Dosido"
     admin_token: str = ""
     base_url: str = "http://localhost:8000"
 

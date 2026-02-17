@@ -1,7 +1,7 @@
 [project]
-name = "founder-matching"
+name = "dosido"
 version = "0.1.0"
-description = "Real-time cofounder matchmaking system for structured networking events"
+description = "Real-time matchmaking for structured networking events. Named after the cookie, not the dance."
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.115",
@@ -25,10 +25,10 @@ dev = [
 ]
 
 [project.scripts]
-fm-seed = "scripts.seed_test_data:main"
-fm-load = "pipeline.load_to_redis:main"
-fm-serve = "scripts.serve:main"
-fm-test-profile = "scripts.test_profile:main"
+dosido-seed = "scripts.seed_test_data:main"
+dosido-load = "pipeline.load_to_redis:main"
+dosido-serve = "scripts.serve:main"
+dosido-test-profile = "scripts.test_profile:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["app", "pipeline", "scripts"]

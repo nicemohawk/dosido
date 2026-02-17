@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-Real-time cofounder matchmaking system for structured networking events (~40-80 attendees, ~10 rounds). Server-rendered FastAPI + HTMX + SSE. Redis for all state. NetworkX max-weight matching solver with multi-round lookahead.
+Dosido — real-time matchmaking for structured networking events (~40-80 attendees, ~10 rounds). Server-rendered FastAPI + HTMX + SSE. Redis for all state. NetworkX max-weight matching solver with multi-round lookahead.
 
 ## Commands
 
@@ -13,11 +13,11 @@ Real-time cofounder matchmaking system for structured networking events (~40-80 
 pip install -e ".[dev]"
 
 # Dev server (requires Redis running locally)
-fm-serve                    # uvicorn with auto-reload on :8000
+dosido-serve                    # uvicorn with auto-reload on :8000
 
 # Pre-event data pipeline
-fm-seed                     # Generate 60 fake attendees + matrix
-fm-load                     # Load seed data into Redis
+dosido-seed                     # Generate 60 fake attendees + matrix
+dosido-load                     # Load seed data into Redis
 python scripts/run_pipeline.py --csv path/to/luma.csv  # Full real pipeline
 
 # Tests
