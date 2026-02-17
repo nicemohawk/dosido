@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
     await close_pool()
 
 
-app = FastAPI(title="Cofounder Matchmaking", lifespan=lifespan)
+app = FastAPI(title="Dosido", lifespan=lifespan)
 
 app.mount("/static", StaticFiles(directory=APP_DIR / "static"), name="static")
 
@@ -39,9 +39,28 @@ app.include_router(admin_router)
 app.include_router(signal_router)
 
 
+COOKIE_JAR = [
+    "Dosidos: peanut butter sandwich cookies since 1978",
+    "Thin Mints outsell every other Girl Scout cookie",
+    "Samoas go by Caramel deLites depending on your baker",
+    "Tagalongs: chocolate-covered peanut butter perfection",
+    "Girl Scouts have been selling cookies since 1917",
+    "Trefoils are the OG — shortbread since day one",
+    "S'mores cookies joined the lineup in 2017",
+    "Lemon-Ups replaced Savannah Smiles in 2020",
+]
+
+
 @app.get("/api/health")
 async def health_check():
-    return {"status": "ok"}
+    return {"status": "ok", "cookie": "dosido"}
+
+
+@app.get("/api/cookies")
+async def cookie_jar():
+    import random
+
+    return {"cookie": random.choice(COOKIE_JAR)}
 
 
 # View routes (catch-all slug patterns — register last)

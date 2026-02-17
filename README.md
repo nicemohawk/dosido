@@ -1,6 +1,6 @@
-# Cofounder Matchmaking
+# Dosido
 
-Real-time cofounder matchmaking system for structured networking events. Pre-computes pairwise compatibility via LLM scoring, dynamically assigns optimal pairings each round using maximum weight matching, and displays results live on a projector screen and attendees' phones.
+Real-time matchmaking for structured networking events. Pre-computes pairwise compatibility via LLM scoring, dynamically assigns optimal pairings each round using maximum weight matching, and displays results live on a projector screen and attendees' phones.
 
 Built for SF Climate Week 2026 (40-80 attendees, ~10 rounds of 8-minute conversations).
 
@@ -53,10 +53,10 @@ After activating the venv, you get these CLI commands:
 
 | Command | What it does |
 |---------|-------------|
-| `fm-seed` | Generate 60 fake attendees + compatibility matrix |
-| `fm-load` | Load data into Redis |
-| `fm-serve` | Start the dev server (with reload) |
-| `fm-test-profile` | Test LinkedIn scraping + enrichment |
+| `dosido-seed` | Generate 60 fake attendees + compatibility matrix |
+| `dosido-load` | Load data into Redis |
+| `dosido-serve` | Start the dev server (with reload) |
+| `dosido-test-profile` | Test LinkedIn scraping + enrichment |
 | `pytest tests/` | Run tests |
 
 ### Configure
@@ -73,11 +73,11 @@ cp .env.example .env
 brew services start redis  # macOS
 
 # Seed fake data and load into Redis
-fm-seed
-fm-load
+dosido-seed
+dosido-load
 
 # Start the server
-fm-serve
+dosido-serve
 ```
 
 Open:
@@ -150,16 +150,16 @@ Interactively test LinkedIn scraping and enrichment:
 
 ```bash
 # Scrape a LinkedIn profile (see what data we can extract)
-fm-test-profile https://linkedin.com/in/someone
+dosido-test-profile https://linkedin.com/in/someone
 
 # Scrape + enrich with Claude
-fm-test-profile https://linkedin.com/in/someone --enrich
+dosido-test-profile https://linkedin.com/in/someone --enrich
 
 # Scrape + enrich with local Ollama (no API key needed)
-fm-test-profile https://linkedin.com/in/someone --enrich --provider ollama
+dosido-test-profile https://linkedin.com/in/someone --enrich --provider ollama
 
 # Scrape + enrich with stub data (no LLM at all)
-fm-test-profile --enrich --provider none
+dosido-test-profile --enrich --provider none
 ```
 
 ## Testing
@@ -182,6 +182,15 @@ Tests cover:
 ```
 web: uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
 ```
+
+### Custom Domain
+
+To serve from a custom domain (e.g. `dosido.io`):
+
+1. Add a custom domain in Railway project settings → Networking
+2. Configure DNS: CNAME record pointing to your Railway domain
+3. Set `BASE_URL=https://dosido.io` in your environment variables — this controls the URLs embedded in badge QR codes
+4. If badges were already printed with a different `BASE_URL`, regenerate them: `python scripts/run_pipeline.py --badges`
 
 ## Project Structure
 
