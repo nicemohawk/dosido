@@ -278,6 +278,11 @@ document.body.addEventListener("sse:timer_update", function(e) {
   else if (data.action === "resume") Timer.resume(data.timer_end);
 });
 
+// Reload on SSE reconnection to catch any missed events
+document.body.addEventListener("sse:reconnected", function() {
+  location.reload();
+});
+
 {% if is_personal %}
 function markSignalSent(roundNumber) {
   signalSentThisRound = true;

@@ -163,5 +163,10 @@ document.body.addEventListener("sse:timer_update", function(e) {
 document.body.addEventListener("sse:checkin_update", function(e) {
   if (document.getElementById("checkin-board")) location.reload();
 });
+
+// Reload on SSE reconnection to catch any missed events
+document.body.addEventListener("sse:reconnected", function() {
+  location.reload();
+});
 </script>
 {% endblock %}

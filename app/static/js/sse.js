@@ -5,6 +5,7 @@
     var SSE_EVENTS = ["round_update", "timer_update", "checkin_update", "signal_update"];
     var source = null;
     var reconnectDelay = 1000;
+    var wasConnected = false;
 
     function connect() {
         source = new EventSource("/api/state/stream");
@@ -12,6 +13,11 @@
         source.onopen = function () {
             reconnectDelay = 1000;
             document.body.dispatchEvent(new CustomEvent("sse:open"));
+            if (wasConnected) {
+                // Reconnected after a drop — may have missed events
+                document.body.dispatchEvent(new CustomEvent("sse:reconnected"));
+            }
+            wasConnected = true;
         };
 
         source.onerror = function () {

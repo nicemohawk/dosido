@@ -13,6 +13,8 @@ router = APIRouter()
 
 templates = Jinja2Templates(directory="app/templates")
 
+_NO_CACHE_HEADERS = {"Cache-Control": "no-store"}
+
 
 @router.get("/{slug}/screen", response_class=HTMLResponse)
 async def projector_screen(request: Request, slug: str):
@@ -36,6 +38,7 @@ async def projector_screen(request: Request, slug: str):
             "attendees": attendees,
             "settings": settings,
         },
+        headers=_NO_CACHE_HEADERS,
     )
 
 
@@ -66,6 +69,7 @@ async def badge_view(
                 "is_claimed": is_claimed,
                 "settings": settings,
             },
+            headers=_NO_CACHE_HEADERS,
         )
 
     # Personal view — owner has claimed this badge
@@ -169,6 +173,7 @@ async def general_mobile(request: Request, slug: str):
             "is_personal": False,
             "settings": settings,
         },
+        headers=_NO_CACHE_HEADERS,
     )
 
 
@@ -212,6 +217,7 @@ async def admin_panel(request: Request, slug: str, token: str):
             "signal_stats": signal_stats,
             "settings": settings,
         },
+        headers=_NO_CACHE_HEADERS,
     )
 
 
@@ -227,6 +233,7 @@ async def admin_partial_round_control(request: Request, slug: str, token: str):
     return templates.TemplateResponse(
         "partials/admin_round_control.html",
         {"request": request, "state": state, "counts": counts, "settings": settings},
+        headers=_NO_CACHE_HEADERS,
     )
 
 
@@ -239,6 +246,7 @@ async def admin_partial_pool(request: Request, slug: str, token: str):
     return templates.TemplateResponse(
         "partials/admin_pool.html",
         {"request": request, "slug": slug, "attendees": attendees, "counts": counts},
+        headers=_NO_CACHE_HEADERS,
     )
 
 
@@ -261,6 +269,7 @@ async def admin_partial_pairings(request: Request, slug: str, token: str):
             "pit_stop_info": pit_stop_info,
             "attendees": attendees,
         },
+        headers=_NO_CACHE_HEADERS,
     )
 
 
@@ -284,6 +293,7 @@ async def admin_partial_signals(request: Request, slug: str, token: str):
     return templates.TemplateResponse(
         "partials/admin_signals.html",
         {"request": request, "state": state, "signal_stats": signal_stats},
+        headers=_NO_CACHE_HEADERS,
     )
 
 

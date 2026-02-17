@@ -256,18 +256,37 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape' && document.getElementById('walkup-modal').style.display === 'flex') toggleWalkUp();
 });
 
+// Refresh all admin partials (used by round_update and SSE reconnection)
+function refreshAdminPartials() {
+  var cacheBuster = '_=' + Date.now();
+  return Promise.all([
+    htmx.ajax('GET', PARTIAL_BASE + '/round-control?' + cacheBuster, {target: '#admin-round-control', swap: 'innerHTML'}),
+    htmx.ajax('GET', PARTIAL_BASE + '/pairings?' + cacheBuster, {target: '#admin-pairings', swap: 'innerHTML'}),
+    htmx.ajax('GET', PARTIAL_BASE + '/signals?' + cacheBuster, {target: '#admin-signals', swap: 'innerHTML'})
+  ]);
+}
+
 // Round update: refresh round control + pairings, then set timer
 document.body.addEventListener("sse:round_update", function(e) {
   const data = JSON.parse(e.detail.data);
-  Promise.all([
-    htmx.ajax('GET', PARTIAL_BASE + '/round-control', {target: '#admin-round-control', swap: 'innerHTML'}),
-    htmx.ajax('GET', PARTIAL_BASE + '/pairings', {target: '#admin-pairings', swap: 'innerHTML'}),
-    htmx.ajax('GET', PARTIAL_BASE + '/signals', {target: '#admin-signals', swap: 'innerHTML'})
-  ]).then(function() {
+  refreshAdminPartials().then(function() {
     if (data.timer_end) {
       Timer.setEnd(data.timer_end);
+      // Auto-switch to pairings tab so admin sees the new round
+      switchTab('pairings');
     } else if (data.undone) {
       Timer.clear();
+    }
+  });
+});
+
+// SSE reconnection: refresh all partials to catch any missed events
+document.body.addEventListener("sse:reconnected", function() {
+  refreshAdminPartials().then(function() {
+    // Restore timer from refreshed round-control state
+    var timerEl = document.getElementById('timer-display');
+    if (timerEl && timerEl.dataset.timerEnd) {
+      Timer.setEnd(timerEl.dataset.timerEnd);
     }
   });
 });
@@ -275,7 +294,8 @@ document.body.addEventListener("sse:round_update", function(e) {
 // Timer update: refresh round control (pause/resume button) + update JS timer
 document.body.addEventListener("sse:timer_update", function(e) {
   const data = JSON.parse(e.detail.data);
-  htmx.ajax('GET', PARTIAL_BASE + '/round-control', {target: '#admin-round-control', swap: 'innerHTML'})
+  var cacheBuster = '_=' + Date.now();
+  htmx.ajax('GET', PARTIAL_BASE + '/round-control?' + cacheBuster, {target: '#admin-round-control', swap: 'innerHTML'})
     .then(function() {
       if (data.action === "pause") {
         Timer.pause(data.timer_remaining);
@@ -287,7 +307,7 @@ document.body.addEventListener("sse:timer_update", function(e) {
 
 // Signal update: refresh signals tab
 document.body.addEventListener("sse:signal_update", function(e) {
-  htmx.ajax('GET', PARTIAL_BASE + '/signals', {target: '#admin-signals', swap: 'innerHTML'});
+  htmx.ajax('GET', PARTIAL_BASE + '/signals?_=' + Date.now(), {target: '#admin-signals', swap: 'innerHTML'});
 });
 
 // Check-in update: refresh pool + round control (active count in confirm dialog)
@@ -295,10 +315,11 @@ document.body.addEventListener("sse:checkin_update", function(e) {
   // Preserve scroll position of the attendee list
   var scrollable = document.querySelector('#admin-pool [data-pool-list]');
   var savedScroll = scrollable ? scrollable.scrollTop : 0;
+  var cacheBuster = '_=' + Date.now();
 
   Promise.all([
-    htmx.ajax('GET', PARTIAL_BASE + '/pool', {target: '#admin-pool', swap: 'innerHTML'}),
-    htmx.ajax('GET', PARTIAL_BASE + '/round-control', {target: '#admin-round-control', swap: 'innerHTML'})
+    htmx.ajax('GET', PARTIAL_BASE + '/pool?' + cacheBuster, {target: '#admin-pool', swap: 'innerHTML'}),
+    htmx.ajax('GET', PARTIAL_BASE + '/round-control?' + cacheBuster, {target: '#admin-round-control', swap: 'innerHTML'})
   ]).then(function() {
     // Restore scroll position
     var newScrollable = document.querySelector('#admin-pool [data-pool-list]');
