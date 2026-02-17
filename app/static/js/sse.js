@@ -2,7 +2,7 @@
 // Dispatches "sse:<event>" CustomEvents on document.body so view scripts
 // can listen with: document.body.addEventListener("sse:round_update", ...)
 (function () {
-    var SSE_EVENTS = ["round_update", "timer_update", "checkin_update", "signal_update"];
+    var SSE_EVENTS = ["round_update", "timer_update", "checkin_update", "signal_update", "heartbeat"];
     var source = null;
     var reconnectDelay = 1000;
     var wasConnected = false;

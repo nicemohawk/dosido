@@ -52,21 +52,26 @@
         showDisconnected();
     });
 
-    // Track any SSE message as a sign of connection health
-    ["sse:round_update", "sse:timer_update", "sse:checkin_update", "sse:signal_update"].forEach(
-        function (eventName) {
-            document.body.addEventListener(eventName, function () {
-                lastEventTime = Date.now();
-                if (!isConnected) showConnected();
-            });
-        }
-    );
+    // Track any SSE message (including heartbeats) as a sign of connection health
+    [
+        "sse:round_update",
+        "sse:timer_update",
+        "sse:checkin_update",
+        "sse:signal_update",
+        "sse:heartbeat",
+    ].forEach(function (eventName) {
+        document.body.addEventListener(eventName, function () {
+            lastEventTime = Date.now();
+            if (!isConnected) showConnected();
+        });
+    });
 
-    // Periodic staleness check — if no event received in 30s, show warning
+    // Periodic staleness check — if no event received in 45s, show warning.
+    // Server sends heartbeats every 15s, so 45s means 3 missed heartbeats.
     checkInterval = setInterval(function () {
         if (lastEventTime === 0) return;
         var elapsed = Math.floor((Date.now() - lastEventTime) / 1000);
-        if (elapsed > 30 && isConnected) {
+        if (elapsed > 45 && isConnected) {
             showStale(elapsed);
         }
     }, 5000);
