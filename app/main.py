@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Request, Response
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -53,12 +53,14 @@ async def health_check():
     return {"status": "ok"}
 
 
+_NOT_FOUND_PAGE = (APP_DIR / "templates" / "404.html").read_text()
+
+
 @app.exception_handler(StarletteHTTPException)
 async def custom_404(request: Request, exc: StarletteHTTPException):
     if exc.status_code == 404:
-        page = (APP_DIR / "templates" / "404.html").read_text()
-        return HTMLResponse(page, status_code=404)
-    return HTMLResponse(str(exc.detail), status_code=exc.status_code)
+        return HTMLResponse(_NOT_FOUND_PAGE, status_code=404)
+    return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
 
 
 # View routes (catch-all slug patterns — register last)
