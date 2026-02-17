@@ -51,16 +51,11 @@ class EventStateManager:
     async def get_all_attendees(self) -> dict[str, Attendee]:
         r = get_redis()
         raw_map = await r.hgetall(f"{_prefix()}:attendees")
-        return {
-            aid: Attendee.model_validate_json(data)
-            for aid, data in raw_map.items()
-        }
+        return {aid: Attendee.model_validate_json(data) for aid, data in raw_map.items()}
 
     async def save_attendee(self, attendee: Attendee) -> None:
         r = get_redis()
-        await r.hset(
-            f"{_prefix()}:attendees", attendee.id, attendee.model_dump_json()
-        )
+        await r.hset(f"{_prefix()}:attendees", attendee.id, attendee.model_dump_json())
 
     async def get_active_pool(self) -> list[Attendee]:
         r = get_redis()
@@ -105,9 +100,7 @@ class EventStateManager:
         raw_map = await r.hgetall(f"{_prefix()}:matrix")
         return {key: json.loads(data) for key, data in raw_map.items()}
 
-    async def set_pair_score(
-        self, id_a: str, id_b: str, score_data: dict
-    ) -> None:
+    async def set_pair_score(self, id_a: str, id_b: str, score_data: dict) -> None:
         r = get_redis()
         pair_key = make_pair_key(id_a, id_b)
         await r.hset(f"{_prefix()}:matrix", pair_key, json.dumps(score_data))
@@ -186,21 +179,13 @@ class EventStateManager:
             await self.increment_pit_stop(pit_stop_id)
 
         # Build round result
-        avg_score = (
-            sum(p.composite_score for p in pairings) / len(pairings)
-            if pairings
-            else 0.0
-        )
+        avg_score = sum(p.composite_score for p in pairings) / len(pairings) if pairings else 0.0
 
         state.round_number += 1
         state.rounds_remaining -= 1
         state.status = EventStatus.ROUND_ACTIVE
-        timer_end = datetime.now(timezone.utc).timestamp() + (
-            settings.round_duration_minutes * 60
-        )
-        state.timer_end = datetime.fromtimestamp(
-            timer_end, tz=timezone.utc
-        ).isoformat()
+        timer_end = datetime.now(timezone.utc).timestamp() + (settings.round_duration_minutes * 60)
+        state.timer_end = datetime.fromtimestamp(timer_end, tz=timezone.utc).isoformat()
         state.timer_paused = False
         state.timer_remaining = None
 
@@ -263,7 +248,9 @@ class EventStateManager:
         # Revert state
         state.round_number -= 1
         state.rounds_remaining += 1
-        state.status = EventStatus.BETWEEN_ROUNDS if state.round_number > 0 else EventStatus.PRE_EVENT
+        state.status = (
+            EventStatus.BETWEEN_ROUNDS if state.round_number > 0 else EventStatus.PRE_EVENT
+        )
         state.timer_end = None
         state.timer_paused = False
         state.timer_remaining = None
@@ -287,9 +274,7 @@ class EventStateManager:
         state = await self.get_state()
         if state.timer_paused and state.timer_remaining is not None:
             timer_end = datetime.now(timezone.utc).timestamp() + state.timer_remaining
-            state.timer_end = datetime.fromtimestamp(
-                timer_end, tz=timezone.utc
-            ).isoformat()
+            state.timer_end = datetime.fromtimestamp(timer_end, tz=timezone.utc).isoformat()
             state.timer_paused = False
             state.timer_remaining = None
             await self.set_state(state)
@@ -297,9 +282,7 @@ class EventStateManager:
 
     # --- Swap override ---
 
-    async def swap_pairing(
-        self, attendee_id_1: str, attendee_id_2: str
-    ) -> RoundResult | None:
+    async def swap_pairing(self, attendee_id_1: str, attendee_id_2: str) -> RoundResult | None:
         """Swap two attendees in the current round's pairings."""
         result = await self.get_current_pairings()
         if not result:
@@ -359,9 +342,7 @@ class EventStateManager:
                 badges.append({"slug": slug, **badge})
         return badges
 
-    async def assign_walkup_badge(
-        self, slug: str, attendee_id: str
-    ) -> str | None:
+    async def assign_walkup_badge(self, slug: str, attendee_id: str) -> str | None:
         """Assign a walk-up badge to an attendee. Returns the badge's token."""
         r = get_redis()
         raw = await r.hget(f"{_prefix()}:walkup_badges", slug)
@@ -398,17 +379,13 @@ class EventStateManager:
 
     # --- Signals ---
 
-    async def record_signal(
-        self, round_number: int, from_id: str, to_id: str
-    ) -> bool:
+    async def record_signal(self, round_number: int, from_id: str, to_id: str) -> bool:
         """Record a signal and check for mutual match. Returns True if mutual."""
         r = get_redis()
         await r.hset(f"{_prefix()}:signals:{round_number}", from_id, to_id)
 
         # Check for mutual match
-        reverse = await r.hget(
-            f"{_prefix()}:signals:{round_number}", to_id
-        )
+        reverse = await r.hget(f"{_prefix()}:signals:{round_number}", to_id)
         if reverse == from_id:
             pair_key = make_pair_key(from_id, to_id)
             await r.sadd(f"{_prefix()}:mutual_matches", pair_key)

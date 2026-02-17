@@ -44,9 +44,7 @@ async def client(fake_redis):
     ):
         from app.main import app
 
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as ac:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
             yield ac
 
     await fake_redis.flushall()
@@ -91,9 +89,7 @@ async def seed_matrix(fake_redis, attendees: list[dict], base_score: int = 65):
                 "rationale": "Test pairing",
                 "spark": "Test topic",
             }
-            await fake_redis.hset(
-                f"{prefix}:matrix", pair_key, json.dumps(score_data)
-            )
+            await fake_redis.hset(f"{prefix}:matrix", pair_key, json.dumps(score_data))
 
 
 async def check_in_all(client: AsyncClient, attendees: list[dict]):

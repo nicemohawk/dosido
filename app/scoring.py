@@ -67,9 +67,7 @@ def match_score(
 
     # Lane complementarity: idea-holder paired with joiner
     lane_bonus = 0
-    if (a.lane == "idea" and b.lane == "joiner") or (
-        a.lane == "joiner" and b.lane == "idea"
-    ):
+    if (a.lane == "idea" and b.lane == "joiner") or (a.lane == "joiner" and b.lane == "idea"):
         lane_bonus = 10
 
     # Climate domain overlap
@@ -84,12 +82,8 @@ def match_score(
     # --- Signal boost (optional) ---
     signal_boost_total = 0
     if mutual_signals and compatibility_scores:
-        signal_boost_total += _signal_boost(
-            a.id, b.id, mutual_signals, compatibility_scores
-        )
-        signal_boost_total += _signal_boost(
-            b.id, a.id, mutual_signals, compatibility_scores
-        )
+        signal_boost_total += _signal_boost(a.id, b.id, mutual_signals, compatibility_scores)
+        signal_boost_total += _signal_boost(b.id, a.id, mutual_signals, compatibility_scores)
 
     return llm_score + role_bonus + lane_bonus + climate_bonus + signal_boost_total
 

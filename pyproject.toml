@@ -22,6 +22,8 @@ dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.24",
     "fakeredis>=2.25",
+    "ruff>=0.9",
+    "pre-commit>=4.0",
 ]
 
 [project.scripts]
@@ -32,6 +34,17 @@ dosido-test-profile = "scripts.test_profile:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["app", "pipeline", "scripts"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+per-file-ignores = {"pipeline/prompts.py" = ["E501"], "scripts/seed_test_data.py" = ["E501"]}
+
+[tool.ruff.format]
+quote-style = "double"
 
 [build-system]
 requires = ["hatchling"]

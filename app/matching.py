@@ -94,9 +94,7 @@ def _solve_remaining_rounds(
             simulated_history.add(pair_key)
 
         if pit_stop_id:
-            simulated_pit_stops[pit_stop_id] = (
-                simulated_pit_stops.get(pit_stop_id, 0) + 1
-            )
+            simulated_pit_stops[pit_stop_id] = simulated_pit_stops.get(pit_stop_id, 0) + 1
 
     return schedule
 
@@ -160,8 +158,6 @@ def _solve_single_round(
     # Convert to Pairing objects with table numbers
     pairings: list[Pairing] = []
     for table_number, (id_a, id_b) in enumerate(sorted(matching), start=1):
-        pair_key = make_pair_key(id_a, id_b)
-        pair_data = compatibility_matrix.get(pair_key, {})
         composite = match_score(
             attendee_map[id_a],
             attendee_map[id_b],

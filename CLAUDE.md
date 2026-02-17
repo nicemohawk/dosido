@@ -11,6 +11,7 @@ Dosido — real-time matchmaking for structured networking events (~40-80 attend
 ```bash
 # Install
 pip install -e ".[dev]"
+pre-commit install              # Set up lint hooks (ruff check + format)
 
 # Dev server (requires Redis running locally)
 dosido-serve                    # uvicorn with auto-reload on :8000
@@ -25,7 +26,11 @@ pytest tests/               # All tests (needs fakeredis, no real Redis required
 pytest tests/test_matching.py::TestMatchScore  # Single test class
 pytest tests/test_api.py -k test_health  # Single test by name
 
-# CI runs: pytest tests/ -q (with Redis 7 service container)
+# Lint
+ruff check .                # Lint (runs automatically on commit via pre-commit)
+ruff format .               # Format
+
+# CI runs: ruff check + format --check, then pytest tests/ -q
 ```
 
 ## Architecture

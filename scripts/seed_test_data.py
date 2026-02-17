@@ -10,14 +10,66 @@ from itertools import combinations
 from pathlib import Path
 
 FIRST_NAMES = [
-    "Alice", "Ben", "Carlos", "Dana", "Emily", "Frank", "Grace", "Henry",
-    "Iris", "Jack", "Kim", "Leo", "Maya", "Noah", "Olivia", "Pablo",
-    "Quinn", "Rosa", "Sam", "Tara", "Uma", "Victor", "Wendy", "Xavier",
-    "Yuki", "Zara", "Aaron", "Beth", "Chris", "Diane", "Elena", "Felix",
-    "Gina", "Hugo", "Isla", "James", "Kira", "Liam", "Mia", "Nate",
-    "Opal", "Priya", "Raj", "Sofia", "Tyler", "Uri", "Vera", "Will",
-    "Xena", "Yara", "Zach", "Ava", "Blake", "Cleo", "Drew", "Eva",
-    "Finn", "Gia", "Hank", "Ivy",
+    "Alice",
+    "Ben",
+    "Carlos",
+    "Dana",
+    "Emily",
+    "Frank",
+    "Grace",
+    "Henry",
+    "Iris",
+    "Jack",
+    "Kim",
+    "Leo",
+    "Maya",
+    "Noah",
+    "Olivia",
+    "Pablo",
+    "Quinn",
+    "Rosa",
+    "Sam",
+    "Tara",
+    "Uma",
+    "Victor",
+    "Wendy",
+    "Xavier",
+    "Yuki",
+    "Zara",
+    "Aaron",
+    "Beth",
+    "Chris",
+    "Diane",
+    "Elena",
+    "Felix",
+    "Gina",
+    "Hugo",
+    "Isla",
+    "James",
+    "Kira",
+    "Liam",
+    "Mia",
+    "Nate",
+    "Opal",
+    "Priya",
+    "Raj",
+    "Sofia",
+    "Tyler",
+    "Uri",
+    "Vera",
+    "Will",
+    "Xena",
+    "Yara",
+    "Zach",
+    "Ava",
+    "Blake",
+    "Cleo",
+    "Drew",
+    "Eva",
+    "Finn",
+    "Gia",
+    "Hank",
+    "Ivy",
 ]
 
 LAST_INITIALS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -25,10 +77,25 @@ LAST_INITIALS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 ROLES = ["engineering", "product", "gtm", "science", "ops", "policy"]
 LANES = ["idea", "joiner", "flexible"]
 CLIMATE_AREAS = [
-    "energy", "transport", "buildings", "food", "water", "carbon removal",
-    "biodiversity", "circular economy", "climate finance", "policy",
-    "grid infrastructure", "EVs", "solar", "wind", "hydrogen",
-    "sustainable materials", "agriculture", "ocean", "forestry",
+    "energy",
+    "transport",
+    "buildings",
+    "food",
+    "water",
+    "carbon removal",
+    "biodiversity",
+    "circular economy",
+    "climate finance",
+    "policy",
+    "grid infrastructure",
+    "EVs",
+    "solar",
+    "wind",
+    "hydrogen",
+    "sustainable materials",
+    "agriculture",
+    "ocean",
+    "forestry",
 ]
 COMMITMENTS = ["full-time", "part-time", "exploring"]
 ARRANGEMENTS = ["colocated", "remote-open"]
@@ -78,9 +145,9 @@ def generate_attendees(count: int = 60) -> list[dict]:
             # Simulated enrichment
             "domain_tags": climate_areas[:2],
             "technical_depth": random.randint(1, 5),
-            "stage": random.choice([
-                "first-time-founder", "repeat-founder", "operator", "researcher"
-            ]),
+            "stage": random.choice(
+                ["first-time-founder", "repeat-founder", "operator", "researcher"]
+            ),
             "superpower": f"Deep expertise in {top_area} with {role} background",
             "matching_summary": (
                 f"{name} is a {role} looking for a {role_needed} cofounder "
@@ -152,14 +219,48 @@ def generate_matrix(attendees: list[dict]) -> dict[str, dict]:
 def generate_walkup_badges(count: int = 20) -> list[dict]:
     """Generate walk-up reserve badges with fun slugs."""
     adjectives = [
-        "Pink", "Turquoise", "Golden", "Silver", "Cosmic", "Crimson",
-        "Emerald", "Amber", "Sapphire", "Coral", "Indigo", "Scarlet",
-        "Azure", "Violet", "Copper", "Jade", "Ruby", "Onyx", "Pearl", "Topaz",
+        "Pink",
+        "Turquoise",
+        "Golden",
+        "Silver",
+        "Cosmic",
+        "Crimson",
+        "Emerald",
+        "Amber",
+        "Sapphire",
+        "Coral",
+        "Indigo",
+        "Scarlet",
+        "Azure",
+        "Violet",
+        "Copper",
+        "Jade",
+        "Ruby",
+        "Onyx",
+        "Pearl",
+        "Topaz",
     ]
     animals = [
-        "Unicorn", "Armadillo", "Falcon", "Otter", "Phoenix", "Dolphin",
-        "Panther", "Penguin", "Lynx", "Hummingbird", "Chameleon", "Fox",
-        "Hawk", "Koala", "Narwhal", "Raven", "Toucan", "Wolf", "Zebra", "Crane",
+        "Unicorn",
+        "Armadillo",
+        "Falcon",
+        "Otter",
+        "Phoenix",
+        "Dolphin",
+        "Panther",
+        "Penguin",
+        "Lynx",
+        "Hummingbird",
+        "Chameleon",
+        "Fox",
+        "Hawk",
+        "Koala",
+        "Narwhal",
+        "Raven",
+        "Toucan",
+        "Wolf",
+        "Zebra",
+        "Crane",
     ]
 
     badges = []
@@ -168,10 +269,12 @@ def generate_walkup_badges(count: int = 20) -> list[dict]:
 
     for i in range(min(count, len(adjectives))):
         slug = f"{adjectives[i]} {animals[i]}"
-        badges.append({
-            "slug": slug,
-            "token": str(uuid.uuid4())[:8],
-        })
+        badges.append(
+            {
+                "slug": slug,
+                "token": str(uuid.uuid4())[:8],
+            }
+        )
 
     return badges
 

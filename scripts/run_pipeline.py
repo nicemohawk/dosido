@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import sys
 
 
 def main():
@@ -53,27 +52,33 @@ def main():
         # Full pipeline from real CSV
         print("=== Step 1: Ingest CSV ===")
         from pipeline.ingest import ingest_csv
+
         ingest_csv(args.csv)
 
         if not args.skip_enrich:
             print("\n=== Step 2: LLM Enrichment ===")
             from pipeline.enrich import enrich_all
+
             enrich_all()
         else:
             print("\n=== Step 2: Skipping enrichment ===")
             # Copy attendees.json as enriched_attendees.json
             import json
             import shutil
+
             shutil.copy("data/attendees.json", "data/enriched_attendees.json")
 
         if not args.skip_score:
             print("\n=== Step 3: Pairwise Scoring (Batch API) ===")
             from pipeline.score_pairs import submit_batch
+
             submit_batch()
         else:
             print("\n=== Step 3: Skipping scoring — generating fake matrix ===")
             import json
+
             from scripts.seed_test_data import generate_matrix
+
             with open("data/enriched_attendees.json") as f:
                 attendees = json.load(f)
             matrix = generate_matrix(attendees)
@@ -85,6 +90,7 @@ def main():
         # Generate test data
         print("=== Generating test data ===")
         from scripts.seed_test_data import seed
+
         seed(attendee_count=args.count)
 
     if args.seed_only:
@@ -94,6 +100,7 @@ def main():
     # Load to Redis
     print("\n=== Loading to Redis ===")
     from pipeline.load_to_redis import load_data
+
     asyncio.run(load_data())
 
     # Generate badges if requested
@@ -103,6 +110,7 @@ def main():
             generate_attendee_badges,
             generate_walkup_badges,
         )
+
         slug = "climate-week-2026"  # from settings
         generate_attendee_badges(base_url=args.base_url, event_slug=slug)
         generate_walkup_badges(base_url=args.base_url, event_slug=slug)

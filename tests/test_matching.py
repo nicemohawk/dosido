@@ -1,10 +1,8 @@
 """Tests for the matching engine and scoring function."""
 
-import pytest
-
-from app.matching import solve_round, _choose_pit_stop
-from app.models import Attendee, Lane, Role, Commitment, Arrangement, AttendeeSource
-from app.scoring import match_score, make_pair_key
+from app.matching import _choose_pit_stop, solve_round
+from app.models import Arrangement, Attendee, AttendeeSource, Commitment, Lane, Role
+from app.scoring import make_pair_key, match_score
 
 
 def make_attendee(
@@ -111,9 +109,7 @@ class TestMatchScore:
         a = make_attendee(
             "a", climate_areas=["energy", "transport", "carbon"], top_climate_area="energy"
         )
-        b = make_attendee(
-            "b", climate_areas=["energy", "transport"], top_climate_area="energy"
-        )
+        b = make_attendee("b", climate_areas=["energy", "transport"], top_climate_area="energy")
         pair_key = make_pair_key("a", "b")
         matrix = {pair_key: {"score": 50}}
 
@@ -197,9 +193,7 @@ class TestSolveRound:
         all_pair_keys: list[str] = []
 
         for round_num in range(5):
-            pairings, pit_stop = solve_round(
-                pool, matrix, history, 5 - round_num, pit_stop_counts
-            )
+            pairings, pit_stop = solve_round(pool, matrix, history, 5 - round_num, pit_stop_counts)
             for p in pairings:
                 pair_key = make_pair_key(p.attendee_a, p.attendee_b)
                 assert pair_key not in all_pair_keys, (
@@ -222,9 +216,7 @@ class TestSolveRound:
         pit_stop_ids: list[str] = []
 
         for round_num in range(5):
-            pairings, pit_stop = solve_round(
-                pool, matrix, history, 5 - round_num, pit_stop_counts
-            )
+            pairings, pit_stop = solve_round(pool, matrix, history, 5 - round_num, pit_stop_counts)
             if pit_stop:
                 pit_stop_ids.append(pit_stop)
                 pit_stop_counts[pit_stop] = pit_stop_counts.get(pit_stop, 0) + 1

@@ -36,7 +36,7 @@ Improvement ideas and tech debt discovered during development. Pick these up whe
 - [ ] **Backfill worker has no health check** — if Redis connection dies silently, worker keeps polling forever and misses all walk-up scoring. (`backfill_worker.py:47`)
 - [ ] **Redis connection pool has no reconnect logic** — long-running processes can get stale connections. (`redis_client.py`)
 - [ ] **No client-side error logging in SSE** — network failures invisible in browser dev tools. (`sse.js`)
-- [ ] **CI only runs tests, no lint/format** — no flake8, ruff, or mypy in GitHub Actions. (`.github/workflows/ci.yml`)
+- [x] **CI only runs tests, no lint/format** — added ruff check + format to CI and pre-commit hooks
 
 ## Improvements
 

@@ -21,7 +21,7 @@ import httpx
 # Ensure project root is on sys.path
 sys.path.insert(0, ".")
 
-from pipeline.enrich import enrich_attendee, fetch_linkedin_text, strip_html
+from pipeline.enrich import enrich_attendee, strip_html
 
 
 def fetch_and_display(url: str) -> str:
@@ -118,18 +118,22 @@ def prompt_application_questions() -> dict:
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Test LinkedIn scraping and profile enrichment"
+    parser = argparse.ArgumentParser(description="Test LinkedIn scraping and profile enrichment")
+    parser.add_argument(
+        "url", nargs="?", default=None, help="LinkedIn profile URL (prompts if omitted)"
     )
-    parser.add_argument("url", nargs="?", default=None, help="LinkedIn profile URL (prompts if omitted)")
-    parser.add_argument("--enrich", action="store_true", help="Also run enrichment (prompts for application questions)")
+    parser.add_argument(
+        "--enrich", action="store_true", help="Also run enrichment (prompts for questions)"
+    )
     parser.add_argument(
         "--provider",
         choices=["claude", "ollama", "none"],
         default=None,
         help="LLM provider (default: from LLM_PROVIDER env / config)",
     )
-    parser.add_argument("--ollama-model", default=None, help="Ollama model name (default: from config)")
+    parser.add_argument(
+        "--ollama-model", default=None, help="Ollama model name (default: from config)"
+    )
     parser.add_argument("--ollama-url", default=None, help="Ollama API URL (default: from config)")
     args = parser.parse_args()
 
@@ -157,7 +161,7 @@ def main():
     print("\n" + "=" * 60)
     print("  LINKEDIN SCRAPE")
     print("=" * 60)
-    linkedin_text = fetch_and_display(url)
+    fetch_and_display(url)
 
     if not args.enrich:
         print("\n(pass --enrich to also test enrichment with application questions)")

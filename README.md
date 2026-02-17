@@ -47,6 +47,7 @@ FastAPI + Jinja2 + HTMX  →  Railway (persistent process)
 python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
+pre-commit install
 ```
 
 After activating the venv, you get these CLI commands:

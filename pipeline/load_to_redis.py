@@ -101,7 +101,6 @@ async def load_data(
 
 async def _check_existing(redis_url: str, event_slug: str) -> bool:
     """Check if event data already exists in Redis. Returns True if safe to proceed."""
-    from app.config import settings
 
     prefix = f"event:{event_slug}"
     r = aioredis.from_url(redis_url, decode_responses=True)

@@ -4,13 +4,11 @@ from __future__ import annotations
 
 import json
 import sys
-from pathlib import Path
 
 import qrcode
 from reportlab.lib.pagesizes import LETTER
 from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
-
 
 # Avery 5395 name badge layout (2 columns x 4 rows per page)
 BADGE_WIDTH = 3.5 * inch
@@ -49,7 +47,6 @@ def generate_attendee_badges(
     for i, att in enumerate(attendees):
         col = i % 2
         row = (i // 2) % 4
-        page = i // 8
 
         if i > 0 and i % 8 == 0:
             c.showPage()
