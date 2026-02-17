@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Cookie, Request
+from fastapi import APIRouter, Cookie, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
@@ -52,7 +52,7 @@ async def badge_view(
     """Badge QR view — public profile card, or personal view if claimed."""
     attendee = await state_manager.get_attendee_by_token(token)
     if not attendee:
-        return HTMLResponse("Badge not found", status_code=404)
+        raise HTTPException(status_code=404)
 
     is_owner = claimed_id == attendee.id
 
@@ -140,7 +140,7 @@ async def claim_badge(slug: str, token: str):
     """Claim a badge as your own — sets cookie and records in Redis."""
     attendee = await state_manager.get_attendee_by_token(token)
     if not attendee:
-        return HTMLResponse("Badge not found", status_code=404)
+        raise HTTPException(status_code=404)
 
     await state_manager.claim_badge(attendee.id)
     response = RedirectResponse(f"/{slug}/a/{token}", status_code=303)
@@ -180,7 +180,7 @@ async def general_mobile(request: Request, slug: str):
 @router.get("/{slug}/admin/{token}", response_class=HTMLResponse)
 async def admin_panel(request: Request, slug: str, token: str):
     if token != settings.admin_token:
-        return HTMLResponse("Not found", status_code=404)
+        raise HTTPException(status_code=404)
 
     state = await state_manager.get_state()
     pairings = await state_manager.get_current_pairings()
