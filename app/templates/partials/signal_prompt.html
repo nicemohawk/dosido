@@ -1,22 +1,22 @@
 <!-- Signal prompt — shown on personal mobile view when timer expires -->
 {% if is_personal and attendee and my_match and my_match_id and state.round_number > 0 %}
-<div style="background: #111827; border: 1px solid #1e293b; border-radius: 12px; padding: 24px; text-align: center;" id="signal-prompt-inner">
-  <div style="font-size: 13px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;">
+<div class="bg-gray-900 border border-slate-800 rounded-xl p-6 text-center" id="signal-prompt-inner">
+  <div class="text-[13px] text-slate-500 font-semibold uppercase tracking-[0.08em]">
     Round {{ state.round_number }} Complete
   </div>
-  <div style="font-size: 16px; color: #94a3b8; margin-top: 16px;">You were matched with</div>
-  <div style="font-size: 24px; font-weight: 700; margin-top: 8px;">{{ my_match }}</div>
-  <div style="background: #0a0f1a; border: 1px solid #1e293b; border-radius: 10px; padding: 20px; margin-top: 24px;">
-    <div style="font-size: 15px; font-weight: 600; margin-bottom: 16px;">&#129309; Want to follow up?</div>
-    <div style="display: flex; gap: 12px; justify-content: center;">
+  <div class="text-base text-slate-400 mt-4">You were matched with</div>
+  <div class="text-2xl font-bold mt-2">{{ my_match }}</div>
+  <div class="bg-midnight border border-slate-800 rounded-[10px] p-5 mt-6">
+    <div class="text-[15px] font-semibold mb-4">&#129309; Want to follow up?</div>
+    <div class="flex gap-3 justify-center">
       <button
         onclick="sendSignal('{{ attendee.id }}', '{{ my_match_id }}', {{ state.round_number }}, '{{ my_match }}')"
-        style="background: #22c55e; color: #0a0f1a; border: none; border-radius: 10px; padding: 14px 36px; font-size: 16px; font-weight: 700; cursor: pointer;">
+        class="bg-green-500 text-midnight border-none rounded-[10px] py-3.5 px-9 text-base font-bold cursor-pointer">
         Yes
       </button>
       <button
         onclick="document.getElementById('signal-prompt').classList.add('hidden')"
-        style="background: #1e293b; color: #94a3b8; border: 1px solid #374151; border-radius: 10px; padding: 14px 36px; font-size: 16px; font-weight: 600; cursor: pointer;">
+        class="bg-slate-800 text-slate-400 border border-gray-700 rounded-[10px] py-3.5 px-9 text-base font-semibold cursor-pointer">
         Skip
       </button>
     </div>
