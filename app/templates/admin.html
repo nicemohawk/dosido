@@ -109,6 +109,8 @@
 
   </div>
 
+  <div style="height: 80px;"></div>
+
   <!-- Walk-Up Modal -->
   <div id="walkup-modal" onclick="if(event.target===this)toggleWalkUp()"
        style="display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center;">
@@ -338,7 +340,7 @@ function filterAttendees(query) {
   const rows = document.querySelectorAll('[data-attendee-name]');
   const q = query.toLowerCase().trim();
   rows.forEach(row => {
-    row.style.display = !q || row.dataset.attendeeName.includes(q) ? '' : 'none';
+    row.style.display = !q || row.dataset.attendeeName.includes(q) ? 'flex' : 'none';
   });
 }
 

@@ -16,13 +16,13 @@
 </div>
 
 <!-- Attendee list -->
-<div style="display: flex; flex-direction: column; gap: 2px; max-height: 480px; overflow-y: auto;" data-pool-list>
+<div style="display: flex; flex-direction: column; gap: 2px;" data-pool-list>
   {% for id, att in attendees.items()|sort(attribute='1.name') %}
   {% set rc = role_colors.get(att.role.value, '#64748b') %}
   <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 8px; background: {% if att.status.value == 'checked-in' %}#0d1520{% else %}transparent{% endif %}; opacity: {% if att.status.value == 'departed' %}0.5{% else %}1{% endif %};"
        data-attendee-name="{{ att.name|lower }}">
     <div style="display: flex; align-items: center; gap: 12px;">
-      <span style="font-size: 16px;">{% if att.status.value == 'checked-in' %}&#9989;{% elif att.status.value == 'departed' %}&#128682;{% else %}&#11036;{% endif %}</span>
+      <span style="display: inline-block; width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; {% if att.status.value == 'checked-in' %}background: #22c55e; box-shadow: 0 0 6px #22c55e;{% elif att.status.value == 'departed' %}background: #ef4444; opacity: 0.5;{% else %}border: 1.5px dotted #374151;{% endif %}"></span>
       <div>
         <div style="font-size: 14px; font-weight: 600;">
           {% if att.token %}<a href="/{{ slug }}/a/{{ att.token }}" target="_blank" class="profile-link">{{ att.name }}</a>{% else %}{{ att.name }}{% endif %}
