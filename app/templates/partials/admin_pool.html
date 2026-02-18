@@ -22,7 +22,7 @@
   <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 8px; background: {% if att.status.value == 'checked-in' %}#0d1520{% else %}transparent{% endif %}; opacity: {% if att.status.value == 'departed' %}0.5{% else %}1{% endif %};"
        data-attendee-name="{{ att.name|lower }}">
     <div style="display: flex; align-items: center; gap: 12px;">
-      <span style="display: inline-block; width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; {% if att.status.value == 'checked-in' %}background: #22c55e; box-shadow: 0 0 6px #22c55e;{% elif att.status.value == 'departed' %}background: #ef4444; opacity: 0.5;{% else %}border: 1.5px dotted #374151;{% endif %}"></span>
+      <span style="display: inline-block; width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; {% if att.status.value == 'checked-in' %}background: radial-gradient(circle at 65% 25%, rgba(255,255,255,0.25), transparent 55%), radial-gradient(circle at 70% 25%, #4ade80, #22c55e 50%, #16a34a); box-shadow: 0 0 6px #22c55e;{% elif att.status.value == 'departed' %}background: #ef4444; opacity: 0.5;{% else %}border: 1.5px dotted #374151;{% endif %}"></span>
       <div>
         <div style="font-size: 14px; font-weight: 600;">
           {% if att.token %}<a href="/{{ slug }}/a/{{ att.token }}" target="_blank" class="profile-link">{{ att.name }}</a>{% else %}{{ att.name }}{% endif %}
@@ -43,7 +43,7 @@
         hx-post="/api/admin/check-in"
         hx-vals='{"attendee_id": "{{ id }}", "action": "check-out"}'
         hx-swap="none"
-        style="background: #7f1d1d; color: #e2e8f0; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer;">
+        style="background: #7f1d1d; color: #e2e8f0; border: none; border-radius: 6px; padding: 6px 0; font-size: 12px; font-weight: 600; cursor: pointer; width: 88px; text-align: center;">
         Check Out
       </button>
       {% elif att.status.value == 'departed' %}
@@ -51,7 +51,7 @@
         hx-post="/api/admin/check-in"
         hx-vals='{"attendee_id": "{{ id }}", "action": "check-in"}'
         hx-swap="none"
-        style="background: #374151; color: #e2e8f0; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer;">
+        style="background: #374151; color: #e2e8f0; border: none; border-radius: 6px; padding: 6px 0; font-size: 12px; font-weight: 600; cursor: pointer; width: 88px; text-align: center;">
         Re-check In
       </button>
       {% else %}
@@ -59,7 +59,7 @@
         hx-post="/api/admin/check-in"
         hx-vals='{"attendee_id": "{{ id }}", "action": "check-in"}'
         hx-swap="none"
-        style="background: #14532d; color: #e2e8f0; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer;">
+        style="background: radial-gradient(circle at 75% 20%, rgba(255,255,255,0.15), transparent 50%), radial-gradient(circle at 80% 20%, #4ade80, #22c55e 50%, #16a34a); color: #0a0f1a; border: none; border-radius: 6px; padding: 6px 0; font-size: 12px; font-weight: 600; cursor: pointer; width: 88px; text-align: center;">
         Check In
       </button>
       {% endif %}
