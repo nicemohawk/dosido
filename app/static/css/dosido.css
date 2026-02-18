@@ -1,0 +1,95 @@
+/* Dosido — shared component styles
+   Patterns that can't be expressed as pure Tailwind utilities live here.
+   Standard colors use Tailwind classes directly (gray-900, slate-200, etc.).
+   Custom colors (midnight, pit-stop, etc.) are defined in the Tailwind config. */
+
+/* --- Timer animation ---------------------------------------------------- */
+
+@keyframes timer-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.timer-warning { color: #ef4444; }
+.timer-expired { color: #ef4444; animation: timer-pulse 1s infinite; }
+.timer-paused  { color: #f59e0b; }
+
+/* --- Form inputs -------------------------------------------------------- */
+
+.input-dark {
+  background: #0a0f1a;
+  color: #e2e8f0;
+  border: 1px solid #374151;
+  outline: none;
+}
+.input-dark:focus {
+  border-color: #64748b;
+}
+
+/* --- Links -------------------------------------------------------------- */
+
+.profile-link { color: #93c5fd; text-decoration: none; }
+.profile-link:hover { text-decoration: underline; }
+
+/* --- Role badges -------------------------------------------------------- */
+
+.role-badge-engineering { color: #3b82f6; background: rgba(59, 130, 246, 0.094); }
+.role-badge-product     { color: #8b5cf6; background: rgba(139, 92, 246, 0.094); }
+.role-badge-gtm         { color: #f59e0b; background: rgba(245, 158, 11, 0.094); }
+.role-badge-science     { color: #10b981; background: rgba(16, 185, 129, 0.094); }
+.role-badge-ops         { color: #6366f1; background: rgba(99, 102, 241, 0.094); }
+.role-badge-policy      { color: #ec4899; background: rgba(236, 72, 153, 0.094); }
+
+/* --- Status dots (admin pool) ------------------------------------------- */
+
+.status-dot-checked-in {
+  background: radial-gradient(
+    circle at 65% 25%, rgba(255, 255, 255, 0.25), transparent 55%
+  ), radial-gradient(
+    circle at 70% 25%, #4ade80, #22c55e 50%, #16a34a
+  );
+  box-shadow: 0 0 6px #22c55e;
+}
+.status-dot-departed {
+  background: #ef4444;
+  opacity: 0.5;
+}
+.status-dot-pending {
+  border: 1.5px dotted #374151;
+}
+
+/* --- Green primary button (gradient with gloss) ------------------------- */
+
+.btn-green {
+  background: radial-gradient(
+    circle at 75% 20%, rgba(255, 255, 255, 0.15), transparent 50%
+  ), radial-gradient(
+    circle at 80% 20%, #4ade80, #22c55e 50%, #16a34a
+  );
+  color: #0a0f1a;
+}
+
+/* --- Admin tabs --------------------------------------------------------- */
+
+.admin-tab-active {
+  background: #1e293b;
+  color: #e2e8f0;
+  border-color: #374151;
+}
+.admin-tab-inactive {
+  background: transparent;
+  color: #64748b;
+  border-color: transparent;
+}
+
+/* --- Score colors ------------------------------------------------------- */
+
+.score-high   { color: #22c55e; }
+.score-medium { color: #f59e0b; }
+.score-low    { color: #ef4444; }
+
+/* --- Scrollbar (webkit) ------------------------------------------------- */
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #111827; }
+::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }

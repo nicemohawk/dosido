@@ -1,6 +1,8 @@
 // Countdown timer — receives timerEnd ISO timestamp from SSE, renders countdown
 // Server-authoritative: server sends target timestamp, client counts down
 (function () {
+    const TIMER_CLASSES = ["timer-warning", "timer-expired", "timer-paused"];
+
     let timerEnd = null;
     let paused = false;
     let pausedRemaining = null;
@@ -15,20 +17,24 @@
         return `${minutes}:${String(seconds).padStart(2, "0")}`;
     }
 
+    function clearTimerClasses(element) {
+        element.classList.remove(...TIMER_CLASSES);
+    }
+
     function updateDisplay() {
         const element = timerElement();
         if (!element) return;
 
         if (paused && pausedRemaining !== null) {
             element.textContent = formatTime(pausedRemaining);
-            element.classList.add("text-yellow-500");
-            element.classList.remove("text-red-500", "animate-pulse");
+            clearTimerClasses(element);
+            element.classList.add("timer-paused");
             return;
         }
 
         if (!timerEnd) {
             element.textContent = "--:--";
-            element.classList.remove("text-red-500", "animate-pulse", "text-yellow-500");
+            clearTimerClasses(element);
             return;
         }
 
@@ -36,19 +42,16 @@
         const remaining = Math.max(0, Math.ceil((timerEnd - now) / 1000));
 
         element.textContent = formatTime(remaining);
-        element.classList.remove("text-yellow-500");
+        clearTimerClasses(element);
 
         if (remaining <= 0) {
-            element.classList.add("text-red-500", "animate-pulse");
+            element.classList.add("timer-expired");
             if (!expireFired && expireCallback) {
                 expireFired = true;
                 expireCallback();
             }
         } else if (remaining <= 60) {
-            element.classList.add("text-red-500");
-            element.classList.remove("animate-pulse");
-        } else {
-            element.classList.remove("text-red-500", "animate-pulse");
+            element.classList.add("timer-warning");
         }
     }
 
