@@ -1,89 +1,83 @@
 {% extends "base.html" %}
 
 {% block title %}Admin — {{ settings.event_name }}{% endblock %}
-{% block body_class %}text-[#e2e8f0]{% endblock %}
+{% block body_class %}text-slate-200{% endblock %}
 
 {% block head %}
 <style>
-  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
   input, select { font-family: inherit; }
-  a.profile-link { color: #93c5fd; text-decoration: none; }
-  a.profile-link:hover { text-decoration: underline; }
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: #111827; }
-  ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
 </style>
 {% endblock %}
 
 {% block body %}
-<div style="min-height: 100vh; background: #0a0f1a; color: #e2e8f0;" hx-ext="json-enc">
+<div class="min-h-screen bg-midnight text-slate-200" hx-ext="json-enc">
 
   <!-- Header bar -->
-  <div style="background: #111827; border-bottom: 1px solid #1e293b; padding: 16px 28px; display: flex; align-items: center; justify-content: space-between;">
-    <div style="display: flex; align-items: center; gap: 14px;">
-      <div id="status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: {% if state.status.value == 'round-active' and not state.timer_paused %}#22c55e{% else %}#f59e0b{% endif %}; box-shadow: 0 0 8px {% if state.status.value == 'round-active' and not state.timer_paused %}#22c55e{% else %}#f59e0b{% endif %};"></div>
-      <span style="font-size: 15px; font-weight: 600; color: #94a3b8; letter-spacing: 0.05em; text-transform: uppercase;">
+  <div class="bg-gray-900 border-b border-slate-800 px-7 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3.5">
+      <div id="status-dot" class="w-2 h-2 rounded-full {% if state.status.value == 'round-active' and not state.timer_paused %}bg-green-500 shadow-[0_0_8px_#22c55e]{% else %}bg-amber-500 shadow-[0_0_8px_#f59e0b]{% endif %}"></div>
+      <span class="text-[15px] font-semibold text-slate-400 tracking-wide uppercase">
         Admin — Dosido
       </span>
     </div>
-    <div style="font-size: 13px; color: #64748b;">
+    <div class="text-[13px] text-slate-500">
       {{ settings.event_name }}
     </div>
   </div>
 
-  <div style="padding: 24px 28px 80px; max-width: 1200px; margin: 0 auto;">
+  <div class="px-7 py-6 pb-20 max-w-[1200px] mx-auto">
 
     <!-- Round Control -->
-    <div style="background: #111827; border: 1px solid #1e293b; border-radius: 12px; padding: 24px; margin-bottom: 20px;">
+    <div class="bg-gray-900 border border-slate-800 rounded-xl p-6 mb-5">
       <div id="admin-round-control">
         {% include "partials/admin_round_control.html" %}
       </div>
 
-      <div style="display: flex; gap: 12px; align-items: center; margin-top: 20px; margin-left: auto; justify-content: flex-end;">
-        <label style="font-size: 12px; color: #64748b; display: flex; align-items: center; gap: 6px;">
+      <div class="flex gap-3 items-center mt-5 ml-auto justify-end">
+        <label class="text-xs text-slate-500 flex items-center gap-1.5">
           Duration
           <input type="number" id="round-duration" value="{{ settings.round_duration_minutes }}" min="1" max="30"
                  data-original="{{ settings.round_duration_minutes }}" oninput="checkSettingsChanged()"
-                 style="background: #1e293b; color: #e2e8f0; border: 1px solid #374151; border-radius: 6px; padding: 0 10px; font-size: 13px; width: 64px; height: 30px;">
-          <span style="color: #64748b;">min</span>
+                 class="input-dark bg-slate-800 rounded-md px-2.5 text-[13px] w-16 h-[30px]">
+          <span class="text-slate-500">min</span>
         </label>
-        <label style="font-size: 12px; color: #64748b; display: flex; align-items: center; gap: 6px;">
+        <label class="text-xs text-slate-500 flex items-center gap-1.5">
           Rounds
           <select id="total-rounds" data-original="{{ state.round_number + state.rounds_remaining }}" onchange="checkSettingsChanged()"
-                  style="background: #1e293b; color: #e2e8f0; border: 1px solid #374151; border-radius: 6px; padding: 0 10px; font-size: 13px; height: 30px;">
+                  class="input-dark bg-slate-800 rounded-md px-2.5 text-[13px] h-[30px]">
             {% for n in range(6, 16) %}
             <option value="{{ n }}" {% if n == state.round_number + state.rounds_remaining %}selected{% endif %}>{{ n }}</option>
             {% endfor %}
           </select>
         </label>
-        <button id="save-settings-btn" onclick="saveSettings()" style="display: none; background: #3b82f6; color: white; border: none; border-radius: 6px; padding: 6px 14px; font-weight: 600; font-size: 12px; cursor: pointer;">Save</button>
-        <span id="saved-indicator" style="display: none; font-size: 12px; color: #22c55e;">Saved!</span>
+        <button id="save-settings-btn" onclick="saveSettings()" class="hidden bg-blue-500 text-white border-none rounded-md px-3.5 py-1.5 font-semibold text-xs cursor-pointer">Save</button>
+        <span id="saved-indicator" class="hidden text-xs text-green-500">Saved!</span>
       </div>
     </div>
 
     <!-- Tabs -->
-    <div style="display: flex; gap: 2px; margin-bottom: 20px;" id="admin-tabs">
-      <button onclick="switchTab('pool')" data-tab="pool" class="admin-tab admin-tab-active"
-              style="background: #1e293b; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 10px 18px; font-weight: 600; font-size: 13px; cursor: pointer;">
+    <div class="flex gap-0.5 mb-5" id="admin-tabs">
+      <button onclick="switchTab('pool')" data-tab="pool"
+              class="admin-tab admin-tab-active border rounded-lg px-[18px] py-2.5 font-semibold text-[13px] cursor-pointer">
         Attendee Pool ({{ counts.total }})
       </button>
-      <button onclick="switchTab('pairings')" data-tab="pairings" class="admin-tab"
-              style="background: transparent; color: #64748b; border: 1px solid transparent; border-radius: 8px; padding: 10px 18px; font-weight: 600; font-size: 13px; cursor: pointer;">
+      <button onclick="switchTab('pairings')" data-tab="pairings"
+              class="admin-tab admin-tab-inactive border rounded-lg px-[18px] py-2.5 font-semibold text-[13px] cursor-pointer">
         Current Pairings
       </button>
-      <button onclick="switchTab('signals')" data-tab="signals" class="admin-tab"
-              style="background: transparent; color: #64748b; border: 1px solid transparent; border-radius: 8px; padding: 10px 18px; font-weight: 600; font-size: 13px; cursor: pointer;">
+      <button onclick="switchTab('signals')" data-tab="signals"
+              class="admin-tab admin-tab-inactive border rounded-lg px-[18px] py-2.5 font-semibold text-[13px] cursor-pointer">
         Signals
       </button>
     </div>
 
     <!-- Pool Tab -->
-    <div id="tab-pool" style="background: #111827; border: 1px solid #1e293b; border-radius: 12px; padding: 24px;">
-      <div style="display: flex; align-items: center; margin-bottom: 16px;">
+    <div id="tab-pool" class="bg-gray-900 border border-slate-800 rounded-xl p-6">
+      <div class="flex items-center mb-4">
         <input type="text" id="admin-filter" placeholder="Filter attendees..." oninput="filterAttendees(this.value)"
-               style="background: #0a0f1a; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 10px 14px; font-size: 14px; width: 280px; outline: none;">
+               class="input-dark rounded-lg px-3.5 py-2.5 text-sm w-[280px]">
         <button onclick="toggleWalkUp()" id="walkup-toggle-btn"
-                style="margin-left: auto; margin-right: 14px; background: #1e293b; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 10px 16px; font-weight: 600; font-size: 13px; cursor: pointer;">
+                class="ml-auto mr-3.5 bg-slate-800 text-slate-200 border border-gray-700 rounded-lg px-4 py-2.5 font-semibold text-[13px] cursor-pointer">
           + Add Walk-Up
         </button>
       </div>
@@ -94,14 +88,14 @@
     </div>
 
     <!-- Pairings Tab -->
-    <div id="tab-pairings" style="display: none; background: #111827; border: 1px solid #1e293b; border-radius: 12px; padding: 24px;">
+    <div id="tab-pairings" class="hidden bg-gray-900 border border-slate-800 rounded-xl p-6">
       <div id="admin-pairings">
         {% include "partials/admin_pairings.html" %}
       </div>
     </div>
 
     <!-- Signals Tab -->
-    <div id="tab-signals" style="display: none; background: #111827; border: 1px solid #1e293b; border-radius: 12px; padding: 24px;">
+    <div id="tab-signals" class="hidden bg-gray-900 border border-slate-800 rounded-xl p-6">
       <div id="admin-signals">
         {% include "partials/admin_signals.html" %}
       </div>
@@ -111,39 +105,38 @@
 
   <!-- Walk-Up Modal -->
   <div id="walkup-modal" onclick="if(event.target===this)toggleWalkUp()"
-       style="display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center;">
-    <div style="background: #111827; border: 1px solid #1e293b; border-radius: 16px; padding: 32px; width: 520px; max-width: 90vw; box-shadow: 0 24px 48px rgba(0,0,0,0.4);">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+       class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-[4px] items-center justify-center">
+    <div class="bg-gray-900 border border-slate-800 rounded-2xl p-8 w-[520px] max-w-[90vw] shadow-[0_24px_48px_rgba(0,0,0,0.4)]">
+      <div class="flex justify-between items-center mb-6">
         <div>
-          <div style="font-size: 18px; font-weight: 700; color: #e2e8f0;">Add Walk-Up Attendee</div>
-          <div style="font-size: 13px; color: #64748b; margin-top: 2px;">Quick-entry for attendees not on the pre-registered list</div>
+          <div class="text-lg font-bold text-slate-200">Add Walk-Up Attendee</div>
+          <div class="text-[13px] text-slate-500 mt-0.5">Quick-entry for attendees not on the pre-registered list</div>
         </div>
-        <button onclick="toggleWalkUp()" style="background: none; border: none; color: #64748b; font-size: 24px; cursor: pointer; padding: 4px 8px; line-height: 1;">&times;</button>
+        <button onclick="toggleWalkUp()" class="bg-transparent border-none text-slate-500 text-2xl cursor-pointer px-2 py-1 leading-none">&times;</button>
       </div>
 
       <form id="walkup-form" hx-post="/api/admin/walk-up" hx-swap="none" hx-on::after-request="this.reset(); toggleWalkUp();">
-        <!-- Name — full width, large, autofocused -->
-        <div style="margin-bottom: 16px;">
-          <label style="font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Name *</label>
+        <!-- Name -->
+        <div class="mb-4">
+          <label class="text-xs font-semibold text-slate-400 uppercase tracking-wide block mb-1.5">Name *</label>
           <input type="text" name="name" required id="walkup-name-input"
-                 style="background: #0a0f1a; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 12px 16px; font-size: 16px; width: 100%; outline: none; box-sizing: border-box;"
+                 class="input-dark rounded-lg px-4 py-3 text-base w-full box-border"
                  placeholder="Full name">
         </div>
 
-        <!-- Email — full width -->
-        <div style="margin-bottom: 16px;">
-          <label style="font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Email</label>
+        <!-- Email -->
+        <div class="mb-4">
+          <label class="text-xs font-semibold text-slate-400 uppercase tracking-wide block mb-1.5">Email</label>
           <input type="email" name="email"
-                 style="background: #0a0f1a; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 12px 16px; font-size: 14px; width: 100%; outline: none; box-sizing: border-box;"
+                 class="input-dark rounded-lg px-4 py-3 text-sm w-full box-border"
                  placeholder="email@example.com">
         </div>
 
         <!-- Two-column fields -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+        <div class="grid grid-cols-2 gap-3 mb-4">
           <div>
-            <label style="font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Badge</label>
-            <select name="badge_slug"
-                    style="background: #0a0f1a; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 0 14px; font-size: 14px; width: 100%; height: 44px; box-sizing: border-box;">
+            <label class="text-xs font-semibold text-slate-400 uppercase tracking-wide block mb-1.5">Badge</label>
+            <select name="badge_slug" class="input-dark rounded-lg px-3.5 text-sm w-full h-11 box-border">
               <option value="">No badge</option>
               {% for badge in walkup_badges %}
               <option value="{{ badge.slug }}">{{ badge.slug }}</option>
@@ -151,18 +144,16 @@
             </select>
           </div>
           <div>
-            <label style="font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Lane</label>
-            <select name="lane"
-                    style="background: #0a0f1a; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 0 14px; font-size: 14px; width: 100%; height: 44px; box-sizing: border-box;">
+            <label class="text-xs font-semibold text-slate-400 uppercase tracking-wide block mb-1.5">Lane</label>
+            <select name="lane" class="input-dark rounded-lg px-3.5 text-sm w-full h-11 box-border">
               <option value="idea">Idea-holder</option>
               <option value="joiner">Joiner</option>
               <option value="flexible" selected>Flexible</option>
             </select>
           </div>
           <div>
-            <label style="font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Primary Role</label>
-            <select name="role"
-                    style="background: #0a0f1a; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 0 14px; font-size: 14px; width: 100%; height: 44px; box-sizing: border-box;">
+            <label class="text-xs font-semibold text-slate-400 uppercase tracking-wide block mb-1.5">Primary Role</label>
+            <select name="role" class="input-dark rounded-lg px-3.5 text-sm w-full h-11 box-border">
               <option value="engineering">Engineering</option>
               <option value="product">Product</option>
               <option value="gtm">GTM / Sales</option>
@@ -172,9 +163,8 @@
             </select>
           </div>
           <div>
-            <label style="font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Role Needed</label>
-            <select name="role_needed"
-                    style="background: #0a0f1a; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 0 14px; font-size: 14px; width: 100%; height: 44px; box-sizing: border-box;">
+            <label class="text-xs font-semibold text-slate-400 uppercase tracking-wide block mb-1.5">Role Needed</label>
+            <select name="role_needed" class="input-dark rounded-lg px-3.5 text-sm w-full h-11 box-border">
               <option value="engineering">Engineering</option>
               <option value="product">Product</option>
               <option value="gtm">GTM / Sales</option>
@@ -184,14 +174,13 @@
             </select>
           </div>
           <div>
-            <label style="font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Top Climate Area</label>
+            <label class="text-xs font-semibold text-slate-400 uppercase tracking-wide block mb-1.5">Top Climate Area</label>
             <input type="text" name="top_climate_area" placeholder="e.g., energy"
-                   style="background: #0a0f1a; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 0 14px; font-size: 14px; width: 100%; height: 44px; outline: none; box-sizing: border-box;">
+                   class="input-dark rounded-lg px-3.5 text-sm w-full h-11 box-border">
           </div>
           <div>
-            <label style="font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Commitment</label>
-            <select name="commitment"
-                    style="background: #0a0f1a; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 0 14px; font-size: 14px; width: 100%; height: 44px; box-sizing: border-box;">
+            <label class="text-xs font-semibold text-slate-400 uppercase tracking-wide block mb-1.5">Commitment</label>
+            <select name="commitment" class="input-dark rounded-lg px-3.5 text-sm w-full h-11 box-border">
               <option value="full-time">Full-time</option>
               <option value="part-time">Part-time</option>
               <option value="exploring" selected>Exploring</option>
@@ -200,13 +189,13 @@
         </div>
 
         <!-- Actions -->
-        <div style="display: flex; gap: 10px; justify-content: flex-end; padding-top: 8px; border-top: 1px solid #1e293b;">
+        <div class="flex gap-2.5 justify-end pt-2 border-t border-slate-800">
           <button type="button" onclick="toggleWalkUp()"
-                  style="background: #1e293b; color: #e2e8f0; border: 1px solid #374151; border-radius: 8px; padding: 10px 20px; font-weight: 600; font-size: 14px; cursor: pointer;">
+                  class="bg-slate-800 text-slate-200 border border-gray-700 rounded-lg px-5 py-2.5 font-semibold text-sm cursor-pointer">
             Cancel
           </button>
           <button type="submit"
-                  style="background: #22c55e; color: #0a0f1a; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 600; font-size: 14px; cursor: pointer;">
+                  class="bg-green-500 text-midnight border-none rounded-lg px-6 py-2.5 font-semibold text-sm cursor-pointer">
             Add to Pool
           </button>
         </div>
@@ -231,29 +220,33 @@ const PARTIAL_BASE = "/{{ slug }}/admin/{{ admin_token }}/partial";
 
 // Tab switching
 function switchTab(tab) {
-  document.querySelectorAll('[id^="tab-"]').forEach(function(el) { el.style.display = 'none'; });
-  document.getElementById('tab-' + tab).style.display = '';
+  document.querySelectorAll('[id^="tab-"]').forEach(function(el) {
+    el.classList.add('hidden');
+  });
+  document.getElementById('tab-' + tab).classList.remove('hidden');
   document.querySelectorAll('.admin-tab').forEach(function(btn) {
     var isActive = btn.dataset.tab === tab;
-    btn.style.background = isActive ? '#1e293b' : 'transparent';
-    btn.style.color = isActive ? '#e2e8f0' : '#64748b';
-    btn.style.borderColor = isActive ? '#374151' : 'transparent';
+    btn.classList.toggle('admin-tab-active', isActive);
+    btn.classList.toggle('admin-tab-inactive', !isActive);
   });
 }
 
 // Walk-up modal toggle
 function toggleWalkUp() {
   var modal = document.getElementById('walkup-modal');
-  var isHidden = modal.style.display === 'none';
-  modal.style.display = isHidden ? 'flex' : 'none';
+  var isHidden = modal.classList.contains('hidden');
   if (isHidden) {
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
     setTimeout(function() { document.getElementById('walkup-name-input').focus(); }, 50);
   } else {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
     document.getElementById('walkup-form').reset();
   }
 }
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape' && document.getElementById('walkup-modal').style.display === 'flex') toggleWalkUp();
+  if (e.key === 'Escape' && !document.getElementById('walkup-modal').classList.contains('hidden')) toggleWalkUp();
 });
 
 // Swap a single admin partial via fetch (avoids htmx.ajax silent request drops)
@@ -356,8 +349,8 @@ document.body.addEventListener("sse:checkin_update", function(e) {
 function filterAttendees(query) {
   const rows = document.querySelectorAll('[data-attendee-name]');
   const q = query.toLowerCase().trim();
-  rows.forEach(row => {
-    row.style.display = !q || row.dataset.attendeeName.includes(q) ? 'flex' : 'none';
+  rows.forEach(function(row) {
+    row.classList.toggle('hidden', q && !row.dataset.attendeeName.includes(q));
   });
 }
 
@@ -366,8 +359,8 @@ function checkSettingsChanged() {
   var dur = document.getElementById('round-duration');
   var tot = document.getElementById('total-rounds');
   var changed = dur.value !== dur.dataset.original || tot.value !== tot.dataset.original;
-  document.getElementById('save-settings-btn').style.display = changed ? '' : 'none';
-  document.getElementById('saved-indicator').style.display = 'none';
+  document.getElementById('save-settings-btn').classList.toggle('hidden', !changed);
+  document.getElementById('saved-indicator').classList.add('hidden');
 }
 
 function saveSettings() {
@@ -383,10 +376,10 @@ function saveSettings() {
   }).then(function() {
     dur.dataset.original = dur.value;
     tot.dataset.original = tot.value;
-    document.getElementById('save-settings-btn').style.display = 'none';
+    document.getElementById('save-settings-btn').classList.add('hidden');
     var indicator = document.getElementById('saved-indicator');
-    indicator.style.display = '';
-    setTimeout(function() { indicator.style.display = 'none'; }, 3000);
+    indicator.classList.remove('hidden');
+    setTimeout(function() { indicator.classList.add('hidden'); }, 3000);
     // Refresh round control to update "Round X of Y" display
     swapPartial('round-control', 'admin-round-control');
   });

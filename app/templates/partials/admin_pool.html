@@ -1,49 +1,40 @@
 <!-- Admin attendee pool partial — swapped via SSE -->
-{% set role_colors = {
-  'engineering': '#3b82f6',
-  'product': '#8b5cf6',
-  'gtm': '#f59e0b',
-  'science': '#10b981',
-  'ops': '#6366f1',
-  'policy': '#ec4899'
-} %}
 
 <!-- Summary bar -->
-<div style="display: flex; gap: 20px; margin-bottom: 16px; font-size: 13px;">
-  <span style="color: #22c55e;">&#9679; Active: {{ counts.active }}</span>
-  <span style="color: #94a3b8;">&#9675; Not yet: {{ counts.not_arrived }}</span>
-  <span style="color: #ef4444;">&#9679; Departed: {{ counts.departed }}</span>
+<div class="flex gap-5 mb-4 text-[13px]">
+  <span class="text-green-500">&#9679; Active: {{ counts.active }}</span>
+  <span class="text-slate-400">&#9675; Not yet: {{ counts.not_arrived }}</span>
+  <span class="text-red-500">&#9679; Departed: {{ counts.departed }}</span>
 </div>
 
 <!-- Attendee list -->
-<div style="display: flex; flex-direction: column; gap: 2px;" data-pool-list>
+<div class="flex flex-col gap-0.5" data-pool-list>
   {% for id, att in attendees.items()|sort(attribute='1.name') %}
-  {% set rc = role_colors.get(att.role.value, '#64748b') %}
-  <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 8px; background: {% if att.status.value == 'checked-in' %}#0d1520{% else %}transparent{% endif %}; opacity: {% if att.status.value == 'departed' %}0.5{% else %}1{% endif %};"
+  <div class="flex items-center justify-between px-3.5 py-2.5 rounded-lg {% if att.status.value == 'checked-in' %}bg-midnight-highlight{% endif %} {% if att.status.value == 'departed' %}opacity-50{% endif %}"
        data-attendee-name="{{ att.name|lower }}">
-    <div style="display: flex; align-items: center; gap: 12px;">
-      <span style="display: inline-block; width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; {% if att.status.value == 'checked-in' %}background: radial-gradient(circle at 65% 25%, rgba(255,255,255,0.25), transparent 55%), radial-gradient(circle at 70% 25%, #4ade80, #22c55e 50%, #16a34a); box-shadow: 0 0 6px #22c55e;{% elif att.status.value == 'departed' %}background: #ef4444; opacity: 0.5;{% else %}border: 1.5px dotted #374151;{% endif %}"></span>
+    <div class="flex items-center gap-3">
+      <span class="inline-block w-3.5 h-3.5 rounded flex-shrink-0 {% if att.status.value == 'checked-in' %}status-dot-checked-in{% elif att.status.value == 'departed' %}status-dot-departed{% else %}status-dot-pending{% endif %}"></span>
       <div>
-        <div style="font-size: 14px; font-weight: 600;">
+        <div class="text-sm font-semibold">
           {% if att.token %}<a href="/{{ slug }}/a/{{ att.token }}" target="_blank" class="profile-link">{{ att.name }}</a>{% else %}{{ att.name }}{% endif %}
         </div>
-        <div style="display: flex; gap: 8px; margin-top: 2px;">
-          <span style="font-size: 11px; font-weight: 600; color: {{ rc }}; background: {{ rc }}18; padding: 1px 6px; border-radius: 4px;">{{ att.role.value }}</span>
-          <span style="font-size: 11px; color: #64748b;">{{ att.lane.value }}</span>
-          <span style="font-size: 11px; color: #64748b;">{{ att.commitment.value[:2]|upper }}</span>
+        <div class="flex gap-2 mt-0.5">
+          <span class="role-badge-{{ att.role.value }} text-[11px] font-semibold px-1.5 rounded">{{ att.role.value }}</span>
+          <span class="text-[11px] text-slate-500">{{ att.lane.value }}</span>
+          <span class="text-[11px] text-slate-500">{{ att.commitment.value[:2]|upper }}</span>
         </div>
       </div>
     </div>
-    <div style="display: flex; align-items: center; gap: 8px;">
+    <div class="flex items-center gap-2">
       {% if att.pit_stop_count > 0 %}
-      <span style="font-size: 11px; color: #f59e0b;">&#9749; &times;{{ att.pit_stop_count }}</span>
+      <span class="text-[11px] text-amber-500">&#9749; &times;{{ att.pit_stop_count }}</span>
       {% endif %}
       {% if att.status.value == 'checked-in' %}
       <button
         hx-post="/api/admin/check-in"
         hx-vals='{"attendee_id": "{{ id }}", "action": "check-out"}'
         hx-swap="none"
-        style="background: #7f1d1d; color: #e2e8f0; border: none; border-radius: 6px; padding: 6px 0; font-size: 12px; font-weight: 600; cursor: pointer; width: 88px; text-align: center;">
+        class="bg-red-900 text-slate-200 border-none rounded-md py-1.5 text-xs font-semibold cursor-pointer w-[88px] text-center">
         Check Out
       </button>
       {% elif att.status.value == 'departed' %}
@@ -51,7 +42,7 @@
         hx-post="/api/admin/check-in"
         hx-vals='{"attendee_id": "{{ id }}", "action": "check-in"}'
         hx-swap="none"
-        style="background: #374151; color: #e2e8f0; border: none; border-radius: 6px; padding: 6px 0; font-size: 12px; font-weight: 600; cursor: pointer; width: 88px; text-align: center;">
+        class="bg-gray-700 text-slate-200 border-none rounded-md py-1.5 text-xs font-semibold cursor-pointer w-[88px] text-center">
         Re-check In
       </button>
       {% else %}
@@ -59,7 +50,7 @@
         hx-post="/api/admin/check-in"
         hx-vals='{"attendee_id": "{{ id }}", "action": "check-in"}'
         hx-swap="none"
-        style="background: radial-gradient(circle at 75% 20%, rgba(255,255,255,0.15), transparent 50%), radial-gradient(circle at 80% 20%, #4ade80, #22c55e 50%, #16a34a); color: #0a0f1a; border: none; border-radius: 6px; padding: 6px 0; font-size: 12px; font-weight: 600; cursor: pointer; width: 88px; text-align: center;">
+        class="btn-green border-none rounded-md py-1.5 text-xs font-semibold cursor-pointer w-[88px] text-center">
         Check In
       </button>
       {% endif %}
