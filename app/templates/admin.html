@@ -291,10 +291,12 @@ function swapPartial(path, targetId) {
     .then(function(html) {
       if (html == null) return;
       var element = document.getElementById(targetId);
-      if (element) {
-        element.innerHTML = html;
-        htmx.process(element);
+      if (!element) {
+        console.warn('[SSE] target element not found:', targetId);
+        return;
       }
+      element.innerHTML = html;
+      htmx.process(element);
     })
     .catch(function(error) {
       console.warn('[SSE] partial fetch error:', path, error);
