@@ -68,19 +68,3 @@
   </button>
   {% endif %}
 </div>
-
-<script>
-function confirmAdvance(e) {
-  e.preventDefault();
-  document.getElementById('advance-btn').classList.add('hidden');
-  var confirm = document.getElementById('advance-confirm');
-  confirm.classList.remove('hidden');
-  confirm.classList.add('flex');
-}
-function cancelAdvance() {
-  document.getElementById('advance-btn').classList.remove('hidden');
-  var confirm = document.getElementById('advance-confirm');
-  confirm.classList.add('hidden');
-  confirm.classList.remove('flex');
-}
-</script>

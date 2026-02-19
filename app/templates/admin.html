@@ -249,6 +249,35 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape' && !document.getElementById('walkup-modal').classList.contains('hidden')) toggleWalkUp();
 });
 
+// Round control helpers (defined here so they survive partial swaps via innerHTML)
+function confirmAdvance(e) {
+  e.preventDefault();
+  document.getElementById('advance-btn').classList.add('hidden');
+  var confirm = document.getElementById('advance-confirm');
+  confirm.classList.remove('hidden');
+  confirm.classList.add('flex');
+}
+function cancelAdvance() {
+  document.getElementById('advance-btn').classList.remove('hidden');
+  var confirm = document.getElementById('advance-confirm');
+  confirm.classList.add('hidden');
+  confirm.classList.remove('flex');
+}
+
+// Swap override helper (defined here so it survives partial swaps via innerHTML)
+function resolveSwapIds(form) {
+  ['1', '2'].forEach(function(n) {
+    var name = document.getElementById('swap-input-' + n).value;
+    var opts = document.getElementById('swap-list-' + n).options;
+    for (var i = 0; i < opts.length; i++) {
+      if (opts[i].value === name) {
+        document.getElementById('swap-id-' + n).value = opts[i].dataset.id;
+        return;
+      }
+    }
+  });
+}
+
 // Swap a single admin partial via fetch (avoids htmx.ajax silent request drops)
 function swapPartial(path, targetId) {
   return fetch(PARTIAL_BASE + '/' + path + '?_=' + Date.now())
