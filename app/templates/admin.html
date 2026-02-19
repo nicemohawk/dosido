@@ -256,13 +256,35 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape' && document.getElementById('walkup-modal').style.display === 'flex') toggleWalkUp();
 });
 
+// Swap a single admin partial via fetch (avoids htmx.ajax silent request drops)
+function swapPartial(path, targetId) {
+  return fetch(PARTIAL_BASE + '/' + path + '?_=' + Date.now())
+    .then(function(response) {
+      if (!response.ok) {
+        console.warn('[SSE] partial fetch failed:', path, response.status);
+        return;
+      }
+      return response.text();
+    })
+    .then(function(html) {
+      if (html == null) return;
+      var element = document.getElementById(targetId);
+      if (element) {
+        element.innerHTML = html;
+        htmx.process(element);
+      }
+    })
+    .catch(function(error) {
+      console.warn('[SSE] partial fetch error:', path, error);
+    });
+}
+
 // Refresh all admin partials (used by round_update and SSE reconnection)
 function refreshAdminPartials() {
-  var cacheBuster = '_=' + Date.now();
   return Promise.all([
-    htmx.ajax('GET', PARTIAL_BASE + '/round-control?' + cacheBuster, {target: '#admin-round-control', swap: 'innerHTML'}),
-    htmx.ajax('GET', PARTIAL_BASE + '/pairings?' + cacheBuster, {target: '#admin-pairings', swap: 'innerHTML'}),
-    htmx.ajax('GET', PARTIAL_BASE + '/signals?' + cacheBuster, {target: '#admin-signals', swap: 'innerHTML'})
+    swapPartial('round-control', 'admin-round-control'),
+    swapPartial('pairings', 'admin-pairings'),
+    swapPartial('signals', 'admin-signals')
   ]);
 }
 
@@ -294,20 +316,18 @@ document.body.addEventListener("sse:reconnected", function() {
 // Timer update: refresh round control (pause/resume button) + update JS timer
 document.body.addEventListener("sse:timer_update", function(e) {
   const data = JSON.parse(e.detail.data);
-  var cacheBuster = '_=' + Date.now();
-  htmx.ajax('GET', PARTIAL_BASE + '/round-control?' + cacheBuster, {target: '#admin-round-control', swap: 'innerHTML'})
-    .then(function() {
-      if (data.action === "pause") {
-        Timer.pause(data.timer_remaining);
-      } else if (data.action === "resume") {
-        Timer.resume(data.timer_end);
-      }
-    });
+  swapPartial('round-control', 'admin-round-control').then(function() {
+    if (data.action === "pause") {
+      Timer.pause(data.timer_remaining);
+    } else if (data.action === "resume") {
+      Timer.resume(data.timer_end);
+    }
+  });
 });
 
 // Signal update: refresh signals tab
 document.body.addEventListener("sse:signal_update", function(e) {
-  htmx.ajax('GET', PARTIAL_BASE + '/signals?_=' + Date.now(), {target: '#admin-signals', swap: 'innerHTML'});
+  swapPartial('signals', 'admin-signals');
 });
 
 // Check-in update: refresh pool + round control (active count in confirm dialog)
@@ -315,11 +335,10 @@ document.body.addEventListener("sse:checkin_update", function(e) {
   // Preserve scroll position of the attendee list
   var scrollable = document.querySelector('#admin-pool [data-pool-list]');
   var savedScroll = scrollable ? scrollable.scrollTop : 0;
-  var cacheBuster = '_=' + Date.now();
 
   Promise.all([
-    htmx.ajax('GET', PARTIAL_BASE + '/pool?' + cacheBuster, {target: '#admin-pool', swap: 'innerHTML'}),
-    htmx.ajax('GET', PARTIAL_BASE + '/round-control?' + cacheBuster, {target: '#admin-round-control', swap: 'innerHTML'})
+    swapPartial('pool', 'admin-pool'),
+    swapPartial('round-control', 'admin-round-control')
   ]).then(function() {
     // Restore scroll position
     var newScrollable = document.querySelector('#admin-pool [data-pool-list]');
@@ -369,7 +388,7 @@ function saveSettings() {
     indicator.style.display = '';
     setTimeout(function() { indicator.style.display = 'none'; }, 3000);
     // Refresh round control to update "Round X of Y" display
-    htmx.ajax('GET', PARTIAL_BASE + '/round-control', {target: '#admin-round-control', swap: 'innerHTML'});
+    swapPartial('round-control', 'admin-round-control');
   });
 }
 </script>

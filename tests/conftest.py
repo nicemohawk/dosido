@@ -10,6 +10,7 @@ import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 
+from app.broadcaster import broadcaster
 from app.config import settings
 from app.models import Attendee, AttendeeSource, AttendeeStatus
 from app.scoring import make_pair_key
@@ -100,3 +101,21 @@ async def check_in_all(client: AsyncClient, attendees: list[dict]):
             json={"attendee_id": att["id"], "action": "check-in"},
         )
         assert resp.status_code == 200
+
+
+@pytest.fixture
+def broadcast_spy():
+    """Capture all broadcaster.broadcast() calls during a test.
+
+    Yields a list of {"event": str, "data": dict|str} dicts, one per call.
+    The real broadcast still fires so downstream behavior is unaffected.
+    """
+    calls: list[dict] = []
+    original = broadcaster.broadcast
+
+    async def spy(event, data):
+        calls.append({"event": event, "data": data})
+        await original(event, data)
+
+    with patch.object(broadcaster, "broadcast", side_effect=spy):
+        yield calls
