@@ -11,7 +11,7 @@
 }
 
 .timer-warning { color: #ef4444; }
-.timer-expired { color: #ef4444; animation: timer-pulse 1s infinite; }
+.timer-expired { color: #ef4444; animation: timer-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
 .timer-paused  { color: #f59e0b; }
 
 /* --- Form inputs -------------------------------------------------------- */
