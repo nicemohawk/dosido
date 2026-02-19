@@ -10,7 +10,7 @@
   50% { opacity: 0.4; }
 }
 
-.timer-warning { color: #ef4444; }
+.timer-warning { color: #f59e0b; }
 .timer-expired { color: #ef4444; animation: timer-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
 .timer-paused  { color: #f59e0b; }
 
@@ -90,6 +90,6 @@
 
 /* --- Scrollbar (webkit) ------------------------------------------------- */
 
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #111827; }
-::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+.admin-scrollable ::-webkit-scrollbar { width: 6px; }
+.admin-scrollable ::-webkit-scrollbar-track { background: #111827; }
+.admin-scrollable ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }

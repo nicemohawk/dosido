@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-midnight text-slate-200" hx-ext="json-enc">
+<div class="min-h-screen bg-midnight text-slate-200 admin-scrollable" hx-ext="json-enc">
 
   <!-- Header bar -->
   <div class="bg-gray-900 border-b border-slate-800 px-7 py-4 flex items-center justify-between">
@@ -38,13 +38,13 @@
           Duration
           <input type="number" id="round-duration" value="{{ settings.round_duration_minutes }}" min="1" max="30"
                  data-original="{{ settings.round_duration_minutes }}" oninput="checkSettingsChanged()"
-                 class="input-dark bg-slate-800 rounded-md px-2.5 text-[13px] w-16 h-[30px]">
+                 class="input-dark rounded-md px-2.5 text-[13px] w-16 h-[30px]">
           <span class="text-slate-500">min</span>
         </label>
         <label class="text-xs text-slate-500 flex items-center gap-1.5">
           Rounds
           <select id="total-rounds" data-original="{{ state.round_number + state.rounds_remaining }}" onchange="checkSettingsChanged()"
-                  class="input-dark bg-slate-800 rounded-md px-2.5 text-[13px] h-[30px]">
+                  class="input-dark rounded-md px-2.5 text-[13px] h-[30px]">
             {% for n in range(6, 16) %}
             <option value="{{ n }}" {% if n == state.round_number + state.rounds_remaining %}selected{% endif %}>{{ n }}</option>
             {% endfor %}

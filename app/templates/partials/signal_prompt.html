@@ -10,7 +10,7 @@
     <div class="text-[15px] font-semibold mb-4">&#129309; Want to follow up?</div>
     <div class="flex gap-3 justify-center">
       <button
-        onclick="sendSignal('{{ attendee.id }}', '{{ my_match_id }}', {{ state.round_number }}, '{{ my_match }}')"
+        onclick="sendSignal({{ attendee.id|tojson }}, {{ my_match_id|tojson }}, {{ state.round_number }}, {{ my_match|tojson }})"
         class="bg-green-500 text-midnight border-none rounded-[10px] py-3.5 px-9 text-base font-bold cursor-pointer">
         Yes
       </button>

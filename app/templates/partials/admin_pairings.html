@@ -43,7 +43,7 @@
         onsubmit="resolveSwapIds(this)">
     <input type="hidden" name="attendee_id_1" id="swap-id-1">
     <input type="text" id="swap-input-1" list="swap-list-1" placeholder="Type to filter..."
-           class="flex-1 input-dark bg-gray-900 rounded-md px-2.5 text-[13px] h-[30px]">
+           class="flex-1 input-dark rounded-md px-2.5 text-[13px] h-[30px]">
     <datalist id="swap-list-1">
       {% for id, att in attendees.items()|sort(attribute='1.name') %}
         {% if att.status.value == 'checked-in' %}
@@ -54,7 +54,7 @@
     <span class="text-slate-600">&#8596;</span>
     <input type="hidden" name="attendee_id_2" id="swap-id-2">
     <input type="text" id="swap-input-2" list="swap-list-2" placeholder="Type to filter..."
-           class="flex-1 input-dark bg-gray-900 rounded-md px-2.5 text-[13px] h-[30px]">
+           class="flex-1 input-dark rounded-md px-2.5 text-[13px] h-[30px]">
     <datalist id="swap-list-2">
       {% for id, att in attendees.items()|sort(attribute='1.name') %}
         {% if att.status.value == 'checked-in' %}
