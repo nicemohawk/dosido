@@ -288,6 +288,31 @@ function refreshAdminPartials() {
   ]);
 }
 
+// Resolve swap form inputs to attendee IDs (used in pairings partial)
+function resolveSwapIds(form) {
+  ['1', '2'].forEach(function(n) {
+    var name = document.getElementById('swap-input-' + n).value;
+    var opts = document.getElementById('swap-list-' + n).options;
+    for (var i = 0; i < opts.length; i++) {
+      if (opts[i].value === name) {
+        document.getElementById('swap-id-' + n).value = opts[i].dataset.id;
+        return;
+      }
+    }
+  });
+}
+
+// Round advance confirmation (used in round control partial)
+function confirmAdvance(e) {
+  e.preventDefault();
+  document.getElementById('advance-btn').style.display = 'none';
+  document.getElementById('advance-confirm').style.display = 'flex';
+}
+function cancelAdvance() {
+  document.getElementById('advance-btn').style.display = '';
+  document.getElementById('advance-confirm').style.display = 'none';
+}
+
 // Round update: refresh round control + pairings, then set timer
 document.body.addEventListener("sse:round_update", function(e) {
   const data = JSON.parse(e.detail.data);

@@ -66,20 +66,6 @@
       Apply Swap
     </button>
   </form>
-  <script>
-  function resolveSwapIds(form) {
-    ['1', '2'].forEach(function(n) {
-      var name = document.getElementById('swap-input-' + n).value;
-      var opts = document.getElementById('swap-list-' + n).options;
-      for (var i = 0; i < opts.length; i++) {
-        if (opts[i].value === name) {
-          document.getElementById('swap-id-' + n).value = opts[i].dataset.id;
-          return;
-        }
-      }
-    });
-  }
-  </script>
 </div>
 {% else %}
 <div style="font-size: 14px; color: #64748b;">No pairings yet — start a round to see matches.</div>
