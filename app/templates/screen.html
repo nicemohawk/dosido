@@ -1,45 +1,37 @@
 {% extends "base.html" %}
 
 {% block title %}{{ settings.event_name }} — Screen{% endblock %}
-{% block body_class %}text-[#e2e8f0]{% endblock %}
-
-{% block head %}
-<style>
-  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-  .timer-warning { color: #f59e0b !important; animation: pulse 1s infinite; }
-  .timer-done { color: #ef4444 !important; animation: pulse 1s infinite; }
-</style>
-{% endblock %}
+{% block body_class %}text-slate-200{% endblock %}
 
 {% block body %}
-<div style="background: #0a0f1a; padding: 28px 40px; height: 100vh; display: flex; flex-direction: column;">
+<div class="bg-midnight py-7 px-10 h-screen flex flex-col">
 
   <!-- Header -->
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0;">
+  <div class="flex justify-between items-center mb-5 flex-shrink-0">
     <div>
-      <div style="font-size: 12px; font-weight: 600; color: #475569; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 2px;">
+      <div class="text-xs font-semibold text-slate-600 tracking-[0.1em] uppercase mb-0.5">
         {{ settings.event_name }}
       </div>
       {% if state.round_number > 0 %}
-      <div style="font-size: 26px; font-weight: 700;">
-        Round {{ state.round_number }} <span style="color: #475569; font-weight: 400;">of {{ state.round_number + state.rounds_remaining }}</span>
+      <div class="text-[26px] font-bold">
+        Round {{ state.round_number }} <span class="text-slate-600 font-normal">of {{ state.round_number + state.rounds_remaining }}</span>
       </div>
       {% else %}
-      <div style="font-size: 26px; font-weight: 700;">Waiting for Round 1</div>
+      <div class="text-[26px] font-bold">Waiting for Round 1</div>
       {% endif %}
     </div>
-    <div style="display: flex; align-items: center; gap: 20px;">
+    <div class="flex items-center gap-5">
       {% if pairings %}
-      <div style="font-size: 13px; color: #64748b;">
+      <div class="text-[13px] text-slate-500">
         {{ pairings|length }} tables &middot; {{ counts.active }} attendees
       </div>
       {% endif %}
-      <span id="timer-display" style="font-family: 'JetBrains Mono', monospace; font-size: 56px; font-weight: 700; color: #e2e8f0;">--:--</span>
+      <span id="timer-display" class="font-mono text-[56px] font-bold">--:--</span>
     </div>
   </div>
 
   <!-- Pairings grid or check-in board -->
-  <div style="flex: 1; min-height: 0;">
+  <div class="flex-1 min-h-0">
     {% if state.round_number > 0 and pairings %}
       {% set count = pairings|length %}
       {% if count <= 10 %}
@@ -89,26 +81,26 @@
         {% set name_size = "12px" %}
       {% endif %}
 
-      <div id="pairings-grid" style="display: grid; grid-template-columns: repeat({{ cols }}, 1fr); gap: {{ grid_gap }}; align-content: start; overflow: hidden;">
+      <div id="pairings-grid" class="grid content-start overflow-hidden" style="grid-template-columns: repeat({{ cols }}, 1fr); gap: {{ grid_gap }};">
         {% for p in pairings %}
-        <div style="background: #111827; border: 1px solid #1e293b; border-radius: 7px; padding: {{ card_pad }}; display: flex; align-items: center; gap: {{ card_gap }};"
+        <div class="bg-gray-900 border border-slate-800 rounded-[7px] flex items-center" style="padding: {{ card_pad }}; gap: {{ card_gap }};"
              data-pairing-row data-pairing-names="{{ p.name_a }} {{ p.name_b }}">
-          <div style="font-family: 'JetBrains Mono', monospace; font-size: {{ tbl_size }}; font-weight: 800; color: #3b82f6; min-width: {{ tbl_min }}; text-align: center; line-height: 1;">
+          <div class="font-mono font-extrabold text-blue-500 text-center leading-none" style="font-size: {{ tbl_size }}; min-width: {{ tbl_min }};">
             {{ p.table_number }}
           </div>
-          <div style="width: 2px; height: {{ div_h }}; background: #1e3a5f; border-radius: 1px; flex-shrink: 0;"></div>
-          <div style="flex: 1; min-width: 0;">
-            <div style="font-size: {{ name_size }}; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.4;">{{ p.name_a }}</div>
-            <div style="font-size: {{ name_size }}; font-weight: 500; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.4;">{{ p.name_b }}</div>
+          <div class="w-0.5 bg-[#1e3a5f] rounded-sm flex-shrink-0" style="height: {{ div_h }};"></div>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold truncate leading-[1.4]" style="font-size: {{ name_size }};">{{ p.name_a }}</div>
+            <div class="font-medium text-slate-400 truncate leading-[1.4]" style="font-size: {{ name_size }};">{{ p.name_b }}</div>
           </div>
         </div>
         {% endfor %}
       </div>
 
       {% if pit_stop_info %}
-      <div style="margin-top: 6px; flex-shrink: 0; background: #1c1208; border: 1px solid #422006; border-radius: 7px; padding: 8px 14px; display: flex; align-items: center; gap: 10px;">
-        <span style="font-size: 14px;">&#9749;</span>
-        <span style="font-size: 13px; color: #f59e0b; font-weight: 500;">Pit Stop: {{ pit_stop_info.name }}</span>
+      <div class="mt-1.5 flex-shrink-0 bg-pit-stop border border-pit-stop-border rounded-[7px] py-2 px-3.5 flex items-center gap-2.5">
+        <span class="text-sm">&#9749;</span>
+        <span class="text-[13px] text-amber-500 font-medium">Pit Stop: {{ pit_stop_info.name }}</span>
       </div>
       {% endif %}
     {% else %}
@@ -129,24 +121,6 @@ Timer.setEnd("{{ state.timer_end }}");
 {% elif state.timer_paused and state.timer_remaining is not none %}
 Timer.pause({{ state.timer_remaining }});
 {% endif %}
-
-// Timer color states
-(function() {
-  var el = document.getElementById('timer-display');
-  if (!el) return;
-  var origUpdate = Timer._updateDisplay;
-  var observer = new MutationObserver(function() {
-    var text = el.textContent.trim();
-    var parts = text.split(':');
-    if (parts.length !== 2) return;
-    var totalSec = parseInt(parts[0]) * 60 + parseInt(parts[1]);
-    if (isNaN(totalSec)) return;
-    el.classList.remove('timer-warning', 'timer-done');
-    if (totalSec === 0) el.classList.add('timer-done');
-    else if (totalSec <= 60) el.classList.add('timer-warning');
-  });
-  observer.observe(el, { childList: true, characterData: true, subtree: true });
-})();
 
 document.body.addEventListener("sse:round_update", function(e) {
   const data = JSON.parse(e.detail.data);

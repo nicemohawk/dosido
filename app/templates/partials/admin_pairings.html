@@ -1,49 +1,49 @@
 <!-- Admin pairings partial — swapped via SSE -->
 {% if pairings %}
-<div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
-  <div style="font-size: 12px; font-weight: 600; color: #64748b; letter-spacing: 0.08em; text-transform: uppercase;">
+<div class="flex justify-between mb-4">
+  <div class="text-xs font-semibold text-slate-500 tracking-[0.08em] uppercase">
     Round {{ state.round_number }} Pairings
   </div>
-  <div style="font-size: 13px; color: #94a3b8;">
-    Avg: <span style="color: #22c55e; font-weight: 600;">{{ "%.0f"|format(pairings|map(attribute='score')|list|sum / pairings|length) }}</span>
+  <div class="text-[13px] text-slate-400">
+    Avg: <span class="text-green-500 font-semibold">{{ "%.0f"|format(pairings|map(attribute='score')|list|sum / pairings|length) }}</span>
     &middot;
-    Low: <span style="color: #f59e0b; font-weight: 600;">{{ "%.0f"|format(pairings|map(attribute='score')|list|min) }}</span>
+    Low: <span class="text-amber-500 font-semibold">{{ "%.0f"|format(pairings|map(attribute='score')|list|min) }}</span>
   </div>
 </div>
 
-<div style="display: flex; flex-direction: column; gap: 4px;">
+<div class="flex flex-col gap-1">
   {% for p in pairings %}
-  <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #0a0f1a; border-radius: 8px;">
-    <div style="display: flex; align-items: center; gap: 16px;">
-      <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #64748b; font-weight: 600; min-width: 60px;">TABLE {{ p.table_number }}</span>
-      <span style="font-size: 14px; font-weight: 500;">
+  <div class="flex items-center justify-between px-4 py-3 bg-midnight rounded-lg">
+    <div class="flex items-center gap-4">
+      <span class="font-mono text-xs text-slate-500 font-semibold min-w-[60px]">TABLE {{ p.table_number }}</span>
+      <span class="text-sm font-medium">
         {% if p.token_a %}<a href="/{{ slug }}/a/{{ p.token_a }}" target="_blank" class="profile-link">{{ p.name_a }}</a>{% else %}{{ p.name_a }}{% endif %}
-        <span style="color: #475569; margin: 0 6px;">&#8596;</span>
+        <span class="text-slate-600 mx-1.5">&#8596;</span>
         {% if p.token_b %}<a href="/{{ slug }}/a/{{ p.token_b }}" target="_blank" class="profile-link">{{ p.name_b }}</a>{% else %}{{ p.name_b }}{% endif %}
       </span>
     </div>
-    <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: {% if p.score >= 80 %}#22c55e{% elif p.score >= 60 %}#f59e0b{% else %}#ef4444{% endif %};">{{ "%.0f"|format(p.score) }}</div>
+    <div class="font-mono text-[13px] font-semibold {% if p.score >= 80 %}score-high{% elif p.score >= 60 %}score-medium{% else %}score-low{% endif %}">{{ "%.0f"|format(p.score) }}</div>
   </div>
   {% endfor %}
 
   {% if pit_stop_info %}
-  <div style="display: flex; align-items: center; gap: 16px; padding: 12px 16px; background: #1c1208; border-radius: 8px; border: 1px solid #422006;">
-    <span style="font-size: 16px;">&#9749;</span>
-    <span style="font-size: 14px; color: #f59e0b;">Pit Stop: {% if pit_stop_info.token %}<a href="/{{ slug }}/a/{{ pit_stop_info.token }}" target="_blank" class="profile-link">{{ pit_stop_info.name }}</a>{% else %}{{ pit_stop_info.name }}{% endif %}</span>
+  <div class="flex items-center gap-4 px-4 py-3 bg-pit-stop rounded-lg border border-pit-stop-border">
+    <span class="text-base">&#9749;</span>
+    <span class="text-sm text-amber-500">Pit Stop: {% if pit_stop_info.token %}<a href="/{{ slug }}/a/{{ pit_stop_info.token }}" target="_blank" class="profile-link">{{ pit_stop_info.name }}</a>{% else %}{{ pit_stop_info.name }}{% endif %}</span>
   </div>
   {% endif %}
 </div>
 
-<!-- best when paired -->
-<div style="margin-top: 20px; padding: 16px; background: #0a0f1a; border-radius: 8px; border: 1px solid #1e293b;">
-  <div style="font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 10px; letter-spacing: 0.08em; text-transform: uppercase;">
+<!-- Override -->
+<div class="mt-5 p-4 bg-midnight rounded-lg border border-slate-800">
+  <div class="text-xs font-semibold text-slate-500 mb-2.5 tracking-[0.08em] uppercase">
     Override
   </div>
-  <form hx-post="/api/admin/swap" hx-swap="none" style="display: flex; align-items: center; gap: 10px;"
+  <form hx-post="/api/admin/swap" hx-swap="none" class="flex items-center gap-2.5"
         onsubmit="resolveSwapIds(this)">
     <input type="hidden" name="attendee_id_1" id="swap-id-1">
     <input type="text" id="swap-input-1" list="swap-list-1" placeholder="Type to filter..."
-           style="flex: 1; background: #111827; color: #e2e8f0; border: 1px solid #374151; border-radius: 6px; padding: 0 10px; font-size: 13px; height: 30px; outline: none;">
+           class="flex-1 input-dark rounded-md px-2.5 text-[13px] h-[30px]">
     <datalist id="swap-list-1">
       {% for id, att in attendees.items()|sort(attribute='1.name') %}
         {% if att.status.value == 'checked-in' %}
@@ -51,10 +51,10 @@
         {% endif %}
       {% endfor %}
     </datalist>
-    <span style="color: #475569;">&#8596;</span>
+    <span class="text-slate-600">&#8596;</span>
     <input type="hidden" name="attendee_id_2" id="swap-id-2">
     <input type="text" id="swap-input-2" list="swap-list-2" placeholder="Type to filter..."
-           style="flex: 1; background: #111827; color: #e2e8f0; border: 1px solid #374151; border-radius: 6px; padding: 0 10px; font-size: 13px; height: 30px; outline: none;">
+           class="flex-1 input-dark rounded-md px-2.5 text-[13px] h-[30px]">
     <datalist id="swap-list-2">
       {% for id, att in attendees.items()|sort(attribute='1.name') %}
         {% if att.status.value == 'checked-in' %}
@@ -62,25 +62,11 @@
         {% endif %}
       {% endfor %}
     </datalist>
-    <button type="submit" style="background: #1e293b; color: #e2e8f0; border: 1px solid #374151; border-radius: 6px; padding: 0 14px; font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap; height: 30px;">
+    <button type="submit" class="bg-slate-800 text-slate-200 border border-gray-700 rounded-md px-3.5 font-semibold text-[13px] cursor-pointer whitespace-nowrap h-[30px]">
       Apply Swap
     </button>
   </form>
-  <script>
-  function resolveSwapIds(form) {
-    ['1', '2'].forEach(function(n) {
-      var name = document.getElementById('swap-input-' + n).value;
-      var opts = document.getElementById('swap-list-' + n).options;
-      for (var i = 0; i < opts.length; i++) {
-        if (opts[i].value === name) {
-          document.getElementById('swap-id-' + n).value = opts[i].dataset.id;
-          return;
-        }
-      }
-    });
-  }
-  </script>
 </div>
 {% else %}
-<div style="font-size: 14px; color: #64748b;">No pairings yet — start a round to see matches.</div>
+<div class="text-sm text-slate-500">No pairings yet — start a round to see matches.</div>
 {% endif %}

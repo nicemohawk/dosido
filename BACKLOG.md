@@ -26,7 +26,7 @@ Improvement ideas and tech debt discovered during development. Pick these up whe
 
 - [ ] **Screen/mobile white flash on round change** — `location.reload()` causes visible flicker on projector. Replace with HTMX partial swaps for smooth transition. (`screen.html`, `mobile.html`)
 - [ ] **No "scoring in progress" indicator for walk-ups** — admin can't tell if LLM backfill is running or stuck. Scores jump unexpectedly when backfill completes.
-- [ ] **No accessibility for live updates** — only `connection-status` has `aria-live`. Screen reader users miss timer, match assignments, and signal results. (`base.html:20`)
+- [ ] **No accessibility for live updates** — only `connection-status` has `aria-live`. Screen reader users miss timer, match assignments, and signal results. Admin tabs lack `role="tab"`, `aria-selected`, and `role="tabpanel"` attributes. (`base.html:20`, `admin.html`)
 - [ ] **Admin pool filter resets on tab switch** — search term lost when switching tabs or on checkin_update refresh. (`admin.html:83`)
 
 ## Tech Debt

@@ -1,62 +1,54 @@
 {% extends "base.html" %}
 
 {% block title %}{{ settings.event_name }}{% endblock %}
-{% block body_class %}text-[#e2e8f0]{% endblock %}
-
-{% block head %}
-<style>
-  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-  .timer-warning { color: #f59e0b !important; animation: pulse 1s infinite; }
-  .timer-done { color: #ef4444 !important; animation: pulse 1s infinite; }
-</style>
-{% endblock %}
+{% block body_class %}text-slate-200{% endblock %}
 
 {% block body %}
-<div style="min-height: 100vh; background: #0a0f1a; color: #e2e8f0; padding: 20px;" hx-ext="json-enc">
-  <div style="max-width: 480px; margin: 0 auto;">
+<div class="min-h-screen bg-midnight p-5" hx-ext="json-enc">
+  <div class="max-w-[480px] mx-auto">
 
   {% if is_personal and attendee %}
   <!-- ===== PERSONAL MOBILE VIEW (badge QR) ===== -->
 
-  <div style="text-align: center; margin-bottom: 16px;">
-    <div style="font-size: 13px; color: #64748b;">Welcome,</div>
-    <div style="font-size: 20px; font-weight: 700;">{{ attendee.name }}</div>
+  <div class="text-center mb-4">
+    <div class="text-[13px] text-slate-500">Welcome,</div>
+    <div class="text-xl font-bold">{{ attendee.name }}</div>
   </div>
 
   <!-- Round + Timer -->
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 2px;">
+  <div class="flex justify-between items-center mb-5 px-0.5">
     {% if state.round_number > 0 %}
-    <div style="font-size: 16px; font-weight: 700;">
-      Round {{ state.round_number }} <span style="color: #475569; font-weight: 400;">/ {{ state.round_number + state.rounds_remaining }}</span>
+    <div class="text-base font-bold">
+      Round {{ state.round_number }} <span class="text-slate-600 font-normal">/ {{ state.round_number + state.rounds_remaining }}</span>
     </div>
     {% else %}
-    <div style="font-size: 14px; color: #64748b;">Waiting for first round...</div>
+    <div class="text-sm text-slate-500">Waiting for first round...</div>
     {% endif %}
-    <span id="timer-display" style="font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: #e2e8f0;">--:--</span>
+    <span id="timer-display" class="font-mono text-[28px] font-bold">--:--</span>
   </div>
 
   {% if state.round_number > 0 %}
     {% if is_pit_stop %}
     <!-- Pit stop -->
-    <div style="background: #1c1208; border: 1px solid #422006; border-radius: 14px; padding: 28px; text-align: center; margin-bottom: 20px;">
-      <div style="font-size: 28px;">&#9749;</div>
-      <div style="font-size: 18px; font-weight: 600; color: #f59e0b; margin-top: 8px;">Pit Stop</div>
-      <div style="font-size: 13px; color: #94a3b8; margin-top: 8px;">Grab a coffee — you're back next round</div>
+    <div class="bg-pit-stop border border-pit-stop-border rounded-[14px] p-7 text-center mb-5">
+      <div class="text-[28px]">&#9749;</div>
+      <div class="text-lg font-semibold text-amber-500 mt-2">Pit Stop</div>
+      <div class="text-[13px] text-slate-400 mt-2">Grab a coffee — you're back next round</div>
     </div>
     {% elif my_match %}
     <!-- Your match -->
-    <div style="background: #111827; border: 1px solid #1e293b; border-radius: 14px; padding: 28px; text-align: center; margin-bottom: 20px;">
-      <div style="font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;">
+    <div class="bg-gray-900 border border-slate-800 rounded-[14px] p-7 text-center mb-5">
+      <div class="text-xs text-slate-500 font-semibold uppercase tracking-[0.08em]">
         Your match
       </div>
-      <div style="font-size: 28px; font-weight: 700; margin-top: 10px;">{{ my_match }}</div>
-      <div style="margin-top: 16px; font-size: 40px; font-weight: 800; color: #3b82f6; font-family: 'JetBrains Mono', monospace;">
+      <div class="text-[28px] font-bold mt-2.5">{{ my_match }}</div>
+      <div class="mt-4 text-[40px] font-extrabold text-blue-500 font-mono">
         TABLE {{ my_table }}
       </div>
     </div>
     {% else %}
-    <div style="background: #111827; border: 1px solid #1e293b; border-radius: 14px; padding: 28px; text-align: center; margin-bottom: 20px;">
-      <div style="color: #64748b; font-size: 14px;">No pairing this round</div>
+    <div class="bg-gray-900 border border-slate-800 rounded-[14px] p-7 text-center mb-5">
+      <div class="text-slate-500 text-sm">No pairing this round</div>
     </div>
     {% endif %}
 
@@ -70,21 +62,21 @@
     <div id="signal-carryover" class="hidden"></div>
     {% endif %}
   {% else %}
-    <div style="background: #111827; border: 1px solid #1e293b; border-radius: 14px; padding: 28px; text-align: center;">
-      <div style="color: #64748b; font-size: 14px;">Rounds haven't started yet.</div>
-      <div style="color: #475569; font-size: 13px; margin-top: 8px;">Grab some coffee and mingle!</div>
+    <div class="bg-gray-900 border border-slate-800 rounded-[14px] p-7 text-center">
+      <div class="text-slate-500 text-sm">Rounds haven't started yet.</div>
+      <div class="text-slate-600 text-[13px] mt-2">Grab some coffee and mingle!</div>
     </div>
   {% endif %}
 
   <!-- Follow-up list (mutual matches) -->
   <div id="follow-up-container">
   {% if mutual_matches %}
-  <div style="margin-top: 20px; background: #1a1505; border: 1px solid #422006; border-radius: 14px; padding: 20px;">
-    <div style="font-weight: 600; color: #f59e0b; margin-bottom: 8px;">&#129309; Your Follow-Up List</div>
-    <div style="font-size: 13px; color: #94a3b8; margin-bottom: 12px;">Great conversations worth continuing — connect during networking time!</div>
-    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px;" id="follow-up-list">
+  <div class="mt-5 bg-follow-up border border-pit-stop-border rounded-[14px] p-5">
+    <div class="font-semibold text-amber-500 mb-2">&#129309; Your Follow-Up List</div>
+    <div class="text-[13px] text-slate-400 mb-3">Great conversations worth continuing — connect during networking time!</div>
+    <ul class="list-none p-0 m-0 flex flex-col gap-1" id="follow-up-list">
       {% for match in mutual_matches %}
-      <li data-name="{{ match.name }}"><a href="/{{ slug }}/a/{{ match.token }}" target="_blank" style="color: #f59e0b; text-decoration: none; font-weight: 500; font-size: 14px;">{{ match.name }}</a></li>
+      <li data-name="{{ match.name }}"><a href="/{{ slug }}/a/{{ match.token }}" target="_blank" class="text-amber-500 no-underline font-medium text-sm">{{ match.name }}</a></li>
       {% endfor %}
     </ul>
   </div>
@@ -95,51 +87,51 @@
   <!-- ===== GENERAL MOBILE VIEW (search/pin) ===== -->
 
   <!-- Search bar -->
-  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+  <div class="flex items-center gap-2 mb-4">
     <input type="text" id="search-input" placeholder="Search your name..."
-           style="flex: 1; background: #111827; color: #e2e8f0; border: 1px solid #1e293b; border-radius: 10px; padding: 12px 16px; font-size: 15px; outline: none;">
-    <button id="pin-button" style="background: #1e293b; color: #e2e8f0; border: 1px solid #374151; border-radius: 10px; padding: 12px 14px; font-size: 14px; cursor: pointer; white-space: nowrap; display: none;">&#128204; Pin</button>
-    <button id="clear-pin" style="background: #374151; color: #e2e8f0; border: none; border-radius: 6px; padding: 4px 10px; font-size: 13px; cursor: pointer; display: none;">&#10005;</button>
+           class="flex-1 bg-gray-900 text-slate-200 border border-slate-800 rounded-[10px] py-3 px-4 text-[15px] outline-none">
+    <button id="pin-button" class="hidden bg-slate-800 text-slate-200 border border-gray-700 rounded-[10px] py-3 px-3.5 text-sm cursor-pointer whitespace-nowrap">&#128204; Pin</button>
+    <button id="clear-pin" class="hidden bg-gray-700 text-slate-200 border-none rounded-md py-1 px-2.5 text-[13px] cursor-pointer">&#10005;</button>
   </div>
 
   <!-- Round + Timer -->
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 2px;">
+  <div class="flex justify-between items-center mb-5 px-0.5">
     {% if state.round_number > 0 %}
-    <div style="font-size: 16px; font-weight: 700;">
-      Round {{ state.round_number }} <span style="color: #475569; font-weight: 400;">/ {{ state.round_number + state.rounds_remaining }}</span>
+    <div class="text-base font-bold">
+      Round {{ state.round_number }} <span class="text-slate-600 font-normal">/ {{ state.round_number + state.rounds_remaining }}</span>
     </div>
     {% else %}
-    <div style="font-size: 14px; color: #64748b;">Waiting for first round...</div>
+    <div class="text-sm text-slate-500">Waiting for first round...</div>
     {% endif %}
-    <span id="timer-display" style="font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: #e2e8f0;">--:--</span>
+    <span id="timer-display" class="font-mono text-[28px] font-bold">--:--</span>
   </div>
 
   <!-- Pairings list -->
   {% if pairings %}
-  <div style="display: flex; flex-direction: column; gap: 6px;" id="pairings-list">
+  <div class="flex flex-col gap-1.5" id="pairings-list">
     {% for p in pairings %}
-    <div style="background: #111827; border: 1px solid #1e293b; border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 12px;"
+    <div class="bg-gray-900 border border-slate-800 rounded-[10px] py-2.5 px-3.5 flex items-center gap-3"
          data-pairing-row data-pairing-names="{{ p.name_a }} {{ p.name_b }}">
-      <div style="font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 800; color: #3b82f6; min-width: 32px; text-align: center;">
+      <div class="font-mono text-lg font-extrabold text-blue-500 min-w-[32px] text-center">
         {{ p.table_number }}
       </div>
-      <div style="width: 2px; height: 28px; background: #1e3a5f; border-radius: 1px; flex-shrink: 0;"></div>
-      <div style="flex: 1; min-width: 0;">
-        <div style="font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ p.name_a }}</div>
-        <div style="font-size: 14px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ p.name_b }}</div>
+      <div class="w-0.5 h-7 bg-[#1e3a5f] rounded-sm flex-shrink-0"></div>
+      <div class="flex-1 min-w-0">
+        <div class="text-sm font-semibold truncate">{{ p.name_a }}</div>
+        <div class="text-sm text-slate-400 truncate">{{ p.name_b }}</div>
       </div>
     </div>
     {% endfor %}
 
     {% if pit_stop_info %}
-    <div style="background: #1c1208; border: 1px solid #422006; border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 10px;">
+    <div class="bg-pit-stop border border-pit-stop-border rounded-[10px] py-2.5 px-3.5 flex items-center gap-2.5">
       <span>&#9749;</span>
-      <span style="color: #f59e0b; font-size: 14px;">{{ pit_stop_info.name }} — Pit Stop</span>
+      <span class="text-amber-500 text-sm">{{ pit_stop_info.name }} — Pit Stop</span>
     </div>
     {% endif %}
   </div>
   {% else %}
-  <div style="text-align: center; color: #64748b; padding: 40px 20px; font-size: 14px;">
+  <div class="text-center text-slate-500 py-10 px-5 text-sm">
     No pairings yet
   </div>
   {% endif %}
@@ -172,27 +164,16 @@ Timer.setEnd("{{ state.timer_end }}");
 Timer.pause({{ state.timer_remaining }});
 {% endif %}
 
-// Timer color states
-(function() {
-  var el = document.getElementById('timer-display');
-  if (!el) return;
-  var observer = new MutationObserver(function() {
-    var text = el.textContent.trim();
-    var parts = text.split(':');
-    if (parts.length !== 2) return;
-    var totalSec = parseInt(parts[0]) * 60 + parseInt(parts[1]);
-    if (isNaN(totalSec)) return;
-    el.classList.remove('timer-warning', 'timer-done');
-    if (totalSec === 0) el.classList.add('timer-done');
-    else if (totalSec <= 60) el.classList.add('timer-warning');
-  });
-  observer.observe(el, { childList: true, characterData: true, subtree: true });
-})();
-
 {% if is_personal %}
+function escapeHtml(str) {
+  var div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
 var SIGNAL_STORAGE_KEY = "matchmaking_pending_signal";
 var SIGNAL_SENT_KEY = "matchmaking_signal_sent";
-var MY_ATTENDEE_ID = "{{ attendee.id }}";
+var MY_ATTENDEE_ID = {{ attendee.id|tojson }};
 
 // Track whether we've already sent feedback this round
 var signalSentThisRound = {{ 'true' if already_signaled else 'false' }};
@@ -232,16 +213,20 @@ Timer.onExpire(function() {
   if (!container) return;
 
   container.innerHTML =
-    '<div style="background: #111827; border: 1px solid #1e293b; border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 16px;" id="signal-carryover-inner">' +
-      '<div style="font-size: 13px; color: #64748b; margin-bottom: 4px;">From round ' + pending.round_number + '</div>' +
-      '<div style="font-size: 15px; font-weight: 600; margin-bottom: 16px;">&#129309; Want to follow up with ' + pending.match_name + '?</div>' +
-      '<div style="display: flex; gap: 12px; justify-content: center;">' +
-        '<button onclick="sendSignal(\'' + pending.from_attendee + '\', \'' + pending.to_attendee + '\', ' + pending.round_number + ', \'' + pending.match_name + '\')"' +
-          ' style="background: #22c55e; color: #0a0f1a; border: none; border-radius: 10px; padding: 14px 36px; font-size: 16px; font-weight: 700; cursor: pointer;">Yes</button>' +
-        '<button onclick="document.getElementById(\'signal-carryover\').classList.add(\'hidden\')"' +
-          ' style="background: #1e293b; color: #94a3b8; border: 1px solid #374151; border-radius: 10px; padding: 14px 36px; font-size: 16px; font-weight: 600; cursor: pointer;">Skip</button>' +
+    '<div class="bg-gray-900 border border-slate-800 rounded-xl p-6 text-center mb-4" id="signal-carryover-inner">' +
+      '<div class="text-[13px] text-slate-500 mb-1">From round ' + pending.round_number + '</div>' +
+      '<div class="text-[15px] font-semibold mb-4">&#129309; Want to follow up with ' + escapeHtml(pending.match_name) + '?</div>' +
+      '<div class="flex gap-3 justify-center">' +
+        '<button id="carryover-yes-btn" class="bg-green-500 text-midnight border-none rounded-[10px] py-3.5 px-9 text-base font-bold cursor-pointer">Yes</button>' +
+        '<button id="carryover-skip-btn" class="bg-slate-800 text-slate-400 border border-gray-700 rounded-[10px] py-3.5 px-9 text-base font-semibold cursor-pointer">Skip</button>' +
       '</div>' +
     '</div>';
+  document.getElementById('carryover-yes-btn').addEventListener('click', function() {
+    sendSignal(pending.from_attendee, pending.to_attendee, pending.round_number, pending.match_name);
+  });
+  document.getElementById('carryover-skip-btn').addEventListener('click', function() {
+    container.classList.add('hidden');
+  });
   container.classList.remove('hidden');
 
   // Auto-dismiss after 60 seconds
@@ -258,8 +243,8 @@ document.body.addEventListener("sse:round_update", function(e) {
     if (prompt && !prompt.classList.contains('hidden')) {
       var signalData = {
         from_attendee: MY_ATTENDEE_ID,
-        to_attendee: "{{ my_match_id or '' }}",
-        match_name: "{{ my_match or '' }}",
+        to_attendee: {{ (my_match_id or '')|tojson }},
+        match_name: {{ (my_match or '')|tojson }},
         round_number: {{ state.round_number }}
       };
       if (signalData.to_attendee) {
@@ -297,10 +282,10 @@ function addToFollowUpList(name, token) {
     var container = document.getElementById('follow-up-container');
     if (!container) return;
     container.innerHTML =
-      '<div style="margin-top: 20px; background: #1a1505; border: 1px solid #422006; border-radius: 14px; padding: 20px;">' +
-        '<div style="font-weight: 600; color: #f59e0b; margin-bottom: 8px;">&#129309; Your Follow-Up List</div>' +
-        '<div style="font-size: 13px; color: #94a3b8; margin-bottom: 12px;">Great conversations worth continuing — connect during networking time!</div>' +
-        '<ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px;" id="follow-up-list"></ul>' +
+      '<div class="mt-5 bg-follow-up border border-pit-stop-border rounded-[14px] p-5">' +
+        '<div class="font-semibold text-amber-500 mb-2">&#129309; Your Follow-Up List</div>' +
+        '<div class="text-[13px] text-slate-400 mb-3">Great conversations worth continuing — connect during networking time!</div>' +
+        '<ul class="list-none p-0 m-0 flex flex-col gap-1" id="follow-up-list"></ul>' +
       '</div>';
     list = document.getElementById('follow-up-list');
   }
@@ -311,7 +296,7 @@ function addToFollowUpList(name, token) {
   var a = document.createElement('a');
   a.href = '/{{ slug }}/a/' + token;
   a.target = '_blank';
-  a.style.cssText = 'color: #f59e0b; text-decoration: none; font-weight: 500; font-size: 14px;';
+  a.className = 'text-amber-500 no-underline font-medium text-sm';
   a.textContent = name;
   li.appendChild(a);
   list.appendChild(li);
@@ -328,16 +313,17 @@ function sendSignal(fromId, toId, roundNumber, matchName) {
     markSignalSent(roundNumber);
     var el = document.getElementById('signal-prompt-inner') || document.getElementById('signal-carryover-inner');
     if (!el) return;
+    var safeName = escapeHtml(matchName);
     if (data.mutual) {
-      el.innerHTML = '<div style="font-size: 28px; margin-bottom: 8px;">&#129309;</div>' +
-        '<div style="font-size: 18px; font-weight: 600; color: #22c55e;">It\'s mutual!</div>' +
-        '<div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">You and ' + matchName + ' both want to follow up.</div>';
+      el.innerHTML = '<div class="text-[28px] mb-2">&#129309;</div>' +
+        '<div class="text-lg font-semibold text-green-500">It\'s mutual!</div>' +
+        '<div class="text-[13px] text-slate-400 mt-1">You and ' + safeName + ' both want to follow up.</div>';
       // Dynamically add to follow-up list
       addToFollowUpList(matchName, data.match_token || '');
     } else {
-      el.innerHTML = '<div style="font-size: 28px; margin-bottom: 8px;">&#9989;</div>' +
-        '<div style="font-size: 18px; font-weight: 600;">Feedback sent!</div>' +
-        '<div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">If ' + matchName + ' feels the same, you\'ll both be notified.</div>';
+      el.innerHTML = '<div class="text-[28px] mb-2">&#9989;</div>' +
+        '<div class="text-lg font-semibold">Feedback sent!</div>' +
+        '<div class="text-[13px] text-slate-400 mt-1">If ' + safeName + ' feels the same, you\'ll both be notified.</div>';
     }
   });
 }
@@ -353,9 +339,9 @@ document.body.addEventListener("sse:signal_update", function(e) {
   // Upgrade "Feedback sent!" prompt to "It's mutual!" if visible
   var el = document.getElementById('signal-prompt-inner') || document.getElementById('signal-carryover-inner');
   if (el) {
-    el.innerHTML = '<div style="font-size: 28px; margin-bottom: 8px;">&#129309;</div>' +
-      '<div style="font-size: 18px; font-weight: 600; color: #22c55e;">It\'s mutual!</div>' +
-      '<div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">You and ' + other.name + ' both want to follow up.</div>';
+    el.innerHTML = '<div class="text-[28px] mb-2">&#129309;</div>' +
+      '<div class="text-lg font-semibold text-green-500">It\'s mutual!</div>' +
+      '<div class="text-[13px] text-slate-400 mt-1">You and ' + escapeHtml(other.name) + ' both want to follow up.</div>';
   }
 });
 {% endif %}
