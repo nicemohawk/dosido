@@ -54,7 +54,7 @@ After activating the venv, you get these CLI commands:
 
 | Command | What it does |
 |---------|-------------|
-| `dosido-seed` | Generate 60 fake attendees + compatibility matrix |
+| `dosido-seed` | Generate 60 curated attendees + compatibility matrix |
 | `dosido-load` | Load data into Redis |
 | `dosido-serve` | Start the dev server (with reload) |
 | `dosido-test-profile` | Test LinkedIn scraping + enrichment |
@@ -73,7 +73,7 @@ cp .env.example .env
 # Start Redis (if not already running)
 brew services start redis  # macOS
 
-# Seed fake data and load into Redis
+# Seed data and load into Redis
 dosido-seed
 dosido-load
 
@@ -85,6 +85,18 @@ Open:
 - Admin: http://localhost:8000/climate-week-2026/admin/{ADMIN_TOKEN}
 - Screen: http://localhost:8000/climate-week-2026/screen
 - Mobile: http://localhost:8000/climate-week-2026
+
+### Testing with LLM scoring
+
+The seed data includes hand-written bios and synthetic compatibility scores (heuristic bonuses for role/lane/climate overlap). To test with real LLM-generated pairwise scores instead:
+
+```bash
+dosido-seed                              # Generate seed attendees + synthetic scores
+python pipeline/score_pairs.py           # Replace matrix with LLM scores (~1,770 pairs, ~5 min, ~$1-2)
+dosido-load                              # Reload Redis with the LLM-scored matrix
+```
+
+This submits all attendee pairs to the Claude Batch API, which returns a score (0-100), rationale, and conversation spark for each pair. Requires `ANTHROPIC_API_KEY` in `.env`.
 
 ## Pre-Event Pipeline
 
@@ -224,7 +236,7 @@ pipeline/
   prompts.py           # LLM prompt templates
 
 scripts/
-  seed_test_data.py    # Generate fake attendees + matrix for dev
+  seed_test_data.py    # Generate curated attendees + matrix for dev
   run_pipeline.py      # CLI orchestrator for the full pipeline
   test_profile.py      # Interactive LinkedIn scrape + enrichment tester
 
