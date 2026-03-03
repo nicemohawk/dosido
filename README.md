@@ -73,7 +73,7 @@ cp .env.example .env
 # Start Redis (if not already running)
 brew services start redis  # macOS
 
-# Seed fake data and load into Redis
+# Seed data and load into Redis
 dosido-seed
 dosido-load
 
@@ -88,16 +88,12 @@ Open:
 
 ### Testing with LLM scoring
 
-The seed data includes hand-written bios and deterministic compatibility scores. To test with real LLM-generated pairwise scores instead:
+The seed data includes hand-written bios and synthetic compatibility scores (heuristic bonuses for role/lane/climate overlap). To test with real LLM-generated pairwise scores instead:
 
 ```bash
-# Run pairwise scoring via Claude Batch API (skips enrichment since seed bios are already complete)
-python scripts/run_pipeline.py --skip-enrich
-
-# Or run the full pipeline step by step:
-dosido-seed                              # Generate seed attendees
-python scripts/run_pipeline.py --skip-enrich --skip-score  # Load to Redis with deterministic scores
+dosido-seed                              # Generate seed attendees + synthetic scores
 python pipeline/score_pairs.py           # Replace matrix with LLM scores (~1,770 pairs, ~5 min, ~$1-2)
+dosido-load                              # Reload Redis with the LLM-scored matrix
 ```
 
 This submits all attendee pairs to the Claude Batch API, which returns a score (0-100), rationale, and conversation spark for each pair. Requires `ANTHROPIC_API_KEY` in `.env`.
