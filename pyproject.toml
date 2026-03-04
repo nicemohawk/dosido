@@ -30,6 +30,7 @@ dev = [
 dosido-seed = "scripts.seed_test_data:main"
 dosido-load = "pipeline.load_to_redis:main"
 dosido-serve = "scripts.serve:main"
+dosido-score = "pipeline.score_pairs:main"
 dosido-test-profile = "scripts.test_profile:main"
 
 [tool.hatch.build.targets.wheel]
