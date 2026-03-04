@@ -57,6 +57,7 @@ After activating the venv, you get these CLI commands:
 | `dosido-seed` | Generate 60 curated attendees + compatibility matrix |
 | `dosido-load` | Load data into Redis |
 | `dosido-serve` | Start the dev server (with reload) |
+| `dosido-score` | Score all pairs via Claude Batch API |
 | `dosido-test-profile` | Test LinkedIn scraping + enrichment |
 | `pytest tests/` | Run tests |
 
@@ -92,7 +93,7 @@ The seed data includes hand-written bios and synthetic compatibility scores (heu
 
 ```bash
 dosido-seed                              # Generate seed attendees + synthetic scores
-python pipeline/score_pairs.py           # Replace matrix with LLM scores (~1,770 pairs, ~5 min, ~$1-2)
+dosido-score                             # Replace matrix with LLM scores (~1,770 pairs, ~5 min, ~$1-2)
 dosido-load                              # Reload Redis with the LLM-scored matrix
 ```
 
