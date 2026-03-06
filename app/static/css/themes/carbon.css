@@ -63,6 +63,14 @@
   --tag-text: #fda4af;
   --tag-border: #3d3532;
 
+  /* Role badges — warm coral spectrum */
+  --role-engineering: #38bdf8; --role-engineering-bg: rgba(56, 189, 248, 0.094);
+  --role-product: #e879f9;     --role-product-bg: rgba(232, 121, 249, 0.094);
+  --role-gtm: #fb923c;         --role-gtm-bg: rgba(251, 146, 60, 0.094);
+  --role-science: #2dd4bf;     --role-science-bg: rgba(45, 212, 191, 0.094);
+  --role-ops: #818cf8;         --role-ops-bg: rgba(129, 140, 248, 0.094);
+  --role-policy: #fb7185;      --role-policy-bg: rgba(251, 113, 133, 0.094);
+
   /* Save / confirm button */
   --confirm: #f43f5e;
 }

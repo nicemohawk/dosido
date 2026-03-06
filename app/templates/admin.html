@@ -38,19 +38,19 @@
           Duration
           <input type="number" id="round-duration" value="{{ settings.round_duration_minutes }}" min="1" max="30"
                  data-original="{{ settings.round_duration_minutes }}" oninput="checkSettingsChanged()"
-                 class="input-dark rounded-md px-2.5 text-[13px] w-16 h-[30px]">
+                 class="input-dark px-2.5 text-[13px] w-16 h-[30px]">
           <span class="text-t-muted">min</span>
         </label>
         <label class="text-xs text-t-muted flex items-center gap-1.5">
           Rounds
           <select id="total-rounds" data-original="{{ state.round_number + state.rounds_remaining }}" onchange="checkSettingsChanged()"
-                  class="input-dark rounded-md px-2.5 text-[13px] h-[30px]">
+                  class="input-dark px-2.5 text-[13px] h-[30px]">
             {% for n in range(6, 16) %}
             <option value="{{ n }}" {% if n == state.round_number + state.rounds_remaining %}selected{% endif %}>{{ n }}</option>
             {% endfor %}
           </select>
         </label>
-        <button id="save-settings-btn" onclick="saveSettings()" class="hidden btn-confirm bg-confirm text-white border-none px-3.5 py-1.5 font-semibold text-xs cursor-pointer">Save</button>
+        <button id="save-settings-btn" onclick="saveSettings()" class="hidden btn-confirm bg-confirm text-action-text border-none px-3.5 py-1.5 font-semibold text-xs cursor-pointer">Save</button>
         <span id="saved-indicator" class="hidden text-xs text-action">Saved!</span>
       </div>
     </div>
@@ -58,15 +58,15 @@
     <!-- Tabs -->
     <div class="flex gap-0.5 mb-5" id="admin-tabs">
       <button onclick="switchTab('pool')" data-tab="pool"
-              class="admin-tab admin-tab-active border rounded-lg px-[18px] py-2.5 font-semibold text-[13px] cursor-pointer">
+              class="admin-tab admin-tab-active border px-[18px] py-2.5 font-semibold text-[13px] cursor-pointer">
         Attendee Pool ({{ counts.total }})
       </button>
       <button onclick="switchTab('pairings')" data-tab="pairings"
-              class="admin-tab admin-tab-inactive border rounded-lg px-[18px] py-2.5 font-semibold text-[13px] cursor-pointer">
+              class="admin-tab admin-tab-inactive border px-[18px] py-2.5 font-semibold text-[13px] cursor-pointer">
         Current Pairings
       </button>
       <button onclick="switchTab('signals')" data-tab="signals"
-              class="admin-tab admin-tab-inactive border rounded-lg px-[18px] py-2.5 font-semibold text-[13px] cursor-pointer">
+              class="admin-tab admin-tab-inactive border px-[18px] py-2.5 font-semibold text-[13px] cursor-pointer">
         Signals
       </button>
     </div>
@@ -75,7 +75,7 @@
     <div id="tab-pool" class="bg-card border border-border-card rounded-xl p-6">
       <div class="flex items-center mb-4">
         <input type="text" id="admin-filter" placeholder="Filter attendees..." oninput="filterAttendees(this.value)"
-               class="input-dark rounded-lg px-3.5 py-2.5 text-sm w-[280px]">
+               class="input-dark px-3.5 py-2.5 text-sm w-[280px]">
         <button onclick="toggleWalkUp()" id="walkup-toggle-btn"
                 class="ml-auto mr-3.5 btn-secondary bg-subtle text-t-primary border border-border-subtle px-4 py-2.5 font-semibold text-[13px] cursor-pointer">
           + Add Walk-Up
@@ -105,8 +105,8 @@
 
   <!-- Walk-Up Modal -->
   <div id="walkup-modal" onclick="if(event.target===this)toggleWalkUp()"
-       class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-[4px] items-center justify-center">
-    <div class="bg-card border border-border-card rounded-2xl p-8 w-[520px] max-w-[90vw] shadow-[0_24px_48px_rgba(0,0,0,0.4)]">
+       class="hidden fixed inset-0 z-[100] modal-overlay backdrop-blur-[4px] items-center justify-center">
+    <div class="bg-card border border-border-card rounded-2xl p-8 w-[520px] max-w-[90vw] modal-shadow">
       <div class="flex justify-between items-center mb-6">
         <div>
           <div class="text-lg font-bold text-t-primary">Add Walk-Up Attendee</div>
@@ -120,7 +120,7 @@
         <div class="mb-4">
           <label class="text-xs font-semibold text-t-secondary uppercase tracking-wide block mb-1.5">Name *</label>
           <input type="text" name="name" required id="walkup-name-input"
-                 class="input-dark rounded-lg px-4 py-3 text-base w-full box-border"
+                 class="input-dark px-4 py-3 text-base w-full box-border"
                  placeholder="Full name">
         </div>
 
@@ -128,7 +128,7 @@
         <div class="mb-4">
           <label class="text-xs font-semibold text-t-secondary uppercase tracking-wide block mb-1.5">Email</label>
           <input type="email" name="email"
-                 class="input-dark rounded-lg px-4 py-3 text-sm w-full box-border"
+                 class="input-dark px-4 py-3 text-sm w-full box-border"
                  placeholder="email@example.com">
         </div>
 
@@ -136,7 +136,7 @@
         <div class="grid grid-cols-2 gap-3 mb-4">
           <div>
             <label class="text-xs font-semibold text-t-secondary uppercase tracking-wide block mb-1.5">Badge</label>
-            <select name="badge_slug" class="input-dark rounded-lg px-3.5 text-sm w-full h-11 box-border">
+            <select name="badge_slug" class="input-dark px-3.5 text-sm w-full h-11 box-border">
               <option value="">No badge</option>
               {% for badge in walkup_badges %}
               <option value="{{ badge.slug }}">{{ badge.slug }}</option>
@@ -145,7 +145,7 @@
           </div>
           <div>
             <label class="text-xs font-semibold text-t-secondary uppercase tracking-wide block mb-1.5">Lane</label>
-            <select name="lane" class="input-dark rounded-lg px-3.5 text-sm w-full h-11 box-border">
+            <select name="lane" class="input-dark px-3.5 text-sm w-full h-11 box-border">
               <option value="idea">Idea-holder</option>
               <option value="joiner">Joiner</option>
               <option value="flexible" selected>Flexible</option>
@@ -153,7 +153,7 @@
           </div>
           <div>
             <label class="text-xs font-semibold text-t-secondary uppercase tracking-wide block mb-1.5">Primary Role</label>
-            <select name="role" class="input-dark rounded-lg px-3.5 text-sm w-full h-11 box-border">
+            <select name="role" class="input-dark px-3.5 text-sm w-full h-11 box-border">
               <option value="engineering">Engineering</option>
               <option value="product">Product</option>
               <option value="gtm">GTM / Sales</option>
@@ -164,7 +164,7 @@
           </div>
           <div>
             <label class="text-xs font-semibold text-t-secondary uppercase tracking-wide block mb-1.5">Role Needed</label>
-            <select name="role_needed" class="input-dark rounded-lg px-3.5 text-sm w-full h-11 box-border">
+            <select name="role_needed" class="input-dark px-3.5 text-sm w-full h-11 box-border">
               <option value="engineering">Engineering</option>
               <option value="product">Product</option>
               <option value="gtm">GTM / Sales</option>
@@ -176,11 +176,11 @@
           <div>
             <label class="text-xs font-semibold text-t-secondary uppercase tracking-wide block mb-1.5">Top Climate Area</label>
             <input type="text" name="top_climate_area" placeholder="e.g., energy"
-                   class="input-dark rounded-lg px-3.5 text-sm w-full h-11 box-border">
+                   class="input-dark px-3.5 text-sm w-full h-11 box-border">
           </div>
           <div>
             <label class="text-xs font-semibold text-t-secondary uppercase tracking-wide block mb-1.5">Commitment</label>
-            <select name="commitment" class="input-dark rounded-lg px-3.5 text-sm w-full h-11 box-border">
+            <select name="commitment" class="input-dark px-3.5 text-sm w-full h-11 box-border">
               <option value="full-time">Full-time</option>
               <option value="part-time">Part-time</option>
               <option value="exploring" selected>Exploring</option>

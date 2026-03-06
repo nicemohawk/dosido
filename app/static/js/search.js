@@ -42,7 +42,7 @@
         if (pinned) {
             searchInput.value = pinned;
             filterPairings(pinned);
-            if (pinButton) pinButton.classList.add("bg-blue-500", "text-white");
+            if (pinButton) pinButton.classList.add("pin-active");
         }
 
         searchInput.addEventListener("input", () => {
@@ -54,7 +54,7 @@
                 const name = searchInput.value.trim();
                 if (name) {
                     setPinnedName(name);
-                    pinButton.classList.add("bg-blue-500", "text-white");
+                    pinButton.classList.add("pin-active");
                 }
             });
         }
@@ -64,7 +64,7 @@
                 setPinnedName("");
                 searchInput.value = "";
                 filterPairings("");
-                if (pinButton) pinButton.classList.remove("bg-blue-500", "text-white");
+                if (pinButton) pinButton.classList.remove("pin-active");
             });
         }
     }

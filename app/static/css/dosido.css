@@ -13,12 +13,28 @@
 .timer-expired { color: var(--danger); animation: timer-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
 .timer-paused  { color: var(--warm); }
 
+/* --- Theme-driven typography --------------------------------------------- */
+
+body {
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: var(--heading-weight);
+}
+
+code, pre, .font-mono {
+  font-family: var(--font-mono);
+}
+
 /* --- Form inputs -------------------------------------------------------- */
 
 .input-dark {
   background: var(--bg-base);
   color: var(--text-primary);
   border: 1px solid var(--border-subtle);
+  border-radius: var(--btn-radius);
   outline: none;
 }
 .input-dark:focus {
@@ -32,12 +48,12 @@
 
 /* --- Role badges -------------------------------------------------------- */
 
-.role-badge-engineering { color: #3b82f6; background: rgba(59, 130, 246, 0.094); }
-.role-badge-product     { color: #8b5cf6; background: rgba(139, 92, 246, 0.094); }
-.role-badge-gtm         { color: #f59e0b; background: rgba(245, 158, 11, 0.094); }
-.role-badge-science     { color: #10b981; background: rgba(16, 185, 129, 0.094); }
-.role-badge-ops         { color: #6366f1; background: rgba(99, 102, 241, 0.094); }
-.role-badge-policy      { color: #ec4899; background: rgba(236, 72, 153, 0.094); }
+.role-badge-engineering { color: var(--role-engineering); background: var(--role-engineering-bg); }
+.role-badge-product     { color: var(--role-product);     background: var(--role-product-bg); }
+.role-badge-gtm         { color: var(--role-gtm);         background: var(--role-gtm-bg); }
+.role-badge-science     { color: var(--role-science);     background: var(--role-science-bg); }
+.role-badge-ops         { color: var(--role-ops);         background: var(--role-ops-bg); }
+.role-badge-policy      { color: var(--role-policy);      background: var(--role-policy-bg); }
 
 /* --- Status dots (admin pool) ------------------------------------------- */
 
@@ -55,21 +71,6 @@
 }
 .status-dot-pending {
   border: 1.5px dotted var(--border-subtle);
-}
-
-/* --- Theme-driven typography --------------------------------------------- */
-
-body {
-  font-family: var(--font-sans);
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display);
-  font-weight: var(--heading-weight);
-}
-
-code, pre, .font-mono {
-  font-family: var(--font-mono);
 }
 
 /* --- Primary action button (gradient with gloss) ------------------------ */
@@ -100,6 +101,9 @@ code, pre, .font-mono {
 
 /* --- Admin tabs --------------------------------------------------------- */
 
+.admin-tab {
+  border-radius: var(--btn-radius);
+}
 .admin-tab-active {
   background: var(--bg-subtle);
   color: var(--text-primary);
@@ -110,6 +114,24 @@ code, pre, .font-mono {
   color: var(--text-muted);
   border-color: transparent;
 }
+
+/* --- Connection status indicator ---------------------------------------- */
+
+.conn-ok    { background: var(--action); color: var(--action-text); }
+.conn-error { background: var(--danger); color: var(--bg-base); }
+.conn-stale { background: var(--warm); color: var(--bg-base); }
+
+/* --- Pin button active state -------------------------------------------- */
+
+.pin-active {
+  background: var(--action) !important;
+  color: var(--action-text) !important;
+}
+
+/* --- Modal overlay & shadow --------------------------------------------- */
+
+.modal-overlay { background: rgba(0, 0, 0, 0.6); }
+.modal-shadow  { box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4); }
 
 /* --- Score colors ------------------------------------------------------- */
 

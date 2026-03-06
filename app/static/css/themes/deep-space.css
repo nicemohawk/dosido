@@ -63,6 +63,14 @@
   --tag-text: #c4b5fd;
   --tag-border: #2e2a52;
 
+  /* Role badges — violet spectrum */
+  --role-engineering: #818cf8; --role-engineering-bg: rgba(129, 140, 248, 0.094);
+  --role-product: #c084fc;     --role-product-bg: rgba(192, 132, 252, 0.094);
+  --role-gtm: #f0abfc;         --role-gtm-bg: rgba(240, 171, 252, 0.094);
+  --role-science: #67e8f9;     --role-science-bg: rgba(103, 232, 249, 0.094);
+  --role-ops: #a5b4fc;         --role-ops-bg: rgba(165, 180, 252, 0.094);
+  --role-policy: #f472b6;      --role-policy-bg: rgba(244, 114, 182, 0.094);
+
   /* Save / confirm button */
   --confirm: #8b5cf6;
 }

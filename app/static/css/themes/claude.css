@@ -63,6 +63,14 @@
   --tag-text: #93c5fd;
   --tag-border: #374151;
 
+  /* Role badges */
+  --role-engineering: #3b82f6; --role-engineering-bg: rgba(59, 130, 246, 0.094);
+  --role-product: #8b5cf6;     --role-product-bg: rgba(139, 92, 246, 0.094);
+  --role-gtm: #f59e0b;         --role-gtm-bg: rgba(245, 158, 11, 0.094);
+  --role-science: #10b981;     --role-science-bg: rgba(16, 185, 129, 0.094);
+  --role-ops: #6366f1;         --role-ops-bg: rgba(99, 102, 241, 0.094);
+  --role-policy: #ec4899;      --role-policy-bg: rgba(236, 72, 153, 0.094);
+
   /* Save / confirm button */
   --confirm: #3b82f6;
 }

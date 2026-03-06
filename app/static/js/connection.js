@@ -28,18 +28,18 @@
     function showConnected() {
         if (!isConnected) {
             isConnected = true;
-            show("Connected", "bg-green-100 text-green-700 opacity-100");
+            show("Connected", "conn-ok opacity-100");
             hideAfterDelay(3000);
         }
     }
 
     function showDisconnected() {
         isConnected = false;
-        show("Reconnecting...", "bg-red-100 text-red-700 opacity-100");
+        show("Reconnecting...", "conn-error opacity-100");
     }
 
     function showStale(seconds) {
-        show("Last update: " + seconds + "s ago", "bg-yellow-100 text-yellow-700 opacity-100");
+        show("Last update: " + seconds + "s ago", "conn-stale opacity-100");
     }
 
     // SSE connection events (from sse.js)
