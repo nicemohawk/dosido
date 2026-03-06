@@ -34,7 +34,7 @@
         hx-post="/api/admin/check-in"
         hx-vals='{"attendee_id": "{{ id }}", "action": "check-out"}'
         hx-swap="none"
-        class="bg-danger-bg text-t-primary border-none rounded-md py-1.5 text-xs font-semibold cursor-pointer w-[88px] text-center">
+        class="btn-secondary bg-danger-bg text-t-primary border-none py-1.5 text-xs font-semibold cursor-pointer w-[88px] text-center">
         Check Out
       </button>
       {% elif att.status.value == 'departed' %}
@@ -42,7 +42,7 @@
         hx-post="/api/admin/check-in"
         hx-vals='{"attendee_id": "{{ id }}", "action": "check-in"}'
         hx-swap="none"
-        class="bg-subtle text-t-primary border-none rounded-md py-1.5 text-xs font-semibold cursor-pointer w-[88px] text-center">
+        class="btn-secondary bg-subtle text-t-primary border-none py-1.5 text-xs font-semibold cursor-pointer w-[88px] text-center">
         Re-check In
       </button>
       {% else %}
