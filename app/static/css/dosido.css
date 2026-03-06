@@ -57,6 +57,21 @@
   border: 1.5px dotted var(--border-subtle);
 }
 
+/* --- Theme-driven typography --------------------------------------------- */
+
+body {
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: var(--heading-weight);
+}
+
+code, pre, .font-mono {
+  font-family: var(--font-mono);
+}
+
 /* --- Primary action button (gradient with gloss) ------------------------ */
 
 .btn-action {
@@ -66,6 +81,21 @@
     circle at 80% 20%, var(--action-glow), var(--action) 50%, var(--action-hover)
   );
   color: var(--action-text);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--btn-shadow);
+}
+
+/* --- Secondary button (theme-aware radius) ------------------------------ */
+
+.btn-secondary {
+  border-radius: var(--btn-radius);
+}
+
+/* --- Confirm / save button (theme-aware radius + shadow) ---------------- */
+
+.btn-confirm {
+  border-radius: var(--btn-radius);
+  box-shadow: var(--btn-shadow);
 }
 
 /* --- Admin tabs --------------------------------------------------------- */

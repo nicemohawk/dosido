@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     round_duration_minutes: int = 8
     total_rounds: int = 10
 
-    # UI theme: "claude", "obsidian", "noir", "deep-space", or "carbon"
+    # UI theme — see app/static/css/themes/ for available options
     theme: str = "obsidian"
 
     # LLM provider: "claude", "ollama", or "none"

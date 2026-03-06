@@ -217,8 +217,8 @@ Timer.onExpire(function() {
       '<div class="text-[13px] text-t-muted mb-1">From round ' + pending.round_number + '</div>' +
       '<div class="text-[15px] font-semibold mb-4">&#129309; Want to follow up with ' + escapeHtml(pending.match_name) + '?</div>' +
       '<div class="flex gap-3 justify-center">' +
-        '<button id="carryover-yes-btn" class="bg-action text-action-text border-none rounded-[10px] py-3.5 px-9 text-base font-bold cursor-pointer">Yes</button>' +
-        '<button id="carryover-skip-btn" class="bg-subtle text-t-secondary border border-border-subtle rounded-[10px] py-3.5 px-9 text-base font-semibold cursor-pointer">Skip</button>' +
+        '<button id="carryover-yes-btn" class="btn-action border-none py-3.5 px-9 text-base cursor-pointer">Yes</button>' +
+        '<button id="carryover-skip-btn" class="btn-secondary bg-subtle text-t-secondary border border-border-subtle py-3.5 px-9 text-base font-semibold cursor-pointer">Skip</button>' +
       '</div>' +
     '</div>';
   document.getElementById('carryover-yes-btn').addEventListener('click', function() {

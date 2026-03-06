@@ -1,5 +1,15 @@
 /* Theme: Noir — pure black with warm gold accents, luxury editorial feel */
 :root {
+  /* Typography */
+  --font-sans: 'Cormorant Garamond', 'Georgia', serif;
+  --font-display: 'Cormorant Garamond', 'Georgia', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --heading-weight: 600;
+
+  /* Button shape */
+  --btn-radius: 2px;
+  --btn-shadow: 0 2px 8px rgba(212, 165, 116, 0.2);
+
   /* Backgrounds */
   --bg-base: #000000;
   --bg-base-alt: #050505;

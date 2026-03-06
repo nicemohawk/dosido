@@ -1,5 +1,15 @@
 /* Theme: Obsidian — cool neutral grays with electric cyan accents */
 :root {
+  /* Typography */
+  --font-sans: 'Inter', 'Helvetica Neue', sans-serif;
+  --font-display: 'Inter', 'Helvetica Neue', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --heading-weight: 600;
+
+  /* Button shape */
+  --btn-radius: 8px;
+  --btn-shadow: 0 0 12px rgba(34, 211, 238, 0.15);
+
   /* Backgrounds */
   --bg-base: #09090b;
   --bg-base-alt: #0c0c0f;

@@ -11,12 +11,12 @@
     <div class="flex gap-3 justify-center">
       <button
         onclick="sendSignal({{ attendee.id|tojson }}, {{ my_match_id|tojson }}, {{ state.round_number }}, {{ my_match|tojson }})"
-        class="bg-action text-action-text border-none rounded-[10px] py-3.5 px-9 text-base font-bold cursor-pointer">
+        class="btn-action border-none py-3.5 px-9 text-base cursor-pointer">
         Yes
       </button>
       <button
         onclick="document.getElementById('signal-prompt').classList.add('hidden')"
-        class="bg-subtle text-t-secondary border border-border-subtle rounded-[10px] py-3.5 px-9 text-base font-semibold cursor-pointer">
+        class="btn-secondary bg-subtle text-t-secondary border border-border-subtle py-3.5 px-9 text-base font-semibold cursor-pointer">
         Skip
       </button>
     </div>

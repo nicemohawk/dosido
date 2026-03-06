@@ -1,5 +1,15 @@
 /* Theme: Carbon — warm charcoal with hot coral/rose accents */
 :root {
+  /* Typography */
+  --font-sans: 'Space Grotesk', 'Helvetica Neue', sans-serif;
+  --font-display: 'Space Grotesk', 'Helvetica Neue', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --heading-weight: 700;
+
+  /* Button shape */
+  --btn-radius: 14px;
+  --btn-shadow: 0 4px 14px rgba(244, 63, 94, 0.25);
+
   /* Backgrounds */
   --bg-base: #0c0a09;
   --bg-base-alt: #100e0d;

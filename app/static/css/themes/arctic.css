@@ -1,0 +1,68 @@
+/* Theme: Arctic — icy blue-white on dark slate, crisp and minimal */
+:root {
+  /* Typography */
+  --font-sans: 'Instrument Sans', 'Inter', 'Helvetica Neue', sans-serif;
+  --font-display: 'Instrument Sans', 'Inter', 'Helvetica Neue', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --heading-weight: 600;
+
+  /* Button shape */
+  --btn-radius: 4px;
+  --btn-shadow: 0 1px 4px rgba(96, 165, 250, 0.15);
+
+  /* Backgrounds */
+  --bg-base: #080c14;
+  --bg-base-alt: #0c1220;
+  --bg-card: #111a2e;
+  --bg-subtle: #1b2742;
+
+  /* Borders */
+  --border-card: #1b2742;
+  --border-subtle: #2a3b5c;
+
+  /* Text */
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-faint: #475569;
+
+  /* Accent (table numbers, links, interactive) */
+  --accent: #60a5fa;
+  --accent-muted: #1e3a5f;
+  --accent-text: #93bbfd;
+
+  /* Action (primary buttons) */
+  --action: #38bdf8;
+  --action-hover: #0ea5e9;
+  --action-glow: #7dd3fc;
+  --action-text: #080c14;
+
+  /* Warm (pit stop, follow-up, warnings) */
+  --warm: #94a3b8;
+  --warm-bg: #111a2e;
+  --warm-border: #2a3b5c;
+  --warm-muted: #111a2e;
+
+  /* Danger */
+  --danger: #f87171;
+  --danger-bg: #7f1d1d;
+
+  /* Signal stats borders */
+  --stat-a: #60a5fa;
+  --stat-b: #38bdf8;
+  --stat-c: #818cf8;
+
+  /* Checkin board */
+  --checkin-active-bg: rgba(56, 189, 248, 0.1);
+  --checkin-active-text: #7dd3fc;
+  --checkin-inactive-bg: #1b2742;
+  --checkin-inactive-text: #475569;
+
+  /* Domain tags */
+  --tag-bg: #1b2742;
+  --tag-text: #93bbfd;
+  --tag-border: #2a3b5c;
+
+  /* Save / confirm button */
+  --confirm: #38bdf8;
+}

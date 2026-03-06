@@ -29,7 +29,7 @@
     hx-post="/api/admin/advance-round"
     hx-swap="none"
     onclick="confirmAdvance(event)"
-    class="btn-action border-none rounded-lg px-5 py-2.5 font-semibold text-sm cursor-pointer">
+    class="btn-action border-none px-5 py-2.5 font-semibold text-sm cursor-pointer">
     &#9654; Start Round {{ state.round_number + 1 }}
   </button>
   <!-- Confirm prompt (hidden, shown by JS) -->
@@ -38,11 +38,11 @@
     <button id="advance-confirm-btn"
       hx-post="/api/admin/advance-round"
       hx-swap="none"
-      class="btn-action border-none rounded-lg px-4 py-2 font-semibold text-[13px] cursor-pointer">
+      class="btn-action border-none px-4 py-2 font-semibold text-[13px] cursor-pointer">
       Confirm
     </button>
     <button onclick="cancelAdvance()"
-      class="bg-subtle text-t-primary border-none rounded-lg px-4 py-2 font-semibold text-[13px] cursor-pointer">
+      class="btn-secondary bg-subtle text-t-primary border-none px-4 py-2 font-semibold text-[13px] cursor-pointer">
       Cancel
     </button>
   </div>
@@ -53,7 +53,7 @@
     hx-post="/api/admin/pause"
     hx-vals='{"action": "{% if state.timer_paused %}resume{% else %}pause{% endif %}"}'
     hx-swap="none"
-    class="bg-subtle text-t-primary border border-border-subtle rounded-lg px-5 py-2.5 font-semibold text-sm cursor-pointer">
+    class="btn-secondary bg-subtle text-t-primary border border-border-subtle px-5 py-2.5 font-semibold text-sm cursor-pointer">
     {% if state.timer_paused %}&#9654; Resume{% else %}&#9208; Pause{% endif %}
   </button>
   {% endif %}
@@ -63,7 +63,7 @@
     hx-post="/api/admin/undo-round"
     hx-confirm="Undo Round {{ state.round_number }}? This will roll back pairings and restore the previous round."
     hx-swap="none"
-    class="bg-transparent text-danger border border-danger-bg rounded-lg px-5 py-2.5 font-semibold text-sm cursor-pointer ml-auto">
+    class="btn-secondary bg-transparent text-danger border border-danger-bg px-5 py-2.5 font-semibold text-sm cursor-pointer ml-auto">
     Undo Round {{ state.round_number }}
   </button>
   {% endif %}

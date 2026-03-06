@@ -1,5 +1,15 @@
 /* Theme: Claude — warm amber/brown tones on midnight navy (the original) */
 :root {
+  /* Typography */
+  --font-sans: 'DM Sans', 'Helvetica Neue', sans-serif;
+  --font-display: 'DM Sans', 'Helvetica Neue', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --heading-weight: 700;
+
+  /* Button shape */
+  --btn-radius: 10px;
+  --btn-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+
   /* Backgrounds */
   --bg-base: #0a0f1a;
   --bg-base-alt: #0d1520;

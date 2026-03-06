@@ -65,6 +65,7 @@ After activating the venv, you get these CLI commands:
 ```bash
 cp .env.example .env
 # Edit .env with your Redis URL, Anthropic API key, admin token, etc.
+# Set THEME to one of: obsidian, claude, noir, carbon, deep-space, emerald, sunset, terminal, arctic
 ```
 
 ### Quick start (development)

@@ -1,5 +1,15 @@
 /* Theme: Deep Space — dark indigo/violet base with cool purple-blue accents */
 :root {
+  /* Typography */
+  --font-sans: 'Outfit', 'Helvetica Neue', sans-serif;
+  --font-display: 'Outfit', 'Helvetica Neue', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --heading-weight: 700;
+
+  /* Button shape */
+  --btn-radius: 20px;
+  --btn-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+
   /* Backgrounds */
   --bg-base: #07061a;
   --bg-base-alt: #0b0a22;
