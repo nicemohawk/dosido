@@ -1,27 +1,27 @@
 <!-- Admin signals partial — swapped via SSE -->
 {% if signal_stats %}
-<div class="text-xs font-semibold text-slate-500 tracking-[0.08em] uppercase mb-4">
+<div class="text-xs font-semibold text-t-muted tracking-[0.08em] uppercase mb-4">
   Signals — Round {{ state.round_number }}
 </div>
 <div class="grid grid-cols-3 gap-3">
-  <div class="bg-midnight rounded-lg p-4 border-l-[3px] border-blue-500">
-    <div class="text-[11px] text-slate-500 font-semibold uppercase tracking-wide">Submitted</div>
+  <div class="bg-base rounded-lg p-4 border-l-[3px] border-stat-a">
+    <div class="text-[11px] text-t-muted font-semibold uppercase tracking-wide">Submitted</div>
     <div class="text-[28px] font-bold mt-1 font-mono">{{ signal_stats.submitted }}/{{ signal_stats.total_active }}</div>
     {% if signal_stats.total_active > 0 %}
-    <div class="text-xs text-slate-500 mt-0.5">{{ ((signal_stats.submitted / signal_stats.total_active) * 100)|round|int }}%</div>
+    <div class="text-xs text-t-muted mt-0.5">{{ ((signal_stats.submitted / signal_stats.total_active) * 100)|round|int }}%</div>
     {% endif %}
   </div>
-  <div class="bg-midnight rounded-lg p-4 border-l-[3px] border-green-500">
-    <div class="text-[11px] text-slate-500 font-semibold uppercase tracking-wide">Mutual (total)</div>
+  <div class="bg-base rounded-lg p-4 border-l-[3px] border-stat-b">
+    <div class="text-[11px] text-t-muted font-semibold uppercase tracking-wide">Mutual (total)</div>
     <div class="text-[28px] font-bold mt-1 font-mono">{{ signal_stats.mutual_total }}</div>
-    <div class="text-xs text-slate-500 mt-0.5">all rounds</div>
+    <div class="text-xs text-t-muted mt-0.5">all rounds</div>
   </div>
-  <div class="bg-midnight rounded-lg p-4 border-l-[3px] border-violet-500">
-    <div class="text-[11px] text-slate-500 font-semibold uppercase tracking-wide">Active Attendees</div>
+  <div class="bg-base rounded-lg p-4 border-l-[3px] border-stat-c">
+    <div class="text-[11px] text-t-muted font-semibold uppercase tracking-wide">Active Attendees</div>
     <div class="text-[28px] font-bold mt-1 font-mono">{{ signal_stats.total_active }}</div>
-    <div class="text-xs text-slate-500 mt-0.5">in pool</div>
+    <div class="text-xs text-t-muted mt-0.5">in pool</div>
   </div>
 </div>
 {% else %}
-<div class="text-sm text-slate-500">No signal data yet — start a round to begin collecting feedback.</div>
+<div class="text-sm text-t-muted">No signal data yet — start a round to begin collecting feedback.</div>
 {% endif %}

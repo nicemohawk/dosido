@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     round_duration_minutes: int = 8
     total_rounds: int = 10
 
+    # UI theme: "claude", "obsidian", "noir", "deep-space", or "carbon"
+    theme: str = "obsidian"
+
     # LLM provider: "claude", "ollama", or "none"
     llm_provider: str = "claude"
     ollama_model: str = "llama3.2"

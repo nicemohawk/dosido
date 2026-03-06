@@ -2,15 +2,15 @@
 
 <!-- Summary bar -->
 <div class="flex gap-5 mb-4 text-[13px]">
-  <span class="text-green-500">&#9679; Active: {{ counts.active }}</span>
-  <span class="text-slate-400">&#9675; Not yet: {{ counts.not_arrived }}</span>
-  <span class="text-red-500">&#9679; Departed: {{ counts.departed }}</span>
+  <span class="text-action">&#9679; Active: {{ counts.active }}</span>
+  <span class="text-t-secondary">&#9675; Not yet: {{ counts.not_arrived }}</span>
+  <span class="text-danger">&#9679; Departed: {{ counts.departed }}</span>
 </div>
 
 <!-- Attendee list -->
 <div class="flex flex-col gap-0.5" data-pool-list>
   {% for id, att in attendees.items()|sort(attribute='1.name') %}
-  <div class="flex items-center justify-between px-3.5 py-2.5 rounded-lg {% if att.status.value == 'checked-in' %}bg-midnight-highlight{% endif %} {% if att.status.value == 'departed' %}opacity-50{% endif %}"
+  <div class="flex items-center justify-between px-3.5 py-2.5 rounded-lg {% if att.status.value == 'checked-in' %}bg-base-alt{% endif %} {% if att.status.value == 'departed' %}opacity-50{% endif %}"
        data-attendee-name="{{ att.name|lower }}">
     <div class="flex items-center gap-3">
       <span class="inline-block w-3.5 h-3.5 rounded flex-shrink-0 {% if att.status.value == 'checked-in' %}status-dot-checked-in{% elif att.status.value == 'departed' %}status-dot-departed{% else %}status-dot-pending{% endif %}"></span>
@@ -20,21 +20,21 @@
         </div>
         <div class="flex gap-2 mt-0.5">
           <span class="role-badge-{{ att.role.value }} text-[11px] font-semibold px-1.5 rounded">{{ att.role.value }}</span>
-          <span class="text-[11px] text-slate-500">{{ att.lane.value }}</span>
-          <span class="text-[11px] text-slate-500">{{ att.commitment.value[:2]|upper }}</span>
+          <span class="text-[11px] text-t-muted">{{ att.lane.value }}</span>
+          <span class="text-[11px] text-t-muted">{{ att.commitment.value[:2]|upper }}</span>
         </div>
       </div>
     </div>
     <div class="flex items-center gap-2">
       {% if att.pit_stop_count > 0 %}
-      <span class="text-[11px] text-amber-500">&#9749; &times;{{ att.pit_stop_count }}</span>
+      <span class="text-[11px] text-warm">&#9749; &times;{{ att.pit_stop_count }}</span>
       {% endif %}
       {% if att.status.value == 'checked-in' %}
       <button
         hx-post="/api/admin/check-in"
         hx-vals='{"attendee_id": "{{ id }}", "action": "check-out"}'
         hx-swap="none"
-        class="bg-red-900 text-slate-200 border-none rounded-md py-1.5 text-xs font-semibold cursor-pointer w-[88px] text-center">
+        class="bg-danger-bg text-t-primary border-none rounded-md py-1.5 text-xs font-semibold cursor-pointer w-[88px] text-center">
         Check Out
       </button>
       {% elif att.status.value == 'departed' %}
@@ -42,7 +42,7 @@
         hx-post="/api/admin/check-in"
         hx-vals='{"attendee_id": "{{ id }}", "action": "check-in"}'
         hx-swap="none"
-        class="bg-gray-700 text-slate-200 border-none rounded-md py-1.5 text-xs font-semibold cursor-pointer w-[88px] text-center">
+        class="bg-subtle text-t-primary border-none rounded-md py-1.5 text-xs font-semibold cursor-pointer w-[88px] text-center">
         Re-check In
       </button>
       {% else %}
@@ -50,7 +50,7 @@
         hx-post="/api/admin/check-in"
         hx-vals='{"attendee_id": "{{ id }}", "action": "check-in"}'
         hx-swap="none"
-        class="btn-green border-none rounded-md py-1.5 text-xs font-semibold cursor-pointer w-[88px] text-center">
+        class="btn-action border-none rounded-md py-1.5 text-xs font-semibold cursor-pointer w-[88px] text-center">
         Check In
       </button>
       {% endif %}

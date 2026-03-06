@@ -1,0 +1,58 @@
+/* Theme: Deep Space — dark indigo/violet base with cool purple-blue accents */
+:root {
+  /* Backgrounds */
+  --bg-base: #07061a;
+  --bg-base-alt: #0b0a22;
+  --bg-card: #0f0e24;
+  --bg-subtle: #1e1b3a;
+
+  /* Borders */
+  --border-card: #1e1b3a;
+  --border-subtle: #2e2a52;
+
+  /* Text */
+  --text-primary: #ddd6fe;
+  --text-secondary: #a5b4fc;
+  --text-muted: #6b6494;
+  --text-faint: #4c4672;
+
+  /* Accent (table numbers, links, interactive) */
+  --accent: #a78bfa;
+  --accent-muted: #3b2d6b;
+  --accent-text: #c4b5fd;
+
+  /* Action (primary buttons) */
+  --action: #8b5cf6;
+  --action-hover: #7c3aed;
+  --action-glow: #a78bfa;
+  --action-text: #07061a;
+
+  /* Warm (pit stop, follow-up, warnings) */
+  --warm: #c4b5fd;
+  --warm-bg: #1a1528;
+  --warm-border: #2e2a52;
+  --warm-muted: #1a1528;
+
+  /* Danger */
+  --danger: #f472b6;
+  --danger-bg: #831843;
+
+  /* Signal stats borders */
+  --stat-a: #818cf8;
+  --stat-b: #a78bfa;
+  --stat-c: #c084fc;
+
+  /* Checkin board */
+  --checkin-active-bg: rgba(139, 92, 246, 0.12);
+  --checkin-active-text: #c4b5fd;
+  --checkin-inactive-bg: #141228;
+  --checkin-inactive-text: #4c4672;
+
+  /* Domain tags */
+  --tag-bg: #1e1b3a;
+  --tag-text: #c4b5fd;
+  --tag-border: #2e2a52;
+
+  /* Save / confirm button */
+  --confirm: #8b5cf6;
+}

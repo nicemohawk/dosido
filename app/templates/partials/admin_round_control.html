@@ -1,7 +1,7 @@
 <!-- Admin round control partial — swapped via SSE -->
 <div class="flex justify-between items-start">
   <div>
-    <div class="text-xs font-semibold text-slate-500 tracking-[0.08em] uppercase mb-2">
+    <div class="text-xs font-semibold text-t-muted tracking-[0.08em] uppercase mb-2">
       Round Control
     </div>
     {% if state.round_number > 0 %}
@@ -13,7 +13,7 @@
       Pre-Event
     </div>
     {% endif %}
-    <div class="text-[13px] {% if state.status.value == 'round-active' and not state.timer_paused %}text-green-500{% elif state.timer_paused %}text-amber-500{% else %}text-slate-500{% endif %}">
+    <div class="text-[13px] {% if state.status.value == 'round-active' and not state.timer_paused %}text-action{% elif state.timer_paused %}text-warm{% else %}text-t-muted{% endif %}">
       {% if state.status.value == 'round-active' and not state.timer_paused %}In progress
       {% elif state.timer_paused %}Paused
       {% elif state.round_number > 0 %}Between rounds
@@ -29,20 +29,20 @@
     hx-post="/api/admin/advance-round"
     hx-swap="none"
     onclick="confirmAdvance(event)"
-    class="btn-green border-none rounded-lg px-5 py-2.5 font-semibold text-sm cursor-pointer">
+    class="btn-action border-none rounded-lg px-5 py-2.5 font-semibold text-sm cursor-pointer">
     &#9654; Start Round {{ state.round_number + 1 }}
   </button>
   <!-- Confirm prompt (hidden, shown by JS) -->
   <div id="advance-confirm" class="hidden items-center gap-2">
-    <span class="text-[13px] text-amber-500">Start Round {{ state.round_number + 1 }}? {{ counts.active }} attendees in pool.</span>
+    <span class="text-[13px] text-warm">Start Round {{ state.round_number + 1 }}? {{ counts.active }} attendees in pool.</span>
     <button id="advance-confirm-btn"
       hx-post="/api/admin/advance-round"
       hx-swap="none"
-      class="btn-green border-none rounded-lg px-4 py-2 font-semibold text-[13px] cursor-pointer">
+      class="btn-action border-none rounded-lg px-4 py-2 font-semibold text-[13px] cursor-pointer">
       Confirm
     </button>
     <button onclick="cancelAdvance()"
-      class="bg-gray-700 text-slate-200 border-none rounded-lg px-4 py-2 font-semibold text-[13px] cursor-pointer">
+      class="bg-subtle text-t-primary border-none rounded-lg px-4 py-2 font-semibold text-[13px] cursor-pointer">
       Cancel
     </button>
   </div>
@@ -53,7 +53,7 @@
     hx-post="/api/admin/pause"
     hx-vals='{"action": "{% if state.timer_paused %}resume{% else %}pause{% endif %}"}'
     hx-swap="none"
-    class="bg-slate-800 text-slate-200 border border-gray-700 rounded-lg px-5 py-2.5 font-semibold text-sm cursor-pointer">
+    class="bg-subtle text-t-primary border border-border-subtle rounded-lg px-5 py-2.5 font-semibold text-sm cursor-pointer">
     {% if state.timer_paused %}&#9654; Resume{% else %}&#9208; Pause{% endif %}
   </button>
   {% endif %}
@@ -63,7 +63,7 @@
     hx-post="/api/admin/undo-round"
     hx-confirm="Undo Round {{ state.round_number }}? This will roll back pairings and restore the previous round."
     hx-swap="none"
-    class="bg-transparent text-red-500 border border-red-900 rounded-lg px-5 py-2.5 font-semibold text-sm cursor-pointer ml-auto">
+    class="bg-transparent text-danger border border-danger-bg rounded-lg px-5 py-2.5 font-semibold text-sm cursor-pointer ml-auto">
     Undo Round {{ state.round_number }}
   </button>
   {% endif %}

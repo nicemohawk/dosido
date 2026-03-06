@@ -1,0 +1,58 @@
+/* Theme: Carbon — warm charcoal with hot coral/rose accents */
+:root {
+  /* Backgrounds */
+  --bg-base: #0c0a09;
+  --bg-base-alt: #100e0d;
+  --bg-card: #1c1917;
+  --bg-subtle: #292524;
+
+  /* Borders */
+  --border-card: #292524;
+  --border-subtle: #3d3532;
+
+  /* Text */
+  --text-primary: #d6d3d1;
+  --text-secondary: #a8a29e;
+  --text-muted: #78716c;
+  --text-faint: #57534e;
+
+  /* Accent (table numbers, links, interactive) */
+  --accent: #fb7185;
+  --accent-muted: #4c1d2d;
+  --accent-text: #fda4af;
+
+  /* Action (primary buttons) */
+  --action: #f43f5e;
+  --action-hover: #e11d48;
+  --action-glow: #fb7185;
+  --action-text: #0c0a09;
+
+  /* Warm (pit stop, follow-up, warnings) */
+  --warm: #fda4af;
+  --warm-bg: #1c1412;
+  --warm-border: #4c1d2d;
+  --warm-muted: #1c1412;
+
+  /* Danger */
+  --danger: #fb923c;
+  --danger-bg: #7c2d12;
+
+  /* Signal stats borders */
+  --stat-a: #fb7185;
+  --stat-b: #f97316;
+  --stat-c: #e879f9;
+
+  /* Checkin board */
+  --checkin-active-bg: rgba(244, 63, 94, 0.1);
+  --checkin-active-text: #fda4af;
+  --checkin-inactive-bg: #292524;
+  --checkin-inactive-text: #57534e;
+
+  /* Domain tags */
+  --tag-bg: #292524;
+  --tag-text: #fda4af;
+  --tag-border: #3d3532;
+
+  /* Save / confirm button */
+  --confirm: #f43f5e;
+}

@@ -9,13 +9,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>tailwind.config={theme:{extend:{fontFamily:{sans:['DM Sans','Helvetica Neue','sans-serif'],mono:['JetBrains Mono','monospace']},colors:{midnight:'#0a0f1a','midnight-highlight':'#0d1520','pit-stop':'#1c1208','pit-stop-border':'#422006','follow-up':'#1a1505'}}}}</script>
+    <script>tailwind.config={theme:{extend:{fontFamily:{sans:['DM Sans','Helvetica Neue','sans-serif'],mono:['JetBrains Mono','monospace']},colors:{base:'var(--bg-base)','base-alt':'var(--bg-base-alt)',card:'var(--bg-card)',subtle:'var(--bg-subtle)','border-card':'var(--border-card)','border-subtle':'var(--border-subtle)','t-primary':'var(--text-primary)','t-secondary':'var(--text-secondary)','t-muted':'var(--text-muted)','t-faint':'var(--text-faint)',accent:'var(--accent)','accent-muted':'var(--accent-muted)','accent-text':'var(--accent-text)',action:'var(--action)','action-hover':'var(--action-hover)','action-glow':'var(--action-glow)','action-text':'var(--action-text)',warm:'var(--warm)','warm-bg':'var(--warm-bg)','warm-border':'var(--warm-border)','warm-muted':'var(--warm-muted)',danger:'var(--danger)','danger-bg':'var(--danger-bg)','stat-a':'var(--stat-a)','stat-b':'var(--stat-b)','stat-c':'var(--stat-c)',confirm:'var(--confirm)','tag-bg':'var(--tag-bg)','tag-text':'var(--tag-text)','tag-border':'var(--tag-border)'}}}}</script>
+    <link rel="stylesheet" href="/static/css/themes/{{ settings.theme }}.css">
     <link rel="stylesheet" href="/static/css/dosido.css">
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <script src="https://cdn.jsdelivr.net/npm/htmx-ext-json-enc@2.0.1/json-enc.js"></script>
     {% block head %}{% endblock %}
 </head>
-<body class="bg-gray-50 min-h-screen {% block body_class %}{% endblock %}">
+<body class="bg-base min-h-screen {% block body_class %}{% endblock %}">
     <!-- Connection status indicator -->
     <div id="connection-status"
          class="fixed bottom-3 right-3 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 z-50 opacity-0 pointer-events-none"

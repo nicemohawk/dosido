@@ -1,0 +1,58 @@
+/* Theme: Obsidian — cool neutral grays with electric cyan accents */
+:root {
+  /* Backgrounds */
+  --bg-base: #09090b;
+  --bg-base-alt: #0c0c0f;
+  --bg-card: #18181b;
+  --bg-subtle: #27272a;
+
+  /* Borders */
+  --border-card: #27272a;
+  --border-subtle: #3f3f46;
+
+  /* Text */
+  --text-primary: #d4d4d8;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --text-faint: #52525b;
+
+  /* Accent (table numbers, links, interactive) */
+  --accent: #22d3ee;
+  --accent-muted: #164e63;
+  --accent-text: #67e8f9;
+
+  /* Action (primary buttons) */
+  --action: #06b6d4;
+  --action-hover: #0891b2;
+  --action-glow: #22d3ee;
+  --action-text: #09090b;
+
+  /* Warm (pit stop, follow-up, warnings) */
+  --warm: #a1a1aa;
+  --warm-bg: #18181b;
+  --warm-border: #3f3f46;
+  --warm-muted: #18181b;
+
+  /* Danger */
+  --danger: #f43f5e;
+  --danger-bg: #881337;
+
+  /* Signal stats borders */
+  --stat-a: #22d3ee;
+  --stat-b: #2dd4bf;
+  --stat-c: #a78bfa;
+
+  /* Checkin board */
+  --checkin-active-bg: rgba(6, 182, 212, 0.12);
+  --checkin-active-text: #67e8f9;
+  --checkin-inactive-bg: #27272a;
+  --checkin-inactive-text: #52525b;
+
+  /* Domain tags */
+  --tag-bg: #27272a;
+  --tag-text: #67e8f9;
+  --tag-border: #3f3f46;
+
+  /* Save / confirm button */
+  --confirm: #06b6d4;
+}

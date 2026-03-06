@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 
 {% block title %}{{ settings.event_name }}{% endblock %}
-{% block body_class %}text-slate-200{% endblock %}
+{% block body_class %}text-t-primary{% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-midnight p-5" hx-ext="json-enc">
+<div class="min-h-screen bg-base p-5" hx-ext="json-enc">
   <div class="max-w-[480px] mx-auto">
 
   {% if is_personal and attendee %}
   <!-- ===== PERSONAL MOBILE VIEW (badge QR) ===== -->
 
   <div class="text-center mb-4">
-    <div class="text-[13px] text-slate-500">Welcome,</div>
+    <div class="text-[13px] text-t-muted">Welcome,</div>
     <div class="text-xl font-bold">{{ attendee.name }}</div>
   </div>
 
@@ -19,10 +19,10 @@
   <div class="flex justify-between items-center mb-5 px-0.5">
     {% if state.round_number > 0 %}
     <div class="text-base font-bold">
-      Round {{ state.round_number }} <span class="text-slate-600 font-normal">/ {{ state.round_number + state.rounds_remaining }}</span>
+      Round {{ state.round_number }} <span class="text-t-faint font-normal">/ {{ state.round_number + state.rounds_remaining }}</span>
     </div>
     {% else %}
-    <div class="text-sm text-slate-500">Waiting for first round...</div>
+    <div class="text-sm text-t-muted">Waiting for first round...</div>
     {% endif %}
     <span id="timer-display" class="font-mono text-[28px] font-bold">--:--</span>
   </div>
@@ -30,25 +30,25 @@
   {% if state.round_number > 0 %}
     {% if is_pit_stop %}
     <!-- Pit stop -->
-    <div class="bg-pit-stop border border-pit-stop-border rounded-[14px] p-7 text-center mb-5">
+    <div class="bg-warm-bg border border-warm-border rounded-[14px] p-7 text-center mb-5">
       <div class="text-[28px]">&#9749;</div>
-      <div class="text-lg font-semibold text-amber-500 mt-2">Pit Stop</div>
-      <div class="text-[13px] text-slate-400 mt-2">Grab a coffee — you're back next round</div>
+      <div class="text-lg font-semibold text-warm mt-2">Pit Stop</div>
+      <div class="text-[13px] text-t-secondary mt-2">Grab a coffee — you're back next round</div>
     </div>
     {% elif my_match %}
     <!-- Your match -->
-    <div class="bg-gray-900 border border-slate-800 rounded-[14px] p-7 text-center mb-5">
-      <div class="text-xs text-slate-500 font-semibold uppercase tracking-[0.08em]">
+    <div class="bg-card border border-border-card rounded-[14px] p-7 text-center mb-5">
+      <div class="text-xs text-t-muted font-semibold uppercase tracking-[0.08em]">
         Your match
       </div>
       <div class="text-[28px] font-bold mt-2.5">{{ my_match }}</div>
-      <div class="mt-4 text-[40px] font-extrabold text-blue-500 font-mono">
+      <div class="mt-4 text-[40px] font-extrabold text-accent font-mono">
         TABLE {{ my_table }}
       </div>
     </div>
     {% else %}
-    <div class="bg-gray-900 border border-slate-800 rounded-[14px] p-7 text-center mb-5">
-      <div class="text-slate-500 text-sm">No pairing this round</div>
+    <div class="bg-card border border-border-card rounded-[14px] p-7 text-center mb-5">
+      <div class="text-t-muted text-sm">No pairing this round</div>
     </div>
     {% endif %}
 
@@ -62,21 +62,21 @@
     <div id="signal-carryover" class="hidden"></div>
     {% endif %}
   {% else %}
-    <div class="bg-gray-900 border border-slate-800 rounded-[14px] p-7 text-center">
-      <div class="text-slate-500 text-sm">Rounds haven't started yet.</div>
-      <div class="text-slate-600 text-[13px] mt-2">Grab some coffee and mingle!</div>
+    <div class="bg-card border border-border-card rounded-[14px] p-7 text-center">
+      <div class="text-t-muted text-sm">Rounds haven't started yet.</div>
+      <div class="text-t-faint text-[13px] mt-2">Grab some coffee and mingle!</div>
     </div>
   {% endif %}
 
   <!-- Follow-up list (mutual matches) -->
   <div id="follow-up-container">
   {% if mutual_matches %}
-  <div class="mt-5 bg-follow-up border border-pit-stop-border rounded-[14px] p-5">
-    <div class="font-semibold text-amber-500 mb-2">&#129309; Your Follow-Up List</div>
-    <div class="text-[13px] text-slate-400 mb-3">Great conversations worth continuing — connect during networking time!</div>
+  <div class="mt-5 bg-warm-muted border border-warm-border rounded-[14px] p-5">
+    <div class="font-semibold text-warm mb-2">&#129309; Your Follow-Up List</div>
+    <div class="text-[13px] text-t-secondary mb-3">Great conversations worth continuing — connect during networking time!</div>
     <ul class="list-none p-0 m-0 flex flex-col gap-1" id="follow-up-list">
       {% for match in mutual_matches %}
-      <li data-name="{{ match.name }}"><a href="/{{ slug }}/a/{{ match.token }}" target="_blank" class="text-amber-500 no-underline font-medium text-sm">{{ match.name }}</a></li>
+      <li data-name="{{ match.name }}"><a href="/{{ slug }}/a/{{ match.token }}" target="_blank" class="text-warm no-underline font-medium text-sm">{{ match.name }}</a></li>
       {% endfor %}
     </ul>
   </div>
@@ -89,19 +89,19 @@
   <!-- Search bar -->
   <div class="flex items-center gap-2 mb-4">
     <input type="text" id="search-input" placeholder="Search your name..."
-           class="flex-1 bg-gray-900 text-slate-200 border border-slate-800 rounded-[10px] py-3 px-4 text-[15px] outline-none">
-    <button id="pin-button" class="hidden bg-slate-800 text-slate-200 border border-gray-700 rounded-[10px] py-3 px-3.5 text-sm cursor-pointer whitespace-nowrap">&#128204; Pin</button>
-    <button id="clear-pin" class="hidden bg-gray-700 text-slate-200 border-none rounded-md py-1 px-2.5 text-[13px] cursor-pointer">&#10005;</button>
+           class="flex-1 bg-card text-t-primary border border-border-card rounded-[10px] py-3 px-4 text-[15px] outline-none">
+    <button id="pin-button" class="hidden bg-subtle text-t-primary border border-border-subtle rounded-[10px] py-3 px-3.5 text-sm cursor-pointer whitespace-nowrap">&#128204; Pin</button>
+    <button id="clear-pin" class="hidden bg-subtle text-t-primary border-none rounded-md py-1 px-2.5 text-[13px] cursor-pointer">&#10005;</button>
   </div>
 
   <!-- Round + Timer -->
   <div class="flex justify-between items-center mb-5 px-0.5">
     {% if state.round_number > 0 %}
     <div class="text-base font-bold">
-      Round {{ state.round_number }} <span class="text-slate-600 font-normal">/ {{ state.round_number + state.rounds_remaining }}</span>
+      Round {{ state.round_number }} <span class="text-t-faint font-normal">/ {{ state.round_number + state.rounds_remaining }}</span>
     </div>
     {% else %}
-    <div class="text-sm text-slate-500">Waiting for first round...</div>
+    <div class="text-sm text-t-muted">Waiting for first round...</div>
     {% endif %}
     <span id="timer-display" class="font-mono text-[28px] font-bold">--:--</span>
   </div>
@@ -110,28 +110,28 @@
   {% if pairings %}
   <div class="flex flex-col gap-1.5" id="pairings-list">
     {% for p in pairings %}
-    <div class="bg-gray-900 border border-slate-800 rounded-[10px] py-2.5 px-3.5 flex items-center gap-3"
+    <div class="bg-card border border-border-card rounded-[10px] py-2.5 px-3.5 flex items-center gap-3"
          data-pairing-row data-pairing-names="{{ p.name_a }} {{ p.name_b }}">
-      <div class="font-mono text-lg font-extrabold text-blue-500 min-w-[32px] text-center">
+      <div class="font-mono text-lg font-extrabold text-accent min-w-[32px] text-center">
         {{ p.table_number }}
       </div>
-      <div class="w-0.5 h-7 bg-[#1e3a5f] rounded-sm flex-shrink-0"></div>
+      <div class="w-0.5 h-7 bg-accent-muted rounded-sm flex-shrink-0"></div>
       <div class="flex-1 min-w-0">
         <div class="text-sm font-semibold truncate">{{ p.name_a }}</div>
-        <div class="text-sm text-slate-400 truncate">{{ p.name_b }}</div>
+        <div class="text-sm text-t-secondary truncate">{{ p.name_b }}</div>
       </div>
     </div>
     {% endfor %}
 
     {% if pit_stop_info %}
-    <div class="bg-pit-stop border border-pit-stop-border rounded-[10px] py-2.5 px-3.5 flex items-center gap-2.5">
+    <div class="bg-warm-bg border border-warm-border rounded-[10px] py-2.5 px-3.5 flex items-center gap-2.5">
       <span>&#9749;</span>
-      <span class="text-amber-500 text-sm">{{ pit_stop_info.name }} — Pit Stop</span>
+      <span class="text-warm text-sm">{{ pit_stop_info.name }} — Pit Stop</span>
     </div>
     {% endif %}
   </div>
   {% else %}
-  <div class="text-center text-slate-500 py-10 px-5 text-sm">
+  <div class="text-center text-t-muted py-10 px-5 text-sm">
     No pairings yet
   </div>
   {% endif %}
@@ -213,12 +213,12 @@ Timer.onExpire(function() {
   if (!container) return;
 
   container.innerHTML =
-    '<div class="bg-gray-900 border border-slate-800 rounded-xl p-6 text-center mb-4" id="signal-carryover-inner">' +
-      '<div class="text-[13px] text-slate-500 mb-1">From round ' + pending.round_number + '</div>' +
+    '<div class="bg-card border border-border-card rounded-xl p-6 text-center mb-4" id="signal-carryover-inner">' +
+      '<div class="text-[13px] text-t-muted mb-1">From round ' + pending.round_number + '</div>' +
       '<div class="text-[15px] font-semibold mb-4">&#129309; Want to follow up with ' + escapeHtml(pending.match_name) + '?</div>' +
       '<div class="flex gap-3 justify-center">' +
-        '<button id="carryover-yes-btn" class="bg-green-500 text-midnight border-none rounded-[10px] py-3.5 px-9 text-base font-bold cursor-pointer">Yes</button>' +
-        '<button id="carryover-skip-btn" class="bg-slate-800 text-slate-400 border border-gray-700 rounded-[10px] py-3.5 px-9 text-base font-semibold cursor-pointer">Skip</button>' +
+        '<button id="carryover-yes-btn" class="bg-action text-action-text border-none rounded-[10px] py-3.5 px-9 text-base font-bold cursor-pointer">Yes</button>' +
+        '<button id="carryover-skip-btn" class="bg-subtle text-t-secondary border border-border-subtle rounded-[10px] py-3.5 px-9 text-base font-semibold cursor-pointer">Skip</button>' +
       '</div>' +
     '</div>';
   document.getElementById('carryover-yes-btn').addEventListener('click', function() {
@@ -282,9 +282,9 @@ function addToFollowUpList(name, token) {
     var container = document.getElementById('follow-up-container');
     if (!container) return;
     container.innerHTML =
-      '<div class="mt-5 bg-follow-up border border-pit-stop-border rounded-[14px] p-5">' +
-        '<div class="font-semibold text-amber-500 mb-2">&#129309; Your Follow-Up List</div>' +
-        '<div class="text-[13px] text-slate-400 mb-3">Great conversations worth continuing — connect during networking time!</div>' +
+      '<div class="mt-5 bg-warm-muted border border-warm-border rounded-[14px] p-5">' +
+        '<div class="font-semibold text-warm mb-2">&#129309; Your Follow-Up List</div>' +
+        '<div class="text-[13px] text-t-secondary mb-3">Great conversations worth continuing — connect during networking time!</div>' +
         '<ul class="list-none p-0 m-0 flex flex-col gap-1" id="follow-up-list"></ul>' +
       '</div>';
     list = document.getElementById('follow-up-list');
@@ -296,7 +296,7 @@ function addToFollowUpList(name, token) {
   var a = document.createElement('a');
   a.href = '/{{ slug }}/a/' + token;
   a.target = '_blank';
-  a.className = 'text-amber-500 no-underline font-medium text-sm';
+  a.className = 'text-warm no-underline font-medium text-sm';
   a.textContent = name;
   li.appendChild(a);
   list.appendChild(li);
@@ -316,14 +316,14 @@ function sendSignal(fromId, toId, roundNumber, matchName) {
     var safeName = escapeHtml(matchName);
     if (data.mutual) {
       el.innerHTML = '<div class="text-[28px] mb-2">&#129309;</div>' +
-        '<div class="text-lg font-semibold text-green-500">It\'s mutual!</div>' +
-        '<div class="text-[13px] text-slate-400 mt-1">You and ' + safeName + ' both want to follow up.</div>';
+        '<div class="text-lg font-semibold text-action">It\'s mutual!</div>' +
+        '<div class="text-[13px] text-t-secondary mt-1">You and ' + safeName + ' both want to follow up.</div>';
       // Dynamically add to follow-up list
       addToFollowUpList(matchName, data.match_token || '');
     } else {
       el.innerHTML = '<div class="text-[28px] mb-2">&#9989;</div>' +
         '<div class="text-lg font-semibold">Feedback sent!</div>' +
-        '<div class="text-[13px] text-slate-400 mt-1">If ' + safeName + ' feels the same, you\'ll both be notified.</div>';
+        '<div class="text-[13px] text-t-secondary mt-1">If ' + safeName + ' feels the same, you\'ll both be notified.</div>';
     }
   });
 }
@@ -340,8 +340,8 @@ document.body.addEventListener("sse:signal_update", function(e) {
   var el = document.getElementById('signal-prompt-inner') || document.getElementById('signal-carryover-inner');
   if (el) {
     el.innerHTML = '<div class="text-[28px] mb-2">&#129309;</div>' +
-      '<div class="text-lg font-semibold text-green-500">It\'s mutual!</div>' +
-      '<div class="text-[13px] text-slate-400 mt-1">You and ' + escapeHtml(other.name) + ' both want to follow up.</div>';
+      '<div class="text-lg font-semibold text-action">It\'s mutual!</div>' +
+      '<div class="text-[13px] text-t-secondary mt-1">You and ' + escapeHtml(other.name) + ' both want to follow up.</div>';
   }
 });
 {% endif %}
