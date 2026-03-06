@@ -11,6 +11,7 @@ from pathlib import Path
 import anthropic
 
 from app.config import settings
+from pipeline.enrich import _parse_json_response
 from pipeline.prompts import PAIRWISE_PROMPT
 
 
@@ -135,23 +136,47 @@ def submit_batch(
     print("Retrieving results...")
     matrix = dict(existing_matrix)
 
+    succeeded = 0
+    parse_errors = 0
+    api_errors = 0
+
     for result in client.messages.batches.results(submitted_batch_id):
         pair_key = result.custom_id.replace("_", ":")
         if result.result.type == "succeeded":
+            message = result.result.message
+            content = message.content
             try:
-                text = result.result.message.content[0].text
-                data = json.loads(text)
+                if not content:
+                    raise ValueError("Empty content blocks")
+                text = content[0].text
+                if not text.strip():
+                    raise ValueError("Empty text response")
+                data = _parse_json_response(text)
                 matrix[pair_key] = {
                     "score": data.get("score", 0),
                     "rationale": data.get("rationale", ""),
                     "spark": data.get("spark", ""),
                 }
-            except (json.JSONDecodeError, IndexError, AttributeError) as e:
+                succeeded += 1
+            except (json.JSONDecodeError, IndexError, AttributeError, ValueError) as e:
+                parse_errors += 1
                 print(f"  Warning: Failed to parse result for {pair_key}: {e}")
+                print(f"    stop_reason={message.stop_reason}")
+                print(f"    content_blocks={len(content)}")
+                for i, block in enumerate(content):
+                    block_text = getattr(block, "text", None)
+                    preview = repr(block_text[:300]) if block_text else repr(block)
+                    print(f"    block[{i}] type={block.type}: {preview}")
                 matrix[pair_key] = {"score": 50, "rationale": "Parse error", "spark": ""}
         else:
-            print(f"  Warning: Request failed for {pair_key}: {result.result.type}")
+            api_errors += 1
+            error_result = result.result
+            print(f"  Warning: Request failed for {pair_key}: type={error_result.type}")
+            if hasattr(error_result, "error"):
+                print(f"    error={error_result.error}")
             matrix[pair_key] = {"score": 50, "rationale": "API error", "spark": ""}
+
+    print(f"Results: {succeeded} succeeded, {parse_errors} parse errors, {api_errors} API errors")
 
     # Save
     output_file.parent.mkdir(parents=True, exist_ok=True)
