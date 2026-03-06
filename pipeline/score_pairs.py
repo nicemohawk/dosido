@@ -57,9 +57,11 @@ def generate_batch_requests(
             b_intention=b.get("intention_90_day", ""),
         )
 
+        # Batch API custom_id only allows [a-zA-Z0-9_-], so use underscore
+        batch_id = pair_key.replace(":", "_")
         requests.append(
             {
-                "custom_id": pair_key,
+                "custom_id": batch_id,
                 "params": {
                     "model": "claude-sonnet-4-5-20250929",
                     "max_tokens": 300,
@@ -114,12 +116,12 @@ def submit_batch(
 
     print(f"Submitting batch of {len(requests)} requests...")
     batch = client.messages.batches.create(requests=requests)
-    batch_id = batch.id
-    print(f"Batch submitted: {batch_id}")
+    submitted_batch_id = batch.id
+    print(f"Batch submitted: {submitted_batch_id}")
 
     # Poll for completion
     while True:
-        status = client.messages.batches.retrieve(batch_id)
+        status = client.messages.batches.retrieve(submitted_batch_id)
         print(
             f"  Status: {status.processing_status} "
             f"({status.request_counts.succeeded}/{status.request_counts.processing}/"
@@ -133,8 +135,8 @@ def submit_batch(
     print("Retrieving results...")
     matrix = dict(existing_matrix)
 
-    for result in client.messages.batches.results(batch_id):
-        pair_key = result.custom_id
+    for result in client.messages.batches.results(submitted_batch_id):
+        pair_key = result.custom_id.replace("_", ":")
         if result.result.type == "succeeded":
             try:
                 text = result.result.message.content[0].text
