@@ -94,7 +94,7 @@ def llm_complete(prompt: str, *, provider: str | None = None) -> str:
     return "{}"
 
 
-def _parse_json_response(text: str) -> dict:
+def parse_json_response(text: str) -> dict:
     """Extract JSON from an LLM response, handling markdown fences."""
     text = text.strip()
     # Strip markdown code fences if present
@@ -180,7 +180,7 @@ def enrich_attendee(attendee: dict, client=None, *, provider: str | None = None)
 
     try:
         raw = llm_complete(prompt, provider=provider)
-        result = _parse_json_response(raw)
+        result = parse_json_response(raw)
         attendee["domain_tags"] = result.get("domain_tags", [])
         attendee["technical_depth"] = result.get("technical_depth", 0)
         attendee["stage"] = result.get("stage", "")

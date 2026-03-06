@@ -11,7 +11,7 @@ from pathlib import Path
 import anthropic
 
 from app.config import settings
-from pipeline.enrich import _parse_json_response
+from pipeline.enrich import parse_json_response
 from pipeline.prompts import PAIRWISE_PROMPT
 
 
@@ -28,7 +28,7 @@ def generate_batch_requests(
     for a, b in combinations(attendees, 2):
         pair_key = ":".join(sorted([a["id"], b["id"]]))
 
-        if existing_keys and pair_key in existing_keys:
+        if existing_keys is not None and pair_key in existing_keys:
             continue
 
         prompt = PAIRWISE_PROMPT.format(
@@ -113,6 +113,9 @@ def submit_batch(
         print(f"Dry run — would submit {len(requests)} requests to Claude Batch API.")
         return existing_matrix
 
+    if not settings.anthropic_api_key:
+        raise RuntimeError("ANTHROPIC_API_KEY is not set. Add it to your .env file or environment.")
+
     client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
 
     print(f"Submitting batch of {len(requests)} requests...")
@@ -151,7 +154,7 @@ def submit_batch(
                 text = content[0].text
                 if not text.strip():
                     raise ValueError("Empty text response")
-                data = _parse_json_response(text)
+                data = parse_json_response(text)
                 matrix[pair_key] = {
                     "score": data.get("score", 0),
                     "rationale": data.get("rationale", ""),
