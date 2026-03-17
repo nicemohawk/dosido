@@ -1,0 +1,76 @@
+/* Theme: Claude — warm amber/brown tones on midnight navy (the original) */
+:root {
+  /* Typography */
+  --font-sans: 'DM Sans', 'Helvetica Neue', sans-serif;
+  --font-display: 'DM Sans', 'Helvetica Neue', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --heading-weight: 700;
+
+  /* Button shape */
+  --btn-radius: 10px;
+  --btn-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+
+  /* Backgrounds */
+  --bg-base: #0a0f1a;
+  --bg-base-alt: #0d1520;
+  --bg-card: #111827;
+  --bg-subtle: #1e293b;
+
+  /* Borders */
+  --border-card: #1e293b;
+  --border-subtle: #374151;
+
+  /* Text */
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-faint: #475569;
+
+  /* Accent (table numbers, links, interactive) */
+  --accent: #3b82f6;
+  --accent-muted: #1e3a5f;
+  --accent-text: #93c5fd;
+
+  /* Action (primary buttons) */
+  --action: #22c55e;
+  --action-hover: #16a34a;
+  --action-glow: #4ade80;
+  --action-text: #0a0f1a;
+
+  /* Warm (pit stop, follow-up, warnings) */
+  --warm: #f59e0b;
+  --warm-bg: #1c1208;
+  --warm-border: #422006;
+  --warm-muted: #1a1505;
+
+  /* Danger */
+  --danger: #ef4444;
+  --danger-bg: #7f1d1d;
+
+  /* Signal stats borders */
+  --stat-a: #3b82f6;
+  --stat-b: #22c55e;
+  --stat-c: #8b5cf6;
+
+  /* Checkin board */
+  --checkin-active-bg: rgba(34, 197, 94, 0.12);
+  --checkin-active-text: #86efac;
+  --checkin-inactive-bg: #1f2937;
+  --checkin-inactive-text: #6b7280;
+
+  /* Domain tags */
+  --tag-bg: #1e293b;
+  --tag-text: #93c5fd;
+  --tag-border: #374151;
+
+  /* Role badges */
+  --role-engineering: #3b82f6; --role-engineering-bg: rgba(59, 130, 246, 0.094);
+  --role-product: #8b5cf6;     --role-product-bg: rgba(139, 92, 246, 0.094);
+  --role-gtm: #f59e0b;         --role-gtm-bg: rgba(245, 158, 11, 0.094);
+  --role-science: #10b981;     --role-science-bg: rgba(16, 185, 129, 0.094);
+  --role-ops: #6366f1;         --role-ops-bg: rgba(99, 102, 241, 0.094);
+  --role-policy: #ec4899;      --role-policy-bg: rgba(236, 72, 153, 0.094);
+
+  /* Save / confirm button */
+  --confirm: #3b82f6;
+}

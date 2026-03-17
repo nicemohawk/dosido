@@ -1,0 +1,76 @@
+/* Theme: Sunset — warm amber-to-magenta gradient feel, rounded and soft */
+:root {
+  /* Typography */
+  --font-sans: 'Sora', 'Helvetica Neue', sans-serif;
+  --font-display: 'Sora', 'Helvetica Neue', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --heading-weight: 700;
+
+  /* Button shape */
+  --btn-radius: 24px;
+  --btn-shadow: 0 4px 16px rgba(251, 146, 60, 0.3);
+
+  /* Backgrounds */
+  --bg-base: #120c08;
+  --bg-base-alt: #18100a;
+  --bg-card: #211810;
+  --bg-subtle: #33261a;
+
+  /* Borders */
+  --border-card: #33261a;
+  --border-subtle: #4a3828;
+
+  /* Text */
+  --text-primary: #f5e6d3;
+  --text-secondary: #c4a882;
+  --text-muted: #8a7058;
+  --text-faint: #5e4d3a;
+
+  /* Accent (table numbers, links, interactive) */
+  --accent: #fb923c;
+  --accent-muted: #5c2d0e;
+  --accent-text: #fdba74;
+
+  /* Action (primary buttons) */
+  --action: #f97316;
+  --action-hover: #ea580c;
+  --action-glow: #fb923c;
+  --action-text: #120c08;
+
+  /* Warm (pit stop, follow-up, warnings) */
+  --warm: #e879f9;
+  --warm-bg: #1e0a22;
+  --warm-border: #4a1a52;
+  --warm-muted: #1e0a22;
+
+  /* Danger */
+  --danger: #fb7185;
+  --danger-bg: #881337;
+
+  /* Signal stats borders */
+  --stat-a: #fb923c;
+  --stat-b: #e879f9;
+  --stat-c: #facc15;
+
+  /* Checkin board */
+  --checkin-active-bg: rgba(249, 115, 22, 0.12);
+  --checkin-active-text: #fdba74;
+  --checkin-inactive-bg: #33261a;
+  --checkin-inactive-text: #5e4d3a;
+
+  /* Domain tags */
+  --tag-bg: #33261a;
+  --tag-text: #fdba74;
+  --tag-border: #4a3828;
+
+  /* Role badges — warm sunset spectrum */
+  --role-engineering: #38bdf8; --role-engineering-bg: rgba(56, 189, 248, 0.094);
+  --role-product: #e879f9;     --role-product-bg: rgba(232, 121, 249, 0.094);
+  --role-gtm: #facc15;         --role-gtm-bg: rgba(250, 204, 21, 0.094);
+  --role-science: #4ade80;     --role-science-bg: rgba(74, 222, 128, 0.094);
+  --role-ops: #fb923c;         --role-ops-bg: rgba(251, 146, 60, 0.094);
+  --role-policy: #fb7185;      --role-policy-bg: rgba(251, 113, 133, 0.094);
+
+  /* Save / confirm button */
+  --confirm: #f97316;
+}

@@ -1,24 +1,24 @@
 <!-- Admin pairings partial — swapped via SSE -->
 {% if pairings %}
 <div class="flex justify-between mb-4">
-  <div class="text-xs font-semibold text-slate-500 tracking-[0.08em] uppercase">
+  <div class="text-xs font-semibold text-t-muted tracking-[0.08em] uppercase">
     Round {{ state.round_number }} Pairings
   </div>
-  <div class="text-[13px] text-slate-400">
-    Avg: <span class="text-green-500 font-semibold">{{ "%.0f"|format(pairings|map(attribute='score')|list|sum / pairings|length) }}</span>
+  <div class="text-[13px] text-t-secondary">
+    Avg: <span class="text-action font-semibold">{{ "%.0f"|format(pairings|map(attribute='score')|list|sum / pairings|length) }}</span>
     &middot;
-    Low: <span class="text-amber-500 font-semibold">{{ "%.0f"|format(pairings|map(attribute='score')|list|min) }}</span>
+    Low: <span class="text-warm font-semibold">{{ "%.0f"|format(pairings|map(attribute='score')|list|min) }}</span>
   </div>
 </div>
 
 <div class="flex flex-col gap-1">
   {% for p in pairings %}
-  <div class="flex items-center justify-between px-4 py-3 bg-midnight rounded-lg">
+  <div class="flex items-center justify-between px-4 py-3 bg-base rounded-lg">
     <div class="flex items-center gap-4">
-      <span class="font-mono text-xs text-slate-500 font-semibold min-w-[60px]">TABLE {{ p.table_number }}</span>
+      <span class="font-mono text-xs text-t-muted font-semibold min-w-[60px]">TABLE {{ p.table_number }}</span>
       <span class="text-sm font-medium">
         {% if p.token_a %}<a href="/{{ slug }}/a/{{ p.token_a }}" target="_blank" class="profile-link">{{ p.name_a }}</a>{% else %}{{ p.name_a }}{% endif %}
-        <span class="text-slate-600 mx-1.5">&#8596;</span>
+        <span class="text-t-faint mx-1.5">&#8596;</span>
         {% if p.token_b %}<a href="/{{ slug }}/a/{{ p.token_b }}" target="_blank" class="profile-link">{{ p.name_b }}</a>{% else %}{{ p.name_b }}{% endif %}
       </span>
     </div>
@@ -27,23 +27,23 @@
   {% endfor %}
 
   {% if pit_stop_info %}
-  <div class="flex items-center gap-4 px-4 py-3 bg-pit-stop rounded-lg border border-pit-stop-border">
+  <div class="flex items-center gap-4 px-4 py-3 bg-warm-bg rounded-lg border border-warm-border">
     <span class="text-base">&#9749;</span>
-    <span class="text-sm text-amber-500">Pit Stop: {% if pit_stop_info.token %}<a href="/{{ slug }}/a/{{ pit_stop_info.token }}" target="_blank" class="profile-link">{{ pit_stop_info.name }}</a>{% else %}{{ pit_stop_info.name }}{% endif %}</span>
+    <span class="text-sm text-warm">Pit Stop: {% if pit_stop_info.token %}<a href="/{{ slug }}/a/{{ pit_stop_info.token }}" target="_blank" class="profile-link">{{ pit_stop_info.name }}</a>{% else %}{{ pit_stop_info.name }}{% endif %}</span>
   </div>
   {% endif %}
 </div>
 
 <!-- Override -->
-<div class="mt-5 p-4 bg-midnight rounded-lg border border-slate-800">
-  <div class="text-xs font-semibold text-slate-500 mb-2.5 tracking-[0.08em] uppercase">
+<div class="mt-5 p-4 bg-base rounded-lg border border-border-card">
+  <div class="text-xs font-semibold text-t-muted mb-2.5 tracking-[0.08em] uppercase">
     Override
   </div>
   <form hx-post="/api/admin/swap" hx-swap="none" class="flex items-center gap-2.5"
         onsubmit="resolveSwapIds(this)">
     <input type="hidden" name="attendee_id_1" id="swap-id-1">
     <input type="text" id="swap-input-1" list="swap-list-1" placeholder="Type to filter..."
-           class="flex-1 input-dark rounded-md px-2.5 text-[13px] h-[30px]">
+           class="flex-1 input-dark px-2.5 text-[13px] h-[30px]">
     <datalist id="swap-list-1">
       {% for id, att in attendees.items()|sort(attribute='1.name') %}
         {% if att.status.value == 'checked-in' %}
@@ -51,10 +51,10 @@
         {% endif %}
       {% endfor %}
     </datalist>
-    <span class="text-slate-600">&#8596;</span>
+    <span class="text-t-faint">&#8596;</span>
     <input type="hidden" name="attendee_id_2" id="swap-id-2">
     <input type="text" id="swap-input-2" list="swap-list-2" placeholder="Type to filter..."
-           class="flex-1 input-dark rounded-md px-2.5 text-[13px] h-[30px]">
+           class="flex-1 input-dark px-2.5 text-[13px] h-[30px]">
     <datalist id="swap-list-2">
       {% for id, att in attendees.items()|sort(attribute='1.name') %}
         {% if att.status.value == 'checked-in' %}
@@ -62,11 +62,11 @@
         {% endif %}
       {% endfor %}
     </datalist>
-    <button type="submit" class="bg-slate-800 text-slate-200 border border-gray-700 rounded-md px-3.5 font-semibold text-[13px] cursor-pointer whitespace-nowrap h-[30px]">
+    <button type="submit" class="btn-secondary bg-subtle text-t-primary border border-border-subtle px-3.5 font-semibold text-[13px] cursor-pointer whitespace-nowrap h-[30px]">
       Apply Swap
     </button>
   </form>
 </div>
 {% else %}
-<div class="text-sm text-slate-500">No pairings yet — start a round to see matches.</div>
+<div class="text-sm text-t-muted">No pairings yet — start a round to see matches.</div>
 {% endif %}

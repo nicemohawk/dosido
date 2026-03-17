@@ -1,18 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 — Dosido</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍪</text></svg>">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>tailwind.config={theme:{extend:{fontFamily:{sans:['DM Sans','Helvetica Neue','sans-serif']}}}}</script>
-</head>
-<body class="m-0 min-h-screen bg-[#0a0f1a] text-slate-200 font-sans flex items-center justify-center">
-    <div class="text-center p-10">
-        <div class="text-7xl font-extrabold text-slate-800">404</div>
-        <div class="text-base text-slate-600 mt-2">Nothing here but crumbs.</div>
-    </div>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}404 — Dosido{% endblock %}
+{% block body_class %}flex items-center justify-center{% endblock %}
+
+{% block body %}
+<div class="text-center p-10">
+    <div class="text-7xl font-extrabold text-t-faint">404</div>
+    <div class="text-base text-t-muted mt-2">Nothing here but crumbs.</div>
+</div>
+{% endblock %}

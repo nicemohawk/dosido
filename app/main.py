@@ -3,11 +3,13 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Request, Response
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.backfill_worker import run_backfill_worker
+from app.config import settings
 from app.redis_client import close_pool
 from app.routes.admin_api import router as admin_router
 from app.routes.public_api import router as public_router
@@ -53,13 +55,15 @@ async def health_check():
     return {"status": "ok"}
 
 
-_NOT_FOUND_PAGE = (APP_DIR / "templates" / "404.html").read_text()
+_templates = Jinja2Templates(directory=APP_DIR / "templates")
 
 
 @app.exception_handler(StarletteHTTPException)
 async def custom_404(request: Request, exc: StarletteHTTPException):
     if exc.status_code == 404:
-        return HTMLResponse(_NOT_FOUND_PAGE, status_code=404)
+        return _templates.TemplateResponse(
+            "404.html", {"request": request, "settings": settings}, status_code=404
+        )
     return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
 
 

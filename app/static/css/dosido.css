@@ -1,7 +1,6 @@
 /* Dosido — shared component styles
    Patterns that can't be expressed as pure Tailwind utilities live here.
-   Standard colors use Tailwind classes directly (gray-900, slate-200, etc.).
-   Custom colors (midnight, pit-stop, etc.) are defined in the Tailwind config. */
+   Theme colors are defined via CSS custom properties in /themes/<name>.css. */
 
 /* --- Timer animation ---------------------------------------------------- */
 
@@ -10,35 +9,51 @@
   50% { opacity: 0.4; }
 }
 
-.timer-warning { color: #f59e0b; }
-.timer-expired { color: #ef4444; animation: timer-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-.timer-paused  { color: #f59e0b; }
+.timer-warning { color: var(--warm); }
+.timer-expired { color: var(--danger); animation: timer-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+.timer-paused  { color: var(--warm); }
+
+/* --- Theme-driven typography --------------------------------------------- */
+
+body {
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: var(--heading-weight);
+}
+
+code, pre, .font-mono {
+  font-family: var(--font-mono);
+}
 
 /* --- Form inputs -------------------------------------------------------- */
 
 .input-dark {
-  background: #0a0f1a;
-  color: #e2e8f0;
-  border: 1px solid #374151;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--btn-radius);
   outline: none;
 }
 .input-dark:focus {
-  border-color: #64748b;
+  border-color: var(--text-muted);
 }
 
 /* --- Links -------------------------------------------------------------- */
 
-.profile-link { color: #93c5fd; text-decoration: none; }
+.profile-link { color: var(--accent-text); text-decoration: none; }
 .profile-link:hover { text-decoration: underline; }
 
 /* --- Role badges -------------------------------------------------------- */
 
-.role-badge-engineering { color: #3b82f6; background: rgba(59, 130, 246, 0.094); }
-.role-badge-product     { color: #8b5cf6; background: rgba(139, 92, 246, 0.094); }
-.role-badge-gtm         { color: #f59e0b; background: rgba(245, 158, 11, 0.094); }
-.role-badge-science     { color: #10b981; background: rgba(16, 185, 129, 0.094); }
-.role-badge-ops         { color: #6366f1; background: rgba(99, 102, 241, 0.094); }
-.role-badge-policy      { color: #ec4899; background: rgba(236, 72, 153, 0.094); }
+.role-badge-engineering { color: var(--role-engineering); background: var(--role-engineering-bg); }
+.role-badge-product     { color: var(--role-product);     background: var(--role-product-bg); }
+.role-badge-gtm         { color: var(--role-gtm);         background: var(--role-gtm-bg); }
+.role-badge-science     { color: var(--role-science);     background: var(--role-science-bg); }
+.role-badge-ops         { color: var(--role-ops);         background: var(--role-ops-bg); }
+.role-badge-policy      { color: var(--role-policy);      background: var(--role-policy-bg); }
 
 /* --- Status dots (admin pool) ------------------------------------------- */
 
@@ -46,50 +61,86 @@
   background: radial-gradient(
     circle at 65% 25%, rgba(255, 255, 255, 0.25), transparent 55%
   ), radial-gradient(
-    circle at 70% 25%, #4ade80, #22c55e 50%, #16a34a
+    circle at 70% 25%, var(--action-glow), var(--action) 50%, var(--action-hover)
   );
-  box-shadow: 0 0 6px #22c55e;
+  box-shadow: 0 0 6px var(--action);
 }
 .status-dot-departed {
-  background: #ef4444;
+  background: var(--danger);
   opacity: 0.5;
 }
 .status-dot-pending {
-  border: 1.5px dotted #374151;
+  border: 1.5px dotted var(--border-subtle);
 }
 
-/* --- Green primary button (gradient with gloss) ------------------------- */
+/* --- Primary action button (gradient with gloss) ------------------------ */
 
-.btn-green {
+.btn-action {
   background: radial-gradient(
     circle at 75% 20%, rgba(255, 255, 255, 0.15), transparent 50%
   ), radial-gradient(
-    circle at 80% 20%, #4ade80, #22c55e 50%, #16a34a
+    circle at 80% 20%, var(--action-glow), var(--action) 50%, var(--action-hover)
   );
-  color: #0a0f1a;
+  color: var(--action-text);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--btn-shadow);
+}
+
+/* --- Secondary button (theme-aware radius) ------------------------------ */
+
+.btn-secondary {
+  border-radius: var(--btn-radius);
+}
+
+/* --- Confirm / save button (theme-aware radius + shadow) ---------------- */
+
+.btn-confirm {
+  border-radius: var(--btn-radius);
+  box-shadow: var(--btn-shadow);
 }
 
 /* --- Admin tabs --------------------------------------------------------- */
 
+.admin-tab {
+  border-radius: var(--btn-radius);
+}
 .admin-tab-active {
-  background: #1e293b;
-  color: #e2e8f0;
-  border-color: #374151;
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
 }
 .admin-tab-inactive {
   background: transparent;
-  color: #64748b;
+  color: var(--text-muted);
   border-color: transparent;
 }
 
+/* --- Connection status indicator ---------------------------------------- */
+
+.conn-ok    { background: var(--action); color: var(--action-text); }
+.conn-error { background: var(--danger); color: var(--bg-base); }
+.conn-stale { background: var(--warm); color: var(--bg-base); }
+
+/* --- Pin button active state -------------------------------------------- */
+
+.pin-active {
+  background: var(--action) !important;
+  color: var(--action-text) !important;
+}
+
+/* --- Modal overlay & shadow --------------------------------------------- */
+
+.modal-overlay { background: rgba(0, 0, 0, 0.6); }
+.modal-shadow  { box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4); }
+
 /* --- Score colors ------------------------------------------------------- */
 
-.score-high   { color: #22c55e; }
-.score-medium { color: #f59e0b; }
-.score-low    { color: #ef4444; }
+.score-high   { color: var(--action); }
+.score-medium { color: var(--warm); }
+.score-low    { color: var(--danger); }
 
 /* --- Scrollbar (webkit) ------------------------------------------------- */
 
 .admin-scrollable ::-webkit-scrollbar { width: 6px; }
-.admin-scrollable ::-webkit-scrollbar-track { background: #111827; }
-.admin-scrollable ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+.admin-scrollable ::-webkit-scrollbar-track { background: var(--bg-card); }
+.admin-scrollable ::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 3px; }

@@ -1,0 +1,76 @@
+/* Theme: Terminal — green-on-black retro hacker, monospace everything */
+:root {
+  /* Typography */
+  --font-sans: 'Fira Code', 'JetBrains Mono', monospace;
+  --font-display: 'Fira Code', 'JetBrains Mono', monospace;
+  --font-mono: 'Fira Code', 'JetBrains Mono', monospace;
+  --heading-weight: 500;
+
+  /* Button shape */
+  --btn-radius: 0px;
+  --btn-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
+
+  /* Backgrounds */
+  --bg-base: #020a02;
+  --bg-base-alt: #041204;
+  --bg-card: #081808;
+  --bg-subtle: #0f280f;
+
+  /* Borders */
+  --border-card: #0f280f;
+  --border-subtle: #1a3d1a;
+
+  /* Text */
+  --text-primary: #4ade80;
+  --text-secondary: #22c55e;
+  --text-muted: #16a34a;
+  --text-faint: #166534;
+
+  /* Accent (table numbers, links, interactive) */
+  --accent: #4ade80;
+  --accent-muted: #14532d;
+  --accent-text: #86efac;
+
+  /* Action (primary buttons) */
+  --action: #22c55e;
+  --action-hover: #16a34a;
+  --action-glow: #4ade80;
+  --action-text: #020a02;
+
+  /* Warm (pit stop, follow-up, warnings) */
+  --warm: #facc15;
+  --warm-bg: #1a1805;
+  --warm-border: #3d3a0a;
+  --warm-muted: #1a1805;
+
+  /* Danger */
+  --danger: #ef4444;
+  --danger-bg: #7f1d1d;
+
+  /* Signal stats borders */
+  --stat-a: #4ade80;
+  --stat-b: #facc15;
+  --stat-c: #22d3ee;
+
+  /* Checkin board */
+  --checkin-active-bg: rgba(74, 222, 128, 0.1);
+  --checkin-active-text: #86efac;
+  --checkin-inactive-bg: #0f280f;
+  --checkin-inactive-text: #166534;
+
+  /* Domain tags */
+  --tag-bg: #0f280f;
+  --tag-text: #86efac;
+  --tag-border: #1a3d1a;
+
+  /* Role badges — monochrome green spectrum */
+  --role-engineering: #4ade80; --role-engineering-bg: rgba(74, 222, 128, 0.08);
+  --role-product: #86efac;     --role-product-bg: rgba(134, 239, 172, 0.06);
+  --role-gtm: #facc15;         --role-gtm-bg: rgba(250, 204, 21, 0.06);
+  --role-science: #22d3ee;     --role-science-bg: rgba(34, 211, 238, 0.06);
+  --role-ops: #22c55e;         --role-ops-bg: rgba(34, 197, 94, 0.08);
+  --role-policy: #a3e635;      --role-policy-bg: rgba(163, 230, 53, 0.06);
+
+  /* Save / confirm button */
+  --confirm: #22c55e;
+}

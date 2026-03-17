@@ -1,23 +1,23 @@
 {% extends "base.html" %}
 
 {% block title %}{{ attendee.name }} — {{ settings.event_name }}{% endblock %}
-{% block body_class %}text-slate-200{% endblock %}
+{% block body_class %}text-t-primary{% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-midnight text-slate-200 p-5">
+<div class="min-h-screen bg-base text-t-primary p-5">
   <div class="max-w-[480px] mx-auto">
 
     <!-- Profile Card -->
-    <div class="bg-gray-900 border border-slate-800 rounded-2xl overflow-hidden">
+    <div class="bg-card border border-border-card rounded-2xl overflow-hidden">
 
       <!-- Header -->
-      <div class="py-8 px-6 text-center border-b border-slate-800">
+      <div class="py-8 px-6 text-center border-b border-border-card">
         <div class="text-2xl font-bold">{{ attendee.name }}</div>
         <div class="flex items-center justify-center gap-2 mt-2">
           <span class="role-badge-{{ attendee.role.value }} text-xs font-semibold px-2 py-0.5 rounded">{{ attendee.role.value }}</span>
           {% if attendee.top_climate_area %}
-          <span class="text-[13px] text-slate-500">&middot;</span>
-          <span class="text-[13px] text-slate-400">{{ attendee.top_climate_area }}</span>
+          <span class="text-[13px] text-t-muted">&middot;</span>
+          <span class="text-[13px] text-t-secondary">{{ attendee.top_climate_area }}</span>
           {% endif %}
         </div>
       </div>
@@ -25,13 +25,13 @@
       <div class="p-6">
 
         {% if attendee.superpower %}
-        <div class="text-[15px] italic text-slate-400 mb-4">
+        <div class="text-[15px] italic text-t-secondary mb-4">
           "{{ attendee.superpower }}"
         </div>
         {% endif %}
 
         {% if attendee.matching_summary %}
-        <div class="text-[13px] text-slate-500 mb-4 leading-normal">
+        <div class="text-[13px] text-t-muted mb-4 leading-normal">
           {{ attendee.matching_summary }}
         </div>
         {% endif %}
@@ -39,47 +39,47 @@
         {% if attendee.domain_tags %}
         <div class="flex flex-wrap gap-1.5 mb-5">
           {% for tag in attendee.domain_tags %}
-          <span class="bg-slate-800 text-blue-300 text-xs py-0.5 px-2.5 rounded-full border border-gray-700">{{ tag }}</span>
+          <span class="bg-tag-bg text-tag-text text-xs py-0.5 px-2.5 rounded-full border border-tag-border">{{ tag }}</span>
           {% endfor %}
         </div>
         {% endif %}
 
         <!-- Details -->
-        <div class="grid grid-cols-2 gap-3 pt-4 border-t border-slate-800">
+        <div class="grid grid-cols-2 gap-3 pt-4 border-t border-border-card">
           <div>
-            <div class="text-[11px] text-slate-600 font-semibold uppercase tracking-[0.05em] mb-0.5">Looking for</div>
+            <div class="text-[11px] text-t-faint font-semibold uppercase tracking-[0.05em] mb-0.5">Looking for</div>
             <div class="text-sm capitalize">{{ attendee.role_needed.value | replace("-", " ") }}</div>
           </div>
           <div>
-            <div class="text-[11px] text-slate-600 font-semibold uppercase tracking-[0.05em] mb-0.5">Lane</div>
+            <div class="text-[11px] text-t-faint font-semibold uppercase tracking-[0.05em] mb-0.5">Lane</div>
             <div class="text-sm capitalize">{{ attendee.lane.value | replace("-", " ") }}</div>
           </div>
           <div>
-            <div class="text-[11px] text-slate-600 font-semibold uppercase tracking-[0.05em] mb-0.5">Commitment</div>
+            <div class="text-[11px] text-t-faint font-semibold uppercase tracking-[0.05em] mb-0.5">Commitment</div>
             <div class="text-sm capitalize">{{ attendee.commitment.value | replace("-", " ") }}</div>
           </div>
           {% if attendee.stage %}
           <div>
-            <div class="text-[11px] text-slate-600 font-semibold uppercase tracking-[0.05em] mb-0.5">Stage</div>
+            <div class="text-[11px] text-t-faint font-semibold uppercase tracking-[0.05em] mb-0.5">Stage</div>
             <div class="text-sm capitalize">{{ attendee.stage | replace("-", " ") }}</div>
           </div>
           {% endif %}
           {% if attendee.location %}
           <div>
-            <div class="text-[11px] text-slate-600 font-semibold uppercase tracking-[0.05em] mb-0.5">Location</div>
+            <div class="text-[11px] text-t-faint font-semibold uppercase tracking-[0.05em] mb-0.5">Location</div>
             <div class="text-sm">{{ attendee.location }}</div>
           </div>
           {% endif %}
           <div>
-            <div class="text-[11px] text-slate-600 font-semibold uppercase tracking-[0.05em] mb-0.5">Arrangement</div>
+            <div class="text-[11px] text-t-faint font-semibold uppercase tracking-[0.05em] mb-0.5">Arrangement</div>
             <div class="text-sm capitalize">{{ attendee.arrangement.value | replace("-", " ") }}</div>
           </div>
         </div>
 
         {% if attendee.intention_90_day %}
-        <div class="pt-4 mt-3 border-t border-slate-800">
-          <div class="text-[11px] text-slate-600 font-semibold uppercase tracking-[0.05em] mb-1">90-day intention</div>
-          <div class="text-[13px] text-slate-400 leading-normal">{{ attendee.intention_90_day }}</div>
+        <div class="pt-4 mt-3 border-t border-border-card">
+          <div class="text-[11px] text-t-faint font-semibold uppercase tracking-[0.05em] mb-1">90-day intention</div>
+          <div class="text-[13px] text-t-secondary leading-normal">{{ attendee.intention_90_day }}</div>
         </div>
         {% endif %}
 
@@ -92,11 +92,11 @@
       <form method="POST" action="/{{ slug }}/a/{{ token }}/claim"
             onsubmit="localStorage.setItem('matchmaking_{{ slug }}_token', '{{ token }}')">
         <button type="submit"
-                class="bg-green-500 text-midnight border-none rounded-xl py-3.5 px-9 text-base font-bold cursor-pointer">
+                class="btn-action border-none py-3.5 px-9 text-base cursor-pointer">
           This is me
         </button>
       </form>
-      <div class="text-xs text-slate-600 mt-2">Tap if this is your badge to see your matches</div>
+      <div class="text-xs text-t-faint mt-2">Tap if this is your badge to see your matches</div>
     </div>
     {% endif %}
 

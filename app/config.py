@@ -1,4 +1,32 @@
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
+
+VALID_THEMES = (
+    "obsidian",
+    "claude",
+    "noir",
+    "carbon",
+    "deep-space",
+    "emerald",
+    "sunset",
+    "terminal",
+    "arctic",
+)
+
+THEME_FONT_URLS: dict[str, str] = {
+    "obsidian": "Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800",
+    "claude": "DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700;800",
+    "noir": "Cormorant+Garamond:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800",
+    "carbon": "Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800",
+    "deep-space": "Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800",
+    "emerald": "Lora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800",
+    "sunset": "Sora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800",
+    "terminal": "Fira+Code:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700;800",
+    "arctic": (
+        "Instrument+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700"
+        "&family=JetBrains+Mono:wght@400;500;700;800"
+    ),
+}
 
 
 class Settings(BaseSettings):
@@ -12,6 +40,21 @@ class Settings(BaseSettings):
 
     round_duration_minutes: int = 8
     total_rounds: int = 10
+
+    # UI theme — see app/static/css/themes/ for available options
+    theme: str = "obsidian"
+
+    @field_validator("theme")
+    @classmethod
+    def validate_theme(cls, value: str) -> str:
+        if value not in VALID_THEMES:
+            raise ValueError(f"Unknown theme '{value}'. Valid themes: {', '.join(VALID_THEMES)}")
+        return value
+
+    @property
+    def theme_font_url(self) -> str:
+        families = THEME_FONT_URLS.get(self.theme, THEME_FONT_URLS["obsidian"])
+        return f"https://fonts.googleapis.com/css2?family={families}&display=swap"
 
     # LLM provider: "claude", "ollama", or "none"
     llm_provider: str = "claude"
