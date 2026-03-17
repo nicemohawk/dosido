@@ -95,7 +95,7 @@ async def run_backfill_worker() -> None:
             # Call Claude API
             try:
                 response = client.messages.create(
-                    model="claude-sonnet-4-5-20250929",
+                    model="claude-sonnet-4-6",
                     max_tokens=300,
                     temperature=0,
                     messages=[{"role": "user", "content": prompt}],

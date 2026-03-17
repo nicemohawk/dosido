@@ -17,8 +17,9 @@ pre-commit install              # Set up lint hooks (ruff check + format)
 dosido-serve                    # uvicorn with auto-reload on :8000
 
 # Pre-event data pipeline
-dosido-seed                     # Generate 60 fake attendees + matrix
+dosido-seed                     # Generate 60 curated attendees + matrix
 dosido-load                     # Load seed data into Redis
+dosido-score                    # Score pending pairs via Claude Batch API (resumable; --force to rescore all)
 python scripts/run_pipeline.py --csv path/to/luma.csv  # Full real pipeline
 
 # Tests
