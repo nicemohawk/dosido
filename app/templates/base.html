@@ -7,7 +7,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍪</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;700&family=Instrument+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&family=Lora:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="{{ settings.theme_font_url }}" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config={theme:{extend:{fontFamily:{sans:['var(--font-sans)'],display:['var(--font-display)'],mono:['var(--font-mono)']},colors:{base:'var(--bg-base)','base-alt':'var(--bg-base-alt)',card:'var(--bg-card)',subtle:'var(--bg-subtle)','border-card':'var(--border-card)','border-subtle':'var(--border-subtle)','t-primary':'var(--text-primary)','t-secondary':'var(--text-secondary)','t-muted':'var(--text-muted)','t-faint':'var(--text-faint)',accent:'var(--accent)','accent-muted':'var(--accent-muted)','accent-text':'var(--accent-text)',action:'var(--action)','action-hover':'var(--action-hover)','action-glow':'var(--action-glow)','action-text':'var(--action-text)',warm:'var(--warm)','warm-bg':'var(--warm-bg)','warm-border':'var(--warm-border)','warm-muted':'var(--warm-muted)',danger:'var(--danger)','danger-bg':'var(--danger-bg)','stat-a':'var(--stat-a)','stat-b':'var(--stat-b)','stat-c':'var(--stat-c)',confirm:'var(--confirm)','tag-bg':'var(--tag-bg)','tag-text':'var(--tag-text)','tag-border':'var(--tag-border)'}}}}</script>
     <link rel="stylesheet" href="/static/css/themes/{{ settings.theme }}.css">
@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/htmx-ext-json-enc@2.0.1/json-enc.js"></script>
     {% block head %}{% endblock %}
 </head>
-<body class="bg-base min-h-screen {% block body_class %}{% endblock %}">
+<body class="m-0 bg-base min-h-screen {% block body_class %}{% endblock %}">
     <!-- Connection status indicator -->
     <div id="connection-status"
          class="fixed bottom-3 right-3 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 z-50 opacity-0 pointer-events-none"
