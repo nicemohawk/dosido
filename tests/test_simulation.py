@@ -12,26 +12,7 @@ class TestFullSimulation:
     def _load_pool(self, count: int = 60):
         raw_attendees = generate_attendees(count)
         matrix = generate_matrix(raw_attendees)
-
-        attendees = []
-        for raw in raw_attendees:
-            attendees.append(
-                Attendee(
-                    id=raw["id"],
-                    name=raw["name"],
-                    email=raw["email"],
-                    location=raw["location"],
-                    lane=raw["lane"],
-                    role=raw["role"],
-                    role_needed=raw["role_needed"],
-                    climate_areas=raw["climate_areas"],
-                    top_climate_area=raw["top_climate_area"],
-                    commitment=raw["commitment"],
-                    arrangement=raw["arrangement"],
-                    source=raw["source"],
-                )
-            )
-
+        attendees = [Attendee.model_validate(raw) for raw in raw_attendees]
         return attendees, matrix
 
     def test_60_attendees_10_rounds_no_repeats(self):

@@ -101,6 +101,8 @@ This submits all attendee pairs to the Claude Batch API, which returns a score (
 
 ## Pre-Event Pipeline
 
+Registration questions are research-backed — see [REGISTRATION.md](./REGISTRATION.md) for the recommended 12-question Luma form, which fields they map to, and the rationale (similarity on commitment/runway/ambition/equity philosophy, complementarity on skills/edge; chemistry is measured at the event via signals, not the form).
+
 For a real event, run the full pipeline to process attendee applications:
 
 ```bash

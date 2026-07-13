@@ -44,6 +44,14 @@ Improvement ideas and tech debt discovered during development. Pick these up whe
 
 - [ ] **No operational runbook** — README covers architecture but not "what if round advance fails?" or "how to recover stuck backfill worker?" scenarios.
 
+## Research Follow-ups (from cofounder-complementarity research, 2026-07-13)
+
+- [ ] **Signal budget + forced choice** — cap "strong yes" signals (3-4 per event) or make each round's signal a forced {strong yes / maybe / no}; scarcity makes signals informative (dyadic-desire research). Selectivity weighting is already in `_signal_boost`; the UI still allows unlimited signals.
+- [ ] **"Would you spend a full day working with this person?"** — add as a post-round binary sub-question; a mutual yes is the strongest chemistry datum available (EF trial-project logic) and should outweigh the LLM score.
+- [ ] **Decay the LLM prior as revealed signals accumulate** — by round 5+, signal-derived adjustments should be able to dominate the pre-scored matrix for pairs with data (stated preferences predict poorly; revealed interest predicts well).
+- [ ] **Per-round escalating spark prompts** — sparks are generated once per pair at scoring time; research favors escalation across the event (early rounds concrete/low-stakes, late rounds the breakup topics: pivot conversation, mock equity negotiation). Needs round-aware spark selection.
+- [ ] **Post-event follow-up kit** — convert mutual strong-yeses into a suggested next step (1-day trial task + YC's 10 questions / First Round's 50 questions); the 24-48h follow-up is where match value is realized.
+
 ## Future Additions
 
 - [ ] **Bell/chime sound at timer zero** — Spec mentions an audible alert when the round timer expires. Nice-to-have for in-person events so attendees know time is up without watching the screen.
