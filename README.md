@@ -124,7 +124,7 @@ python scripts/run_pipeline.py --badges
 
 - **Pre-registered attendees**: Name + QR code sticker badges, printed at home on Avery labels
 - **Walk-up reserve**: ~20 badges with fun slugs + QR codes. Admin assigns a badge to each walk-up via the admin panel
-- Walk-ups get deterministic-only scoring immediately; LLM scoring backfills between rounds
+- Walk-ups get an immediate heuristic score on the same 0-100 scale as LLM scores, so they compete fairly from their first round; LLM scoring backfills between rounds
 
 ## Event Day Operations
 
@@ -156,7 +156,7 @@ The system supports three LLM providers, configured via `LLM_PROVIDER` in `.env`
 |----------|----------|----------|
 | `claude` (default) | Production — highest quality enrichment and scoring | `ANTHROPIC_API_KEY` |
 | `ollama` | Local dev — free, no API key, runs on your machine | [Ollama](https://ollama.com) + `ollama pull llama3.2` |
-| `none` | Testing — stub enrichment from application data only | Nothing |
+| `none` | Testing / no-API events — stub enrichment; matching uses heuristic 0-100 pairwise scoring from application data | Nothing |
 
 ### Test profile script
 
@@ -183,9 +183,9 @@ pytest tests/
 ```
 
 Tests cover:
-- Matching engine correctness (no repeat pairings, hard constraints, pit stop fairness)
-- Composite scoring function (LLM primary signal, deterministic bonuses, walk-up fallback)
-- Full simulation: 60 attendees x 10 rounds, 80-attendee performance (<2s solve time)
+- Matching engine correctness (no repeat pairings, hard constraints, pit stop fairness and quality)
+- Composite scoring function (LLM primary signal, deterministic bonuses, heuristic fallback for unscored pairs)
+- Full simulation: 60 and 100 attendees x 10 rounds, with and without an LLM matrix, 100-attendee performance (<1s solve time)
 
 ## Deployment (Railway)
 
@@ -215,7 +215,7 @@ app/
   models.py            # Pydantic models (Attendee, PairScore, RoundResult, etc.)
   redis_client.py      # Async Redis connection pool
   state.py             # EventStateManager — all Redis read/write operations
-  matching.py          # Solver (networkx max weight matching + lookahead)
+  matching.py          # Solver (networkx max weight matching, solver-chosen pit stop)
   scoring.py           # Composite scoring function
   broadcaster.py       # SSE pub/sub via asyncio queues
   backfill_worker.py   # Background LLM scoring for walk-ups

@@ -51,9 +51,12 @@ def match_score(
     ):
         return float("-inf")
 
-    # --- LLM score (primary signal) ---
-    pair_data = compatibility_matrix.get(pair_key, {})
-    llm_score = pair_data.get("score", 0) if pair_data else 0
+    # --- Base score: LLM if scored, heuristic stand-in otherwise ---
+    pair_data = compatibility_matrix.get(pair_key)
+    if pair_data:
+        base_score = pair_data.get("score", 0)
+    else:
+        base_score = heuristic_pair_score(a, b)
 
     # --- Deterministic bonuses ---
 
@@ -75,17 +78,52 @@ def match_score(
     top_match = 10 if (a.top_climate_area and a.top_climate_area == b.top_climate_area) else 0
     climate_bonus = (climate_overlap * 5) + top_match
 
-    # --- Walk-up without LLM score: deterministic only, scaled up ---
-    if llm_score == 0 and pair_key not in compatibility_matrix:
-        return (role_bonus + lane_bonus + climate_bonus) * 2
-
     # --- Signal boost (optional) ---
     signal_boost_total = 0
     if mutual_signals and compatibility_scores:
         signal_boost_total += _signal_boost(a.id, b.id, mutual_signals, compatibility_scores)
         signal_boost_total += _signal_boost(b.id, a.id, mutual_signals, compatibility_scores)
 
-    return llm_score + role_bonus + lane_bonus + climate_bonus + signal_boost_total
+    return base_score + role_bonus + lane_bonus + climate_bonus + signal_boost_total
+
+
+def heuristic_pair_score(a: Attendee, b: Attendee) -> int:
+    """Deterministic 0-100 stand-in for the LLM pairwise score.
+
+    Used for pairs the LLM hasn't scored yet (walk-ups awaiting backfill, or
+    events running with LLM_PROVIDER=none) so they compete on the same scale
+    as scored pairs instead of sinking to the bottom of the matching.
+    """
+    score = 0
+
+    if a.role != b.role:
+        if a.role_needed == b.role:
+            score += 20
+        if b.role_needed == a.role:
+            score += 20
+
+    if {a.lane, b.lane} == {"idea", "joiner"}:
+        score += 10
+
+    shared_areas = set(a.climate_areas) & set(b.climate_areas)
+    all_areas = set(a.climate_areas) | set(b.climate_areas)
+    if all_areas:
+        score += round(20 * len(shared_areas) / len(all_areas))
+    if a.top_climate_area and a.top_climate_area == b.top_climate_area:
+        score += 10
+
+    if a.commitment == b.commitment:
+        score += 10 if a.commitment == "full-time" else 5
+
+    if (
+        a.arrangement == "colocated"
+        and b.arrangement == "colocated"
+        and a.location
+        and a.location.lower() == b.location.lower()
+    ):
+        score += 10
+
+    return min(score, 100)
 
 
 def _signal_boost(

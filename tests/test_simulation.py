@@ -167,10 +167,10 @@ class TestFullSimulation:
         )
 
     def test_solver_performance_at_scale(self):
-        """Solver should complete in under 2 seconds for 80 attendees."""
+        """Solver should complete in under 1 second for 100 attendees."""
         import time
 
-        pool, matrix = self._load_pool(80)
+        pool, matrix = self._load_pool(100)
 
         start = time.monotonic()
         pairings, pit_stop = solve_round(
@@ -182,5 +182,46 @@ class TestFullSimulation:
         )
         elapsed = time.monotonic() - start
 
-        assert elapsed < 2.0, f"Solver took {elapsed:.2f}s (expected < 2s)"
-        assert len(pairings) == 40  # 80 attendees = 40 pairs
+        assert elapsed < 1.0, f"Solver took {elapsed:.2f}s (expected < 1s)"
+        assert len(pairings) == 50  # 100 attendees = 50 pairs
+
+    def test_100_attendees_10_rounds_no_repeats(self):
+        """Full-capacity event: 100 attendees, 10 rounds, everyone paired every round."""
+        pool, matrix = self._load_pool(100)
+        history: set[str] = set()
+        pit_stop_counts: dict[str, int] = {}
+
+        for round_num in range(10):
+            pairings, pit_stop = solve_round(
+                active_pool=pool,
+                compatibility_matrix=matrix,
+                pairing_history=history,
+                rounds_remaining=10 - round_num,
+                pit_stop_counts=pit_stop_counts,
+            )
+
+            assert pit_stop is None  # Even pool, everyone matchable
+            assert len(pairings) == 50
+            for p in pairings:
+                pk = make_pair_key(p.attendee_a, p.attendee_b)
+                assert pk not in history, f"REPEAT in round {round_num + 1}: {pk}"
+                history.add(pk)
+
+    def test_100_attendees_without_llm_matrix(self):
+        """Out-of-box with no LLM scores: heuristic scoring still pairs everyone."""
+        pool, _ = self._load_pool(100)
+        history: set[str] = set()
+
+        for round_num in range(10):
+            pairings, pit_stop = solve_round(
+                active_pool=pool,
+                compatibility_matrix={},
+                pairing_history=history,
+                rounds_remaining=10 - round_num,
+                pit_stop_counts={},
+            )
+
+            assert len(pairings) == 50
+            assert all(p.composite_score >= 0 for p in pairings)
+            for p in pairings:
+                history.add(make_pair_key(p.attendee_a, p.attendee_b))

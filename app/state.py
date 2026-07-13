@@ -16,7 +16,7 @@ from app.models import (
     RoundResult,
 )
 from app.redis_client import get_redis
-from app.scoring import make_pair_key
+from app.scoring import make_pair_key, match_score
 
 
 def _prefix() -> str:
@@ -306,12 +306,20 @@ class EventStateManager:
         partner_1 = p1.attendee_b if p1.attendee_a == attendee_id_1 else p1.attendee_a
         partner_2 = p2.attendee_b if p2.attendee_a == attendee_id_2 else p2.attendee_a
 
-        # Look up scores for the new pairs from the compatibility matrix
+        # Recompute composite scores for the new pairs
         matrix = await self.get_compatibility_matrix()
-        new_key_1 = make_pair_key(attendee_id_2, partner_1)
-        new_key_2 = make_pair_key(attendee_id_1, partner_2)
-        score_1 = matrix.get(new_key_1, {}).get("composite_score", 0)
-        score_2 = matrix.get(new_key_2, {}).get("composite_score", 0)
+        history = await self.get_pairing_history()
+        attendees = await self.get_all_attendees()
+        score_1 = score_2 = 0.0
+        if all(aid in attendees for aid in (attendee_id_1, attendee_id_2, partner_1, partner_2)):
+            # Admin overrides may violate constraints (e.g. re-pair people who
+            # already met) — show 0 rather than -inf for those.
+            score_1 = max(
+                match_score(attendees[attendee_id_2], attendees[partner_1], matrix, history), 0.0
+            )
+            score_2 = max(
+                match_score(attendees[attendee_id_1], attendees[partner_2], matrix, history), 0.0
+            )
 
         # Swap: attendee_1 goes with partner_2, attendee_2 goes with partner_1
         result.pairings[idx_1] = Pairing(

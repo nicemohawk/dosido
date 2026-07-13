@@ -14,7 +14,8 @@ Improvement ideas and tech debt discovered during development. Pick these up whe
 - [ ] **"NEXT ROUND STARTING..." interstitial on projector** — Spec calls for a 5-second countdown overlay on the screen view before revealing new pairings. Currently the screen reloads directly on `round_update` with no transition.
 - [ ] **Polling fallback for SSE drops** — Screen view should poll every 5 seconds and admin view every 15 seconds as a backup when SSE connection is lost. Other views (mobile) don't need polling — SSE reconnection is sufficient.
 - [ ] **Clarify signal window dynamics** — Signal submissions have no round validation. A signal from a previous round could be submitted after the next round starts. Need to define and enforce when the signal window opens and closes relative to round transitions.
-- [ ] **Review solver constraints — commitment and location as hard constraints** — Spec says commitments should be a hard constraint (must be paired). Currently only "arrangement" is enforced as hard. Location/colocated is also likely a hard constraint. Audit `solver.py` and confirm which constraints should be hard vs. soft (score bonus).
+- [ ] **Review solver constraints — commitment and location as hard constraints** — Spec says commitments should be a hard constraint (must be paired). Currently only "arrangement" is enforced as hard. Location/colocated is also likely a hard constraint. Audit `app/matching.py` and confirm which constraints should be hard vs. soft (score bonus).
+- [ ] **Multiple simultaneous sit-outs are underreported** — `solve_round` now reports any unmatched attendee as the pit stop, but `RoundResult.pit_stop` holds a single ID. In the pathological case where several attendees have no valid partners left in the same round, only the first is surfaced. Consider making `pit_stop` a list end-to-end.
 
 ## Bugs
 
