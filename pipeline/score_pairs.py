@@ -11,6 +11,7 @@ from pathlib import Path
 import anthropic
 
 from app.config import settings
+from pipeline import load_required_json
 from pipeline.enrich import parse_json_response
 from pipeline.prompts import PAIRWISE_PROMPT
 
@@ -88,8 +89,10 @@ def submit_batch(
     Pass force=True to re-score everything.
     Pass dry_run=True to preview what would be scored without calling the API.
     """
-    with open(input_path) as f:
-        attendees = json.load(f)
+    attendees = load_required_json(
+        input_path,
+        hint="run `dosido-seed` for test data or `python -m pipeline.enrich` for real data",
+    )
 
     # Load existing scores for resumability
     output_file = Path(output_path)

@@ -63,9 +63,14 @@ def main():
         else:
             print("\n=== Step 2: Skipping enrichment ===")
             # Copy attendees.json as enriched_attendees.json
-            import json
             import shutil
 
+            from pipeline import load_required_json
+
+            load_required_json(
+                "data/attendees.json",
+                hint="run `python scripts/run_pipeline.py --csv <luma.csv>` to ingest first",
+            )
             shutil.copy("data/attendees.json", "data/enriched_attendees.json")
 
         if not args.skip_score:
@@ -77,10 +82,13 @@ def main():
             print("\n=== Step 3: Skipping scoring — generating fake matrix ===")
             import json
 
+            from pipeline import load_required_json
             from scripts.seed_test_data import generate_matrix
 
-            with open("data/enriched_attendees.json") as f:
-                attendees = json.load(f)
+            attendees = load_required_json(
+                "data/enriched_attendees.json",
+                hint="run `dosido-seed` for test data or `python -m pipeline.enrich` for real data",
+            )
             matrix = generate_matrix(attendees)
             with open("data/matrix.json", "w") as f:
                 json.dump(matrix, f, indent=2)
