@@ -33,6 +33,9 @@
         {% include "partials/admin_round_control.html" %}
       </div>
 
+      <div id="admin-error-alert" role="alert"
+           class="hidden mt-4 bg-red-950 border border-red-900 text-red-400 text-[13px] rounded-lg px-4 py-2.5"></div>
+
       <div class="flex gap-3 items-center mt-5 ml-auto justify-end">
         <label class="text-xs text-slate-500 flex items-center gap-1.5">
           Duration
@@ -263,6 +266,20 @@ function cancelAdvance() {
   confirm.classList.add('hidden');
   confirm.classList.remove('flex');
 }
+
+// Surface failed admin requests (e.g. advance-round 500s) in an inline alert
+document.body.addEventListener('htmx:responseError', function(e) {
+  var alert = document.getElementById('admin-error-alert');
+  if (!alert) return;
+  var message = '';
+  try { message = JSON.parse(e.detail.xhr.responseText).detail; } catch (parseError) {}
+  alert.textContent = message || ('Request failed (HTTP ' + e.detail.xhr.status + ')');
+  alert.classList.remove('hidden');
+});
+document.body.addEventListener('htmx:beforeRequest', function() {
+  var alert = document.getElementById('admin-error-alert');
+  if (alert) alert.classList.add('hidden');
+});
 
 // Swap override helper (defined here so it survives partial swaps via innerHTML)
 function resolveSwapIds(form) {
