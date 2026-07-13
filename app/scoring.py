@@ -2,7 +2,15 @@
 
 from __future__ import annotations
 
-from app.models import Attendee
+from app.models import (
+    COMMITMENT_TIER,
+    Ambition,
+    Attendee,
+    Edge,
+    EquityPhilosophy,
+)
+
+COMMITMENT_GAP_ADJUSTMENT = {0: 10, 1: 0, 2: -10, 3: -25}
 
 
 def make_pair_key(id_a: str, id_b: str) -> str:
@@ -84,7 +92,55 @@ def match_score(
         signal_boost_total += _signal_boost(a.id, b.id, mutual_signals, compatibility_scores)
         signal_boost_total += _signal_boost(b.id, a.id, mutual_signals, compatibility_scores)
 
-    return base_score + role_bonus + lane_bonus + climate_bonus + signal_boost_total
+    return (
+        base_score
+        + role_bonus
+        + lane_bonus
+        + climate_bonus
+        + alignment_adjustment(a, b)
+        + signal_boost_total
+    )
+
+
+def alignment_adjustment(a: Attendee, b: Attendee) -> int:
+    """Deterministic cofounder-alignment adjustment.
+
+    Similarity on commitment, ambition, and equity philosophy predicts founding-team
+    survival; edge complementarity within a shared domain predicts upside. Unknown or
+    undisclosed values always contribute 0 so skipping questions never penalizes anyone.
+    """
+    adjustment = 0
+
+    commitment_gap = abs(COMMITMENT_TIER[a.commitment] - COMMITMENT_TIER[b.commitment])
+    adjustment += COMMITMENT_GAP_ADJUSTMENT[commitment_gap]
+
+    if Ambition.UNDECIDED not in (a.ambition, b.ambition):
+        if a.ambition == b.ambition:
+            adjustment += 10
+        elif {a.ambition, b.ambition} == {Ambition.BOOTSTRAP, Ambition.VENTURE_SCALE}:
+            adjustment -= 20
+
+    if EquityPhilosophy.NO_STRONG_VIEW not in (a.equity_philosophy, b.equity_philosophy):
+        if a.equity_philosophy == b.equity_philosophy:
+            adjustment += 5
+        elif {a.equity_philosophy, b.equity_philosophy} == {
+            EquityPhilosophy.EQUAL,
+            EquityPhilosophy.CONTRIBUTION_BASED,
+        }:
+            adjustment -= 15
+
+    if _has_complementary_edge(a, b):
+        adjustment += 10
+
+    return adjustment
+
+
+def _has_complementary_edge(a: Attendee, b: Attendee) -> bool:
+    return (
+        Edge.UNKNOWN not in (a.edge, b.edge)
+        and a.edge != b.edge
+        and bool(set(a.climate_areas) & set(b.climate_areas))
+    )
 
 
 def heuristic_pair_score(a: Attendee, b: Attendee) -> int:
@@ -112,8 +168,26 @@ def heuristic_pair_score(a: Attendee, b: Attendee) -> int:
     if a.top_climate_area and a.top_climate_area == b.top_climate_area:
         score += 10
 
-    if a.commitment == b.commitment:
-        score += 10 if a.commitment == "full-time" else 5
+    commitment_gap = abs(COMMITMENT_TIER[a.commitment] - COMMITMENT_TIER[b.commitment])
+    if commitment_gap == 0:
+        score += 10
+    elif commitment_gap == 3:
+        score -= 15
+
+    if Ambition.UNDECIDED not in (a.ambition, b.ambition):
+        if a.ambition == b.ambition:
+            score += 5
+        elif {a.ambition, b.ambition} == {Ambition.BOOTSTRAP, Ambition.VENTURE_SCALE}:
+            score -= 10
+
+    if {a.equity_philosophy, b.equity_philosophy} == {
+        EquityPhilosophy.EQUAL,
+        EquityPhilosophy.CONTRIBUTION_BASED,
+    }:
+        score -= 10
+
+    if _has_complementary_edge(a, b):
+        score += 10
 
     if (
         a.arrangement == "colocated"
@@ -123,7 +197,7 @@ def heuristic_pair_score(a: Attendee, b: Attendee) -> int:
     ):
         score += 10
 
-    return min(score, 100)
+    return max(0, min(score, 100))
 
 
 def _signal_boost(
@@ -136,13 +210,24 @@ def _signal_boost(
 
     If A liked someone similar to B (high pairwise score between B and the person
     A liked), then A↔B gets a boost — A's revealed preference tells us something
-    about what they're actually looking for.
+    about what they're actually looking for. Signals from selective senders carry
+    more information than signals from someone who signals everyone, so each
+    contribution is weighted by how many signals the sender has cast.
     """
     interests = mutual_signals.get(from_id, [])
+    selectivity_weight = _sender_selectivity_weight(len(interests))
     boost = 0.0
     for interest_id in interests:
         similarity_key = make_pair_key(candidate_id, interest_id)
         similarity = compatibility_scores.get(similarity_key, 0)
         if similarity > 70:
-            boost += 5.0
+            boost += 5.0 * selectivity_weight
     return boost
+
+
+def _sender_selectivity_weight(signals_sent: int) -> float:
+    if signals_sent <= 2:
+        return 1.0
+    if signals_sent <= 5:
+        return 0.5
+    return 0.25

@@ -222,6 +222,7 @@ class TestFullSimulation:
             )
 
             assert len(pairings) == 50
-            assert all(p.composite_score >= 0 for p in pairings)
+            # Alignment penalties can push weak pairs below zero, bounded at -60
+            assert all(p.composite_score >= -60 for p in pairings)
             for p in pairings:
                 history.add(make_pair_key(p.attendee_a, p.attendee_b))
