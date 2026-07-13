@@ -30,9 +30,11 @@
     </div>
   </div>
 
-  <!-- Pairings grid or check-in board -->
+  <!-- Mutual board, pairings grid, or check-in board -->
   <div class="flex-1 min-h-0">
-    {% if state.round_number > 0 and pairings %}
+    {% if state.status.value == 'open-networking' %}
+      {% include "partials/mutual_board.html" %}
+    {% elif state.round_number > 0 and pairings %}
       {% set count = pairings|length %}
       {% if count <= 10 %}
         {% set cols = 2 %}
@@ -132,6 +134,10 @@ document.body.addEventListener("sse:timer_update", function(e) {
   const data = JSON.parse(e.detail.data);
   if (data.action === "pause") Timer.pause(data.timer_remaining);
   else if (data.action === "resume") Timer.resume(data.timer_end);
+});
+
+document.body.addEventListener("sse:status_update", function() {
+  location.reload();
 });
 
 document.body.addEventListener("sse:checkin_update", function(e) {

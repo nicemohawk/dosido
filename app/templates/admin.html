@@ -371,6 +371,13 @@ document.body.addEventListener("sse:signal_update", function(e) {
   swapPartial('signals', 'admin-signals');
 });
 
+// Status update (timer expiry / open networking): refresh round control + stop timer
+document.body.addEventListener("sse:status_update", function() {
+  swapPartial('round-control', 'admin-round-control').then(function() {
+    Timer.clear();
+  });
+});
+
 // Check-in update: refresh pool + round control (active count in confirm dialog)
 document.body.addEventListener("sse:checkin_update", function(e) {
   // Preserve scroll position of the attendee list

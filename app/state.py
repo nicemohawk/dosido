@@ -39,6 +39,16 @@ class EventStateManager:
         r = get_redis()
         await r.set(f"{_prefix()}:state", state.model_dump_json())
 
+    async def set_status(self, status: EventStatus) -> EventState:
+        """Transition the event to a new status, clearing any running timer."""
+        state = await self.get_state()
+        state.status = status
+        state.timer_end = None
+        state.timer_paused = False
+        state.timer_remaining = None
+        await self.set_state(state)
+        return state
+
     # --- Attendees ---
 
     async def get_attendee(self, attendee_id: str) -> Attendee | None:

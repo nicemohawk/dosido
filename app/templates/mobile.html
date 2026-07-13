@@ -263,6 +263,11 @@ document.body.addEventListener("sse:timer_update", function(e) {
   else if (data.action === "resume") Timer.resume(data.timer_end);
 });
 
+// Round ended / open networking started
+document.body.addEventListener("sse:status_update", function() {
+  location.reload();
+});
+
 // Reload on SSE reconnection to catch any missed events
 document.body.addEventListener("sse:reconnected", function() {
   location.reload();

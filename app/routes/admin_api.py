@@ -14,6 +14,7 @@ from app.models import (
     Attendee,
     AttendeeSource,
     AttendeeStatus,
+    EventStatus,
 )
 from app.scoring import make_pair_key
 from app.state import state_manager
@@ -168,6 +169,17 @@ async def undo_last_round():
         },
     )
 
+    return {"ok": True, "state": state.model_dump()}
+
+
+@router.post("/open-networking")
+async def open_networking():
+    """End the rounds portion of the event and start open networking."""
+    state = await state_manager.set_status(EventStatus.OPEN_NETWORKING)
+    await broadcaster.broadcast(
+        "status_update",
+        {"status": state.status.value, "round_number": state.round_number},
+    )
     return {"ok": True, "state": state.model_dump()}
 
 
