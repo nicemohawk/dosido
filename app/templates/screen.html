@@ -2,8 +2,15 @@
 
 {% block title %}{{ settings.event_name }} — Screen{% endblock %}
 {% block body_class %}text-slate-200{% endblock %}
+{% block body_attributes %}data-sse-poll-ms="5000"{% endblock %}
 
 {% block body %}
+<!-- Round transition interstitial — shown by round_update handler, survives reload via sessionStorage -->
+<div id="round-interstitial" class="hidden fixed inset-0 z-[200] bg-midnight flex-col items-center justify-center gap-6">
+  <div class="text-5xl font-extrabold tracking-[0.15em] uppercase text-slate-200">Next Round Starting&hellip;</div>
+  <div id="round-interstitial-countdown" class="font-mono text-[96px] font-bold text-blue-500 leading-none">5</div>
+</div>
+
 <div class="bg-midnight py-7 px-10 h-screen flex flex-col">
 
   <!-- Header -->
@@ -122,10 +129,58 @@ Timer.setEnd("{{ state.timer_end }}");
 Timer.pause({{ state.timer_remaining }});
 {% endif %}
 
+// Round transition interstitial — covers the reload so new pairings appear
+// without a white flash. The deadline persists in sessionStorage so the
+// overlay survives the reload and drops once the countdown finishes.
+const INTERSTITIAL_KEY = "dosidoRoundInterstitialUntil";
+const INTERSTITIAL_MS = 5000;
+const currentRoundNumber = {{ state.round_number }};
+
+function showInterstitial(untilTimestamp) {
+  const overlay = document.getElementById("round-interstitial");
+  const countdown = document.getElementById("round-interstitial-countdown");
+  overlay.classList.remove("hidden");
+  overlay.classList.add("flex");
+  (function tick() {
+    const remainingMs = untilTimestamp - Date.now();
+    if (remainingMs <= 0) {
+      sessionStorage.removeItem(INTERSTITIAL_KEY);
+      overlay.classList.add("hidden");
+      overlay.classList.remove("flex");
+      return;
+    }
+    countdown.textContent = Math.ceil(remainingMs / 1000);
+    setTimeout(tick, 200);
+  })();
+}
+
+// Resume the interstitial if we just reloaded mid-countdown
+(function() {
+  const until = parseInt(sessionStorage.getItem(INTERSTITIAL_KEY) || "0", 10);
+  if (until > Date.now()) showInterstitial(until);
+  else sessionStorage.removeItem(INTERSTITIAL_KEY);
+})();
+
 document.body.addEventListener("sse:round_update", function(e) {
   const data = JSON.parse(e.detail.data);
   Timer.setEnd(data.timer_end);
+  const isNewRound = !data.undone && data.round_number > currentRoundNumber;
+  if (isNewRound) {
+    // Cover the transition, then reload behind the overlay
+    const until = Date.now() + INTERSTITIAL_MS;
+    sessionStorage.setItem(INTERSTITIAL_KEY, String(until));
+    showInterstitial(until);
+  }
   location.reload();
+});
+
+// Polling fallback (sse.js fires sse:poll while the connection is down).
+// Only reload if the server is actually reachable, so a dead server
+// doesn't replace the projector with a browser error page.
+document.body.addEventListener("sse:poll", function() {
+  fetch(location.href, { cache: "no-store" })
+    .then(function(response) { if (response.ok) location.reload(); })
+    .catch(function(error) { console.warn("[poll] server unreachable, will retry:", error); });
 });
 
 document.body.addEventListener("sse:timer_update", function(e) {
