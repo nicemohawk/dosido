@@ -16,6 +16,7 @@
     <div class="text-[13px] {% if state.status.value == 'round-active' and not state.timer_paused %}text-green-500{% elif state.timer_paused %}text-amber-500{% else %}text-slate-500{% endif %}">
       {% if state.status.value == 'round-active' and not state.timer_paused %}In progress
       {% elif state.timer_paused %}Paused
+      {% elif state.status.value == 'open-networking' %}Open networking
       {% elif state.round_number > 0 %}Between rounds
       {% else %}Waiting to start{% endif %}
     </div>
@@ -68,3 +69,16 @@
   </button>
   {% endif %}
 </div>
+
+<!-- End event: switch the screen to the mutual-match board -->
+{% if state.round_number > 0 and state.status.value != 'open-networking' %}
+<div class="mt-3">
+  <button
+    hx-post="/api/admin/open-networking"
+    hx-confirm="End rounds and start open networking? The screen will show mutual matches."
+    hx-swap="none"
+    class="bg-transparent text-emerald-400 border border-emerald-900 rounded-lg px-5 py-2.5 font-semibold text-sm cursor-pointer">
+    &#129309; Open Networking
+  </button>
+</div>
+{% endif %}

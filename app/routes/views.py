@@ -7,6 +7,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from app.config import settings
+from app.models import EventStatus
 from app.state import state_manager
 
 router = APIRouter()
@@ -26,6 +27,11 @@ async def projector_screen(request: Request, slug: str):
     pairing_display = _build_pairing_display(pairings, attendees)
     pit_stop_info = _get_pit_stop_info(pairings, attendees)
 
+    mutual_matches = []
+    if state.status == EventStatus.OPEN_NETWORKING:
+        mutual_keys = await state_manager.get_mutual_matches()
+        mutual_matches = _build_mutual_match_display(mutual_keys, attendees)
+
     return templates.TemplateResponse(
         "screen.html",
         {
@@ -34,6 +40,7 @@ async def projector_screen(request: Request, slug: str):
             "state": state,
             "pairings": pairing_display,
             "pit_stop_info": pit_stop_info,
+            "mutual_matches": mutual_matches,
             "counts": counts,
             "attendees": attendees,
             "settings": settings,
@@ -315,6 +322,16 @@ def _build_pairing_display(pairings, attendees):
                     "score": round(p.composite_score, 1),
                 }
             )
+    return display
+
+
+def _build_mutual_match_display(mutual_keys, attendees):
+    display = []
+    for key in sorted(mutual_keys):
+        id_a, _, id_b = key.partition(":")
+        a = attendees.get(id_a)
+        b = attendees.get(id_b)
+        display.append({"name_a": a.name if a else "?", "name_b": b.name if b else "?"})
     return display
 
 

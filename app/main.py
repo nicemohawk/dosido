@@ -9,6 +9,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.backfill_worker import run_backfill_worker
 from app.redis_client import close_pool
+from app.round_monitor import run_round_monitor
 from app.routes.admin_api import router as admin_router
 from app.routes.public_api import router as public_router
 from app.routes.signal_api import router as signal_router
@@ -19,14 +20,18 @@ APP_DIR = Path(__file__).parent
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Start backfill worker as a background task
-    backfill_task = asyncio.create_task(run_backfill_worker())
+    # Start background tasks: walk-up scoring backfill + round timer monitor
+    background_tasks = [
+        asyncio.create_task(run_backfill_worker()),
+        asyncio.create_task(run_round_monitor()),
+    ]
     yield
-    backfill_task.cancel()
-    try:
-        await backfill_task
-    except asyncio.CancelledError:
-        pass
+    for task in background_tasks:
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
     await close_pool()
 
 
