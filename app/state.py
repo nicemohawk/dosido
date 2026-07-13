@@ -147,15 +147,13 @@ class EventStateManager:
     # --- Round management ---
 
     async def advance_round(self) -> RoundResult:
-        """Record current history, solve next round, update state."""
-        state = await self.get_state()
+        """Solve the next round, then commit history and state.
 
-        # Record current round's pairings into history
+        Nothing is written to Redis until the solve succeeds, so a solver or
+        data error leaves the event state untouched.
+        """
+        state = await self.get_state()
         current = await self.get_current_pairings()
-        if current:
-            for pairing in current.pairings:
-                pair_key = make_pair_key(pairing.attendee_a, pairing.attendee_b)
-                await self.add_to_history(pair_key)
 
         # Load all data needed for solver
         active_pool = await self.get_active_pool()
@@ -164,7 +162,13 @@ class EventStateManager:
         pit_stop_counts = await self.get_pit_stop_counts()
         signals = await self.get_all_signals_as_map()
 
-        # Solve
+        # Current round's pairings count as history for the solve, but are
+        # only persisted after it succeeds
+        current_pair_keys = (
+            [make_pair_key(p.attendee_a, p.attendee_b) for p in current.pairings] if current else []
+        )
+        history = history | set(current_pair_keys)
+
         pairings, pit_stop_id = solve_round(
             active_pool=active_pool,
             compatibility_matrix=matrix,
@@ -174,7 +178,9 @@ class EventStateManager:
             mutual_signals=signals if signals else None,
         )
 
-        # Update pit stop counts
+        # Solve succeeded — commit history and pit stop counts
+        for pair_key in current_pair_keys:
+            await self.add_to_history(pair_key)
         if pit_stop_id:
             await self.increment_pit_stop(pit_stop_id)
 
@@ -211,13 +217,9 @@ class EventStateManager:
         r = get_redis()
         current = await self.get_current_pairings()
 
-        # Remove current round's pairings from history
-        # (they were added to history at the START of advance_round,
-        #  meaning the previous round's pairings are in history, not the current ones.
-        #  The current round's pairings haven't been added to history yet —
-        #  they get added when the NEXT round is advanced.)
-        # So we actually need to remove the pairings that belong to this round
-        # from the current_pairings, and restore the previous round.
+        # advance_round commits the PREVIOUS round's pairings to history, so
+        # the current round's pairings are not in history yet — undo restores
+        # the previous round and removes its pairings from history.
 
         # Remove current round result
         await r.delete(f"{_prefix()}:round:{state.round_number}:pairings")

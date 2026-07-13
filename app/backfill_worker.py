@@ -7,13 +7,13 @@ queue and makes Claude API calls to backfill LLM scores for walk-up attendees.
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 
 import anthropic
 
 from app.config import settings
 from app.state import state_manager
+from pipeline.enrich import parse_json_response
 from pipeline.prompts import PAIRWISE_PROMPT
 
 logger = logging.getLogger(__name__)
@@ -21,6 +21,17 @@ logger = logging.getLogger(__name__)
 # Rate limit: max calls per minute to avoid burning through API quota during rounds
 MAX_CALLS_PER_MINUTE = 15
 POLL_INTERVAL_SECONDS = 5
+
+
+def extract_score_result(response: anthropic.types.Message) -> dict:
+    """Parse the JSON score from an API response, tolerating markdown fences.
+
+    Raises ValueError if the response has no text content.
+    """
+    text_blocks = [block.text for block in response.content if getattr(block, "text", None)]
+    if not text_blocks:
+        raise ValueError("response contained no text content")
+    return parse_json_response(text_blocks[0])
 
 
 async def run_backfill_worker() -> None:
@@ -100,14 +111,14 @@ async def run_backfill_worker() -> None:
                     temperature=0,
                     messages=[{"role": "user", "content": prompt}],
                 )
-                result = json.loads(response.content[0].text)
+                result = extract_score_result(response)
                 score_data = {
                     "score": result.get("score", 50),
                     "rationale": result.get("rationale", ""),
                     "spark": result.get("spark", ""),
                 }
             except Exception as e:
-                logger.warning(f"API call failed for {pair_key}: {e}")
+                logger.warning(f"API call or parsing failed for {pair_key}: {e}")
                 score_data = {"score": 50, "rationale": "API error", "spark": ""}
 
             # Store in matrix
