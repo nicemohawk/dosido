@@ -64,6 +64,7 @@ ruff format .               # Format
 - Admin partials in `templates/partials/` are swapped via HTMX on SSE events
 - All HTML responses include `Cache-Control: no-store` to prevent stale HTMX partial fetches
 - Background backfill worker (`app/backfill_worker.py`) runs in lifespan, rate-limited at 15 calls/min
+- Background round monitor (`app/round_monitor.py`) runs in lifespan; flips ROUND_ACTIVE → BETWEEN_ROUNDS when the timer expires and broadcasts `status_update`
 
 ## Code Quality
 

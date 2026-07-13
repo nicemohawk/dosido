@@ -136,9 +136,9 @@ The admin panel is designed so an ops volunteer can run the event with zero trai
 2. As attendees arrive and grab their badge, check them in via admin panel
 3. When ready, click "Start Round 1" — solver assigns pairings in ~1 second
 4. Projector shows table assignments, phones show individual matches
-5. Timer counts down. Between rounds, attendees signal interest on their phones
+5. Timer counts down; when it hits zero the event automatically enters "between rounds" and attendees signal interest on their phones
 6. Repeat for ~10 rounds
-7. At open networking: mutual matches revealed on screen and phones
+7. Click "Open Networking" to end the rounds — mutual matches are revealed on the projector and phones
 
 ### Admin capabilities
 
@@ -147,6 +147,9 @@ The admin panel is designed so an ops volunteer can run the event with zero trai
 - **Swap override** if two matched attendees already know each other
 - **Add walk-ups** with a reserve badge assignment
 - **Adjust settings** (round duration, total rounds) on the fly
+- **End the event** with the "Open Networking" button (puts the mutual-match board on the projector)
+
+Failed admin actions show an inline error alert, and a failed round advance leaves event state untouched — safe to retry. If the SSE connection drops, the projector falls back to polling every 5s and the admin panel every 15s until it reconnects.
 
 ## LLM Provider Config
 
@@ -219,6 +222,7 @@ app/
   scoring.py           # Composite scoring function
   broadcaster.py       # SSE pub/sub via asyncio queues
   backfill_worker.py   # Background LLM scoring for walk-ups
+  round_monitor.py     # Background timer-expiry watcher (round-active → between-rounds)
   routes/
     views.py           # HTML page routes + admin partial endpoints
     admin_api.py       # POST routes: check-in, advance, pause, swap, walk-up
