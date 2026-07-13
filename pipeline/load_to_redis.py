@@ -12,6 +12,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import redis.asyncio as aioredis
 
+from pipeline import load_required_json
+
 
 async def load_data(
     attendees_path: str = "data/enriched_attendees.json",
@@ -26,8 +28,10 @@ async def load_data(
     r = aioredis.from_url(redis_url, decode_responses=True)
 
     # Load attendees
-    with open(attendees_path) as f:
-        attendees = json.load(f)
+    attendees = load_required_json(
+        attendees_path,
+        hint="run `dosido-seed` for test data or `python -m pipeline.enrich` for real data",
+    )
 
     print(f"Loading {len(attendees)} attendees...")
     pipe = r.pipeline()
@@ -45,8 +49,10 @@ async def load_data(
     print(f"  Loaded {len(attendees)} attendees")
 
     # Load compatibility matrix
-    with open(matrix_path) as f:
-        matrix = json.load(f)
+    matrix = load_required_json(
+        matrix_path,
+        hint="run `dosido-seed` for test data or `dosido-score` for real data",
+    )
 
     print(f"Loading {len(matrix)} pair scores...")
     pipe = r.pipeline()

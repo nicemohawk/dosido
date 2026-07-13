@@ -9,6 +9,7 @@ from pathlib import Path
 import httpx
 
 from app.config import settings
+from pipeline import load_required_json
 from pipeline.prompts import ENRICHMENT_PROMPT
 
 
@@ -202,8 +203,10 @@ def enrich_all(
     """Enrich all attendees. Resumable — skips already-enriched."""
     provider = provider or settings.llm_provider
 
-    with open(input_path) as f:
-        attendees = json.load(f)
+    attendees = load_required_json(
+        input_path,
+        hint="run `python scripts/run_pipeline.py --csv <luma.csv>` to ingest attendees first",
+    )
 
     # Load existing enriched data for resumability
     enriched_path = Path(output_path)
