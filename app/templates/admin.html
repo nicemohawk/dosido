@@ -2,6 +2,7 @@
 
 {% block title %}Admin — {{ settings.event_name }}{% endblock %}
 {% block body_class %}text-slate-200{% endblock %}
+{% block body_attributes %}data-sse-poll-ms="15000"{% endblock %}
 
 {% block head %}
 <style>
@@ -341,6 +342,11 @@ document.body.addEventListener("sse:round_update", function(e) {
       Timer.clear();
     }
   });
+});
+
+// Polling fallback (sse.js fires sse:poll while the connection is down)
+document.body.addEventListener("sse:poll", function() {
+  refreshAdminPartials();
 });
 
 // SSE reconnection: refresh all partials to catch any missed events
