@@ -1,13 +1,13 @@
-"""Multi-round matching engine using maximum weight matching."""
+"""Round matching engine using maximum weight matching."""
 
 from __future__ import annotations
-
-from copy import deepcopy
 
 import networkx as nx
 
 from app.models import Attendee, Pairing
-from app.scoring import make_pair_key, match_score
+from app.scoring import match_score
+
+PIT_STOP_SENTINEL = "__pit_stop__"
 
 
 def solve_round(
@@ -18,16 +18,21 @@ def solve_round(
     pit_stop_counts: dict[str, int],
     mutual_signals: dict[str, list[str]] | None = None,
 ) -> tuple[list[Pairing], str | None]:
-    """Solve the next round's pairings using multi-round lookahead.
+    """Solve one round's pairings via maximum weight matching.
 
-    Solves for all remaining rounds simultaneously to ensure walk-ups and early
-    departures don't degrade match quality. Only commits the first round's pairings.
+    Greedy per-round max-weight matching with the no-repeat constraint;
+    benchmarks showed simulating future rounds cannot change the current
+    round's optimum, so each round is solved directly.
+
+    When the pool is odd, a sentinel node with zero-weight edges to the
+    fairness-eligible attendees lets the solver pick the pit stop whose
+    absence costs the round the least.
 
     Args:
         active_pool: List of currently checked-in attendees.
         compatibility_matrix: Pre-computed pair scores {pair_key: {score, rationale, spark}}.
         pairing_history: Set of pair keys already matched in prior rounds.
-        rounds_remaining: Number of rounds left including this one.
+        rounds_remaining: Number of rounds left including this one (reserved).
         pit_stop_counts: Dict mapping attendee ID to number of pit stops assigned.
         mutual_signals: Optional signal data for algorithm boost.
 
@@ -43,96 +48,18 @@ def solve_round(
         if isinstance(data, dict) and "score" in data:
             compatibility_scores[key] = data["score"]
 
-    # Solve remaining rounds with lookahead
-    schedule = _solve_remaining_rounds(
-        active_pool=active_pool,
-        compatibility_matrix=compatibility_matrix,
-        pairing_history=pairing_history,
-        rounds_remaining=rounds_remaining,
-        pit_stop_counts=pit_stop_counts,
-        mutual_signals=mutual_signals,
-        compatibility_scores=compatibility_scores,
-    )
+    attendee_map = {a.id: a for a in active_pool}
+    ids = list(attendee_map)
 
-    if not schedule:
-        return [], None
-
-    # Take only the first round's result
-    return schedule[0]
-
-
-def _solve_remaining_rounds(
-    active_pool: list[Attendee],
-    compatibility_matrix: dict[str, dict],
-    pairing_history: set[str],
-    rounds_remaining: int,
-    pit_stop_counts: dict[str, int],
-    mutual_signals: dict[str, list[str]] | None,
-    compatibility_scores: dict[str, int],
-) -> list[tuple[list[Pairing], str | None]]:
-    """Solve all remaining rounds using iterative max-weight matching with lookahead."""
-    schedule: list[tuple[list[Pairing], str | None]] = []
-    simulated_history = deepcopy(pairing_history)
-    simulated_pit_stops = deepcopy(pit_stop_counts)
-
-    for round_idx in range(rounds_remaining):
-        pairings, pit_stop_id = _solve_single_round(
-            active_pool=active_pool,
-            compatibility_matrix=compatibility_matrix,
-            pairing_history=simulated_history,
-            rounds_remaining=rounds_remaining - round_idx,
-            pit_stop_counts=simulated_pit_stops,
-            mutual_signals=mutual_signals,
-            compatibility_scores=compatibility_scores,
-        )
-
-        schedule.append((pairings, pit_stop_id))
-
-        # Update simulated state for lookahead
-        for pairing in pairings:
-            pair_key = make_pair_key(pairing.attendee_a, pairing.attendee_b)
-            simulated_history.add(pair_key)
-
-        if pit_stop_id:
-            simulated_pit_stops[pit_stop_id] = simulated_pit_stops.get(pit_stop_id, 0) + 1
-
-    return schedule
-
-
-def _solve_single_round(
-    active_pool: list[Attendee],
-    compatibility_matrix: dict[str, dict],
-    pairing_history: set[str],
-    rounds_remaining: int,
-    pit_stop_counts: dict[str, int],
-    mutual_signals: dict[str, list[str]] | None,
-    compatibility_scores: dict[str, int],
-) -> tuple[list[Pairing], str | None]:
-    """Solve a single round using maximum weight matching."""
-    pool = list(active_pool)
-    pit_stop_id: str | None = None
-
-    # Handle odd pool: determine who sits out
-    if len(pool) % 2 == 1:
-        pit_stop_id = _choose_pit_stop(pool, pit_stop_counts)
-        pool = [a for a in pool if a.id != pit_stop_id]
-
-    if len(pool) < 2:
-        return [], pit_stop_id
-
-    # Build weighted graph
     graph = nx.Graph()
-    attendee_map = {a.id: a for a in pool}
-    ids = list(attendee_map.keys())
+    graph.add_nodes_from(ids)
+    edge_scores: dict[tuple[str, str], float] = {}
 
     for i, id_a in enumerate(ids):
         for id_b in ids[i + 1 :]:
-            a = attendee_map[id_a]
-            b = attendee_map[id_b]
-
             weight = match_score(
-                a,
-                b,
+                attendee_map[id_a],
+                attendee_map[id_b],
                 compatibility_matrix,
                 pairing_history,
                 mutual_signals,
@@ -143,59 +70,53 @@ def _solve_single_round(
             if weight == float("-inf"):
                 continue
 
-            # Lookahead discount: if both will be present for many more rounds,
-            # slightly discount — save best matches for when fewer rounds remain
-            if rounds_remaining > 3:
-                weight *= 0.95
-
+            edge_scores[(min(id_a, id_b), max(id_a, id_b))] = weight
             # networkx needs non-negative weights for max_weight_matching
-            # Shift all weights up to ensure non-negative (matching is relative)
             graph.add_edge(id_a, id_b, weight=max(weight, 0))
 
-    # Solve maximum weight matching
+    if len(ids) % 2 == 1:
+        for candidate_id in _pit_stop_candidates(active_pool, pit_stop_counts):
+            graph.add_edge(PIT_STOP_SENTINEL, candidate_id, weight=0)
+
     matching = nx.max_weight_matching(graph, maxcardinality=True)
 
-    # Convert to Pairing objects with table numbers
-    pairings: list[Pairing] = []
-    for table_number, (id_a, id_b) in enumerate(sorted(matching), start=1):
-        composite = match_score(
-            attendee_map[id_a],
-            attendee_map[id_b],
-            compatibility_matrix,
-            pairing_history,
-            mutual_signals,
-            compatibility_scores,
+    matched_pairs: list[tuple[str, str]] = []
+    matched_ids: set[str] = set()
+    for id_a, id_b in matching:
+        if PIT_STOP_SENTINEL in (id_a, id_b):
+            continue
+        matched_pairs.append((min(id_a, id_b), max(id_a, id_b)))
+        matched_ids.update((id_a, id_b))
+
+    # Whoever ended up unmatched (sentinel partner, or someone with no valid
+    # partners left) sits this round out.
+    unmatched = sorted(set(ids) - matched_ids)
+    pit_stop_id = unmatched[0] if unmatched else None
+
+    pairings = [
+        Pairing(
+            table_number=table_number,
+            attendee_a=id_a,
+            attendee_b=id_b,
+            composite_score=edge_scores[(id_a, id_b)],
         )
-        pairings.append(
-            Pairing(
-                table_number=table_number,
-                attendee_a=id_a,
-                attendee_b=id_b,
-                composite_score=composite,
-            )
-        )
+        for table_number, (id_a, id_b) in enumerate(sorted(matched_pairs), start=1)
+    ]
 
     return pairings, pit_stop_id
 
 
-def _choose_pit_stop(
+def _pit_stop_candidates(
     pool: list[Attendee],
     pit_stop_counts: dict[str, int],
-) -> str:
-    """Choose who sits out when the pool is odd.
+) -> list[str]:
+    """Attendees eligible to sit out this round.
 
-    Priority:
-    1. Never give the same person two pit stops
-    2. Never pit-stop a walk-up who just arrived (fewer total rounds)
-    3. Prefer people with the most completed rounds (they've had more matches)
+    Fairness rules: only those with the fewest pit stops so far, and walk-ups
+    are protected while anyone else is available (they joined late, so they
+    have fewer total rounds).
     """
-    candidates = []
-    for attendee in pool:
-        count = pit_stop_counts.get(attendee.id, 0)
-        is_walk_up = attendee.source == "walk-up"
-        # Sort key: (pit_stop_count ASC, is_walk_up ASC, pit_stop_count ASC)
-        # Lower is "more eligible" for pit stop
-        candidates.append((count, is_walk_up, attendee.id))
-
-    candidates.sort()
-    return candidates[0][2]
+    min_count = min(pit_stop_counts.get(a.id, 0) for a in pool)
+    candidates = [a for a in pool if pit_stop_counts.get(a.id, 0) == min_count]
+    non_walk_ups = [a for a in candidates if a.source != "walk-up"]
+    return [a.id for a in (non_walk_ups or candidates)]

@@ -16,7 +16,7 @@ from app.models import (
     RoundResult,
 )
 from app.redis_client import get_redis
-from app.scoring import make_pair_key
+from app.scoring import make_pair_key, match_score
 
 
 def _prefix() -> str:
@@ -38,6 +38,16 @@ class EventStateManager:
     async def set_state(self, state: EventState) -> None:
         r = get_redis()
         await r.set(f"{_prefix()}:state", state.model_dump_json())
+
+    async def set_status(self, status: EventStatus) -> EventState:
+        """Transition the event to a new status, clearing any running timer."""
+        state = await self.get_state()
+        state.status = status
+        state.timer_end = None
+        state.timer_paused = False
+        state.timer_remaining = None
+        await self.set_state(state)
+        return state
 
     # --- Attendees ---
 
@@ -147,15 +157,13 @@ class EventStateManager:
     # --- Round management ---
 
     async def advance_round(self) -> RoundResult:
-        """Record current history, solve next round, update state."""
-        state = await self.get_state()
+        """Solve the next round, then commit history and state.
 
-        # Record current round's pairings into history
+        Nothing is written to Redis until the solve succeeds, so a solver or
+        data error leaves the event state untouched.
+        """
+        state = await self.get_state()
         current = await self.get_current_pairings()
-        if current:
-            for pairing in current.pairings:
-                pair_key = make_pair_key(pairing.attendee_a, pairing.attendee_b)
-                await self.add_to_history(pair_key)
 
         # Load all data needed for solver
         active_pool = await self.get_active_pool()
@@ -164,7 +172,13 @@ class EventStateManager:
         pit_stop_counts = await self.get_pit_stop_counts()
         signals = await self.get_all_signals_as_map()
 
-        # Solve
+        # Current round's pairings count as history for the solve, but are
+        # only persisted after it succeeds
+        current_pair_keys = (
+            [make_pair_key(p.attendee_a, p.attendee_b) for p in current.pairings] if current else []
+        )
+        history = history | set(current_pair_keys)
+
         pairings, pit_stop_id = solve_round(
             active_pool=active_pool,
             compatibility_matrix=matrix,
@@ -174,7 +188,9 @@ class EventStateManager:
             mutual_signals=signals if signals else None,
         )
 
-        # Update pit stop counts
+        # Solve succeeded — commit history and pit stop counts
+        for pair_key in current_pair_keys:
+            await self.add_to_history(pair_key)
         if pit_stop_id:
             await self.increment_pit_stop(pit_stop_id)
 
@@ -211,13 +227,9 @@ class EventStateManager:
         r = get_redis()
         current = await self.get_current_pairings()
 
-        # Remove current round's pairings from history
-        # (they were added to history at the START of advance_round,
-        #  meaning the previous round's pairings are in history, not the current ones.
-        #  The current round's pairings haven't been added to history yet —
-        #  they get added when the NEXT round is advanced.)
-        # So we actually need to remove the pairings that belong to this round
-        # from the current_pairings, and restore the previous round.
+        # advance_round commits the PREVIOUS round's pairings to history, so
+        # the current round's pairings are not in history yet — undo restores
+        # the previous round and removes its pairings from history.
 
         # Remove current round result
         await r.delete(f"{_prefix()}:round:{state.round_number}:pairings")
@@ -306,12 +318,20 @@ class EventStateManager:
         partner_1 = p1.attendee_b if p1.attendee_a == attendee_id_1 else p1.attendee_a
         partner_2 = p2.attendee_b if p2.attendee_a == attendee_id_2 else p2.attendee_a
 
-        # Look up scores for the new pairs from the compatibility matrix
+        # Recompute composite scores for the new pairs
         matrix = await self.get_compatibility_matrix()
-        new_key_1 = make_pair_key(attendee_id_2, partner_1)
-        new_key_2 = make_pair_key(attendee_id_1, partner_2)
-        score_1 = matrix.get(new_key_1, {}).get("composite_score", 0)
-        score_2 = matrix.get(new_key_2, {}).get("composite_score", 0)
+        history = await self.get_pairing_history()
+        attendees = await self.get_all_attendees()
+        score_1 = score_2 = 0.0
+        if all(aid in attendees for aid in (attendee_id_1, attendee_id_2, partner_1, partner_2)):
+            # Admin overrides may violate constraints (e.g. re-pair people who
+            # already met) — show 0 rather than -inf for those.
+            score_1 = max(
+                match_score(attendees[attendee_id_2], attendees[partner_1], matrix, history), 0.0
+            )
+            score_2 = max(
+                match_score(attendees[attendee_id_1], attendees[partner_2], matrix, history), 0.0
+            )
 
         # Swap: attendee_1 goes with partner_2, attendee_2 goes with partner_1
         result.pairings[idx_1] = Pairing(

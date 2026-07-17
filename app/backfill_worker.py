@@ -7,13 +7,13 @@ queue and makes Claude API calls to backfill LLM scores for walk-up attendees.
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 
 import anthropic
 
 from app.config import settings
 from app.state import state_manager
+from pipeline.enrich import parse_json_response
 from pipeline.prompts import PAIRWISE_PROMPT
 
 logger = logging.getLogger(__name__)
@@ -21,6 +21,17 @@ logger = logging.getLogger(__name__)
 # Rate limit: max calls per minute to avoid burning through API quota during rounds
 MAX_CALLS_PER_MINUTE = 15
 POLL_INTERVAL_SECONDS = 5
+
+
+def extract_score_result(response: anthropic.types.Message) -> dict:
+    """Parse the JSON score from an API response, tolerating markdown fences.
+
+    Raises ValueError if the response has no text content.
+    """
+    text_blocks = [block.text for block in response.content if getattr(block, "text", None)]
+    if not text_blocks:
+        raise ValueError("response contained no text content")
+    return parse_json_response(text_blocks[0])
 
 
 async def run_backfill_worker() -> None:
@@ -72,24 +83,40 @@ async def run_backfill_worker() -> None:
                 a_climate_areas=", ".join(a.climate_areas),
                 a_top_area=a.top_climate_area,
                 a_commitment=a.commitment,
+                a_runway=a.runway,
                 a_arrangement=a.arrangement,
+                a_ambition=a.ambition,
+                a_equity_philosophy=a.equity_philosophy,
+                a_idea_flexibility=a.idea_flexibility,
+                a_edge=a.edge,
                 a_location=a.location,
                 a_matching_summary=a.matching_summary,
                 a_superpower=a.superpower,
                 a_domain_tags=", ".join(a.domain_tags),
                 a_intention=a.intention_90_day,
+                a_hardest_thing=a.hardest_thing,
+                a_proof_summary_1=a.proof_summary_1,
+                a_proof_summary_2=a.proof_summary_2,
                 b_role=b.role,
                 b_role_needed=b.role_needed,
                 b_lane=b.lane,
                 b_climate_areas=", ".join(b.climate_areas),
                 b_top_area=b.top_climate_area,
                 b_commitment=b.commitment,
+                b_runway=b.runway,
                 b_arrangement=b.arrangement,
+                b_ambition=b.ambition,
+                b_equity_philosophy=b.equity_philosophy,
+                b_idea_flexibility=b.idea_flexibility,
+                b_edge=b.edge,
                 b_location=b.location,
                 b_matching_summary=b.matching_summary,
                 b_superpower=b.superpower,
                 b_domain_tags=", ".join(b.domain_tags),
                 b_intention=b.intention_90_day,
+                b_hardest_thing=b.hardest_thing,
+                b_proof_summary_1=b.proof_summary_1,
+                b_proof_summary_2=b.proof_summary_2,
             )
 
             # Call Claude API
@@ -100,14 +127,14 @@ async def run_backfill_worker() -> None:
                     temperature=0,
                     messages=[{"role": "user", "content": prompt}],
                 )
-                result = json.loads(response.content[0].text)
+                result = extract_score_result(response)
                 score_data = {
                     "score": result.get("score", 50),
                     "rationale": result.get("rationale", ""),
                     "spark": result.get("spark", ""),
                 }
             except Exception as e:
-                logger.warning(f"API call failed for {pair_key}: {e}")
+                logger.warning(f"API call or parsing failed for {pair_key}: {e}")
                 score_data = {"score": 50, "rationale": "API error", "spark": ""}
 
             # Store in matrix

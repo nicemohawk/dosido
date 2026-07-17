@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import uuid
 
 from fastapi import APIRouter, HTTPException
@@ -13,9 +14,12 @@ from app.models import (
     Attendee,
     AttendeeSource,
     AttendeeStatus,
+    EventStatus,
 )
 from app.scoring import make_pair_key
 from app.state import state_manager
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin")
 
@@ -93,7 +97,15 @@ async def advance_round():
     if state.rounds_remaining <= 0:
         raise HTTPException(status_code=400, detail="No rounds remaining")
 
-    result = await state_manager.advance_round()
+    try:
+        result = await state_manager.advance_round()
+    except Exception as error:
+        logger.exception("Failed to advance round")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to advance round — event state is unchanged ({error})",
+        ) from error
+
     updated_state = await state_manager.get_state()
 
     # Build display data for broadcast
@@ -157,6 +169,17 @@ async def undo_last_round():
         },
     )
 
+    return {"ok": True, "state": state.model_dump()}
+
+
+@router.post("/open-networking")
+async def open_networking():
+    """End the rounds portion of the event and start open networking."""
+    state = await state_manager.set_status(EventStatus.OPEN_NETWORKING)
+    await broadcaster.broadcast(
+        "status_update",
+        {"status": state.status.value, "round_number": state.round_number},
+    )
     return {"ok": True, "state": state.model_dump()}
 
 

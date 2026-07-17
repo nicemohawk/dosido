@@ -11,6 +11,7 @@ from pathlib import Path
 import anthropic
 
 from app.config import settings
+from pipeline import load_required_json
 from pipeline.enrich import parse_json_response
 from pipeline.prompts import PAIRWISE_PROMPT
 
@@ -38,24 +39,40 @@ def generate_batch_requests(
             a_climate_areas=", ".join(a.get("climate_areas", [])),
             a_top_area=a.get("top_climate_area", ""),
             a_commitment=a.get("commitment", ""),
+            a_runway=a.get("runway", "undisclosed"),
             a_arrangement=a.get("arrangement", ""),
+            a_ambition=a.get("ambition", "undecided"),
+            a_equity_philosophy=a.get("equity_philosophy", "no-strong-view"),
+            a_idea_flexibility=a.get("idea_flexibility", "n/a"),
+            a_edge=a.get("edge", "unknown"),
             a_location=a.get("location", ""),
             a_matching_summary=a.get("matching_summary", ""),
             a_superpower=a.get("superpower", ""),
             a_domain_tags=", ".join(a.get("domain_tags", [])),
             a_intention=a.get("intention_90_day", ""),
+            a_hardest_thing=a.get("hardest_thing", ""),
+            a_proof_summary_1=a.get("proof_summary_1", ""),
+            a_proof_summary_2=a.get("proof_summary_2", ""),
             b_role=b.get("role", ""),
             b_role_needed=b.get("role_needed", ""),
             b_lane=b.get("lane", ""),
             b_climate_areas=", ".join(b.get("climate_areas", [])),
             b_top_area=b.get("top_climate_area", ""),
             b_commitment=b.get("commitment", ""),
+            b_runway=b.get("runway", "undisclosed"),
             b_arrangement=b.get("arrangement", ""),
+            b_ambition=b.get("ambition", "undecided"),
+            b_equity_philosophy=b.get("equity_philosophy", "no-strong-view"),
+            b_idea_flexibility=b.get("idea_flexibility", "n/a"),
+            b_edge=b.get("edge", "unknown"),
             b_location=b.get("location", ""),
             b_matching_summary=b.get("matching_summary", ""),
             b_superpower=b.get("superpower", ""),
             b_domain_tags=", ".join(b.get("domain_tags", [])),
             b_intention=b.get("intention_90_day", ""),
+            b_hardest_thing=b.get("hardest_thing", ""),
+            b_proof_summary_1=b.get("proof_summary_1", ""),
+            b_proof_summary_2=b.get("proof_summary_2", ""),
         )
 
         # Batch API custom_id only allows [a-zA-Z0-9_-], so use underscore
@@ -88,8 +105,10 @@ def submit_batch(
     Pass force=True to re-score everything.
     Pass dry_run=True to preview what would be scored without calling the API.
     """
-    with open(input_path) as f:
-        attendees = json.load(f)
+    attendees = load_required_json(
+        input_path,
+        hint="run `dosido-seed` for test data or `python -m pipeline.enrich` for real data",
+    )
 
     # Load existing scores for resumability
     output_file = Path(output_path)

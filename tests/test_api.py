@@ -106,6 +106,34 @@ class TestAdvanceRound:
         resp = await client.post("/api/admin/advance-round", json={})
         assert resp.status_code == 400
 
+    async def test_solver_failure_returns_500_and_leaves_state_unchanged(
+        self, client, fake_redis, monkeypatch
+    ):
+        attendees = await seed_attendees(fake_redis, count=6)
+        await seed_matrix(fake_redis, attendees)
+        await check_in_all(client, attendees)
+
+        first = await client.post("/api/admin/advance-round", json={})
+        assert first.status_code == 200
+
+        prefix = f"event:{settings.event_slug}"
+        state_before = await fake_redis.get(f"{prefix}:state")
+        pairings_before = await fake_redis.get(f"{prefix}:current_pairings")
+        history_before = await fake_redis.smembers(f"{prefix}:history")
+
+        def exploding_solver(**kwargs):
+            raise RuntimeError("solver exploded")
+
+        monkeypatch.setattr("app.state.solve_round", exploding_solver)
+
+        resp = await client.post("/api/admin/advance-round", json={})
+        assert resp.status_code == 500
+        assert "Failed to advance round" in resp.json()["detail"]
+
+        assert await fake_redis.get(f"{prefix}:state") == state_before
+        assert await fake_redis.get(f"{prefix}:current_pairings") == pairings_before
+        assert await fake_redis.smembers(f"{prefix}:history") == history_before
+
 
 # ---------------------------------------------------------------------------
 # Pause / Resume
@@ -277,6 +305,76 @@ class TestSettings:
         )
         assert resp.status_code == 200
         assert resp.json()["round_duration_minutes"] == 5
+
+
+# ---------------------------------------------------------------------------
+# Open networking
+# ---------------------------------------------------------------------------
+
+
+class TestOpenNetworking:
+    async def _mutual_match(self, client, from_id, to_id):
+        for a, b in ((from_id, to_id), (to_id, from_id)):
+            await client.post(
+                "/api/signal",
+                json={"from_attendee": a, "to_attendee": b, "round_number": 1},
+            )
+
+    async def test_open_networking_endpoint(self, client, fake_redis, broadcast_spy):
+        attendees = await seed_attendees(fake_redis, count=4)
+        await seed_matrix(fake_redis, attendees)
+        await check_in_all(client, attendees)
+        await client.post("/api/admin/advance-round", json={})
+
+        resp = await client.post("/api/admin/open-networking", json={})
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["ok"] is True
+        assert data["state"]["status"] == "open-networking"
+        assert data["state"]["timer_end"] is None
+
+        status_events = [c for c in broadcast_spy if c["event"] == "status_update"]
+        assert status_events == [
+            {"event": "status_update", "data": {"status": "open-networking", "round_number": 1}}
+        ]
+
+    async def test_screen_shows_mutual_board(self, client, fake_redis):
+        attendees = await seed_attendees(fake_redis, count=4)
+        await seed_matrix(fake_redis, attendees)
+        await check_in_all(client, attendees)
+        await client.post("/api/admin/advance-round", json={})
+        await self._mutual_match(client, attendees[0]["id"], attendees[1]["id"])
+
+        await client.post("/api/admin/open-networking", json={})
+
+        resp = await client.get("/test-event/screen")
+        assert resp.status_code == 200
+        assert "MUTUAL MATCHES" in resp.text
+        assert "Test Person 0" in resp.text
+        assert "Test Person 1" in resp.text
+
+    async def test_screen_mutual_board_without_matches(self, client, fake_redis):
+        attendees = await seed_attendees(fake_redis, count=4)
+        await seed_matrix(fake_redis, attendees)
+        await check_in_all(client, attendees)
+        await client.post("/api/admin/advance-round", json={})
+
+        await client.post("/api/admin/open-networking", json={})
+
+        resp = await client.get("/test-event/screen")
+        assert resp.status_code == 200
+        assert "No mutual matches recorded yet" in resp.text
+
+    async def test_screen_hides_mutual_board_before_open_networking(self, client, fake_redis):
+        attendees = await seed_attendees(fake_redis, count=4)
+        await seed_matrix(fake_redis, attendees)
+        await check_in_all(client, attendees)
+        await client.post("/api/admin/advance-round", json={})
+        await self._mutual_match(client, attendees[0]["id"], attendees[1]["id"])
+
+        resp = await client.get("/test-event/screen")
+        assert resp.status_code == 200
+        assert "MUTUAL MATCHES" not in resp.text
 
 
 # ---------------------------------------------------------------------------

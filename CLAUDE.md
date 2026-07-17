@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-Dosido — real-time matchmaking for structured networking events (~40-80 attendees, ~10 rounds). Server-rendered FastAPI + HTMX + SSE. Redis for all state. NetworkX max-weight matching solver with multi-round lookahead.
+Dosido — real-time matchmaking for structured networking events (up to ~100 attendees, ~10 rounds). Server-rendered FastAPI + HTMX + SSE. Redis for all state. NetworkX max-weight matching solver.
 
 ## Commands
 
@@ -47,9 +47,9 @@ ruff format .               # Format
 
 **State is centralized in `EventStateManager`** (`app/state.py`) — all Redis operations go through this class. No direct Redis calls elsewhere in app code.
 
-**Scoring** (`app/scoring.py:match_score`): LLM pairwise score (0-100) + deterministic bonuses (role complement +15, lane +10, climate overlap +5/+10, mutual signal +20). Hard constraints return -inf (already paired, colocated).
+**Scoring** (`app/scoring.py:match_score`): base score (LLM pairwise 0-100, or `heuristic_pair_score` 0-100 for unscored pairs) + deterministic bonuses (role complement +15, lane +10, climate overlap +5/+10) + `alignment_adjustment` (commitment-tier gap up to −25, ambition/equity tail penalties, edge complementarity +10; unknown values always contribute 0) + selectivity-weighted signal boost. Hard constraints return -inf (already paired, colocated in different cities). Registration questions behind these fields: see REGISTRATION.md.
 
-**Solver** (`app/matching.py:solve_round`): Solves all remaining rounds simultaneously via lookahead, returns only the first round's pairings. Handles odd pools via pit stop rotation.
+**Solver** (`app/matching.py:solve_round`): max-weight matching per round over all valid pairs (~0.1s at 100 attendees). Odd pools add a zero-weight sentinel node connected to fairness-eligible attendees so the solver picks the least-costly pit stop (never the same person twice, walk-ups protected).
 
 **Pair keys are always canonical** — `make_pair_key(a, b)` sorts IDs so `abc:def` == `def:abc`.
 
@@ -64,6 +64,7 @@ ruff format .               # Format
 - Admin partials in `templates/partials/` are swapped via HTMX on SSE events
 - All HTML responses include `Cache-Control: no-store` to prevent stale HTMX partial fetches
 - Background backfill worker (`app/backfill_worker.py`) runs in lifespan, rate-limited at 15 calls/min
+- Background round monitor (`app/round_monitor.py`) runs in lifespan; flips ROUND_ACTIVE → BETWEEN_ROUNDS when the timer expires and broadcasts `status_update`
 
 ## Code Quality
 

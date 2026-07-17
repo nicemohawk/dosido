@@ -1,6 +1,6 @@
 """Tests for the matching engine and scoring function."""
 
-from app.matching import _choose_pit_stop, solve_round
+from app.matching import _pit_stop_candidates, solve_round
 from app.models import Arrangement, Attendee, AttendeeSource, Commitment, Lane, Role
 from app.scoring import make_pair_key, match_score
 
@@ -124,7 +124,7 @@ class TestMatchScore:
         assert score_overlap > score_no_overlap
 
     def test_walk_up_without_llm_score(self):
-        """Walk-ups without LLM scores get scaled deterministic scoring."""
+        """Walk-ups without LLM scores get heuristic base scoring."""
         a = make_attendee("a", role=Role.ENGINEERING, role_needed=Role.GTM, lane=Lane.IDEA)
         b = make_attendee(
             "b",
@@ -136,6 +136,47 @@ class TestMatchScore:
         # Empty matrix — no LLM score exists
         score = match_score(a, b, {}, set())
         assert score > 0  # Should get a reasonable deterministic score
+
+    def test_unscored_pair_competes_on_llm_scale(self):
+        """A strong unscored pair should outrank a weak LLM-scored pair."""
+        a = make_attendee("a", role=Role.ENGINEERING, role_needed=Role.GTM, lane=Lane.IDEA)
+        b = make_attendee("b", role=Role.GTM, role_needed=Role.ENGINEERING, lane=Lane.JOINER)
+        c = make_attendee("c", role=Role.ENGINEERING, role_needed=Role.GTM, lane=Lane.IDEA)
+        d = make_attendee("d", role=Role.ENGINEERING, role_needed=Role.OPS, lane=Lane.IDEA)
+
+        matrix = {make_pair_key("c", "d"): {"score": 15}}
+
+        strong_unscored = match_score(a, b, matrix, set())
+        weak_scored = match_score(c, d, matrix, set())
+        assert strong_unscored > weak_scored
+
+    def test_heuristic_pair_score_bounds(self):
+        """Heuristic base score stays on the LLM's 0-100 scale."""
+        from app.scoring import heuristic_pair_score
+
+        strong_a = make_attendee(
+            "a",
+            role=Role.ENGINEERING,
+            role_needed=Role.GTM,
+            lane=Lane.IDEA,
+            climate_areas=["energy", "solar"],
+            arrangement=Arrangement.COLOCATED,
+        )
+        strong_b = make_attendee(
+            "b",
+            role=Role.GTM,
+            role_needed=Role.ENGINEERING,
+            lane=Lane.JOINER,
+            climate_areas=["energy", "solar"],
+            arrangement=Arrangement.COLOCATED,
+        )
+        weak_c = make_attendee("c", role=Role.OPS, role_needed=Role.OPS, climate_areas=["water"])
+        weak_d = make_attendee("d", role=Role.OPS, role_needed=Role.OPS, climate_areas=["food"])
+
+        strong = heuristic_pair_score(strong_a, strong_b)
+        weak = heuristic_pair_score(weak_c, weak_d)
+
+        assert 0 <= weak < strong <= 100
 
 
 # --- Matching tests ---
@@ -228,7 +269,7 @@ class TestSolveRound:
         assert max(counts) - min(counts) <= 1
 
     def test_walk_up_not_pit_stopped_first(self):
-        """Walk-ups should not be the first to get pit-stopped."""
+        """Walk-ups should not be eligible for pit stop while others are."""
         pool = [
             make_attendee("0"),
             make_attendee("1"),
@@ -236,8 +277,24 @@ class TestSolveRound:
         ]
         pit_stop_counts: dict[str, int] = {}
 
-        chosen = _choose_pit_stop(pool, pit_stop_counts)
-        assert chosen != "2"  # Walk-up should not be first pit stop
+        candidates = _pit_stop_candidates(pool, pit_stop_counts)
+        assert "2" not in candidates
+        assert set(candidates) == {"0", "1"}
+
+    def test_pit_stop_choice_minimizes_quality_loss(self):
+        """The solver should sit out the attendee whose absence costs least."""
+        pool = [make_attendee(str(i)) for i in range(3)]
+        matrix = {
+            make_pair_key("0", "1"): {"score": 90},
+            make_pair_key("0", "2"): {"score": 10},
+            make_pair_key("1", "2"): {"score": 10},
+        }
+
+        pairings, pit_stop = solve_round(pool, matrix, set(), 5, {})
+
+        assert pit_stop == "2"  # Sitting out "2" preserves the 90-point pair
+        assert len(pairings) == 1
+        assert {pairings[0].attendee_a, pairings[0].attendee_b} == {"0", "1"}
 
     def test_empty_pool(self):
         pairings, pit_stop = solve_round([], {}, set(), 5, {})
